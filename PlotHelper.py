@@ -7,9 +7,9 @@ def Plot1D(h, dir, drawOption="hist", islogy=False, canvasX=600, canvasY=800):
     hname = h.GetName()
     htitle = h.GetTitle()
     sname = hname.strip(htitle+"_")
-    outputdirpath = os.path.join(dir,"Plots",sname)
+    outputdirpath = os.path.join(dir,"1DPlots",sname)
     if not os.path.exists(outputdirpath):
-        os.mkdir(outputdirpath)
+        os.makedirs(outputdirpath)
 
     leg = ROOT.TLegend(0.7, 0.75, 0.9, 0.9)
     leg.AddEntry(h, sname ,"l")
@@ -28,9 +28,12 @@ def CompareHist(h1, h2, comparetype, dir, drawOption="hist", islogy=False, scale
     hname = h1.GetName()
     htitle = h1.GetTitle()
     sname = hname.strip(htitle+"_")
-    outputdirpath = os.path.join(dir,"Plots",comparetype)
+    outputdirpath = os.path.join(dir,"RatioPlots",comparetype)
     if not os.path.exists(outputdirpath):
-        os.mkdir(outputdirpath)
+        if os.path.exists(os.path.join(dir,"RatioPlots")):
+            os.mkdir(outputdirpath)
+        else:
+            os.makedirs(outputdirpath)
     if 'unit' in scaleOption:
         h1.Scale(1/h1.Integral())
         h2.Scale(1/h2.Integral())

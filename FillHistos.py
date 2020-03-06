@@ -5,16 +5,17 @@ from VarHandler import VarHandler
 
 class FillHistos():
 
-    def __init__(self, histos, chain):
+    def __init__(self, histos, chain, year):
         self.histos = histos
         self.chain = chain
-
+        self.year = year
+        
     def fill(self):
         tr = self.chain
         n_entries = tr.GetEntries()
         for ientry in range(n_entries):
             tr.GetEntry(ientry)
-            getvar = VarHandler(tr)
+            getvar = VarHandler(tr, self.year)
             cut = getvar.ISRcut() and getvar.METcut() and getvar.HTcut()
             var = {}
             if cut:
