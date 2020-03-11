@@ -22,7 +22,7 @@ XlabelDict = {
 
 colDict = {
     'Signal' : ROOT.kBlack,
-    'TTbar'  : ROOT.kRed
+    'TTSingleLep_pow'  : ROOT.kAzure+2,
 
 }
 
