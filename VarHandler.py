@@ -60,7 +60,7 @@ class VarHandler():
     def cntMuon(self):
         nm = 0
         for i in range(len(self.tr.Muon_pt)):
-            if self.tr.Muon_pt[i]>3.5 and abs(self.tr.Muon_eta[i])<2.4 and self.tr.Muon_isPFcand[i] and (self.tr.Muon_isGlobal[i] or self.tr.Muon_isTracker[i]):
+            if muonSelector(self.tr.Muon_pt[i], self.tr.Muon_eta[i], self.tr.Muon_looseId[i], self.tr.Muon_dxy[i], self.tr.Muon_dz[i], 'Other'):
                 nm = nm+1
         return nm
 
@@ -110,3 +110,44 @@ class VarHandler():
             return True
         
 
+    def muonSelector( self, pt, eta, iso, Id, dxy, dz, lepton_selection='hybridIso', year=2016):
+        if lepton_selection == 'hybridIso':
+            def func():
+                if pt <= 25 and pt >3.5:
+                    return \
+                        abs(eta)       < 2.4 \
+                        and (iso* pt) < 5.0 \
+                        and abs(dxy)       < 0.02 \
+                        and abs(dz)        < 0.1 \
+                        and Id
+                elif pt > 25:
+                    return \
+                        abs(eta)       < 2.4 \
+                        and iso < 0.2 \
+                        and abs(dxy)       < 0.02 \
+                        and abs(dz)        < 0.1 \
+                        and Id
+            
+        elif lepton_selection == 'looseHybridIso':
+            def func():
+                if pt <= 25 and pt >3.5:
+                    return \
+                        abs(eta)       < 2.4 \
+                        and (iso*pt) < 20.0 \
+                        and abs(dxy)       < 0.1 \
+                        and abs(dz)        < 0.5 \
+                        and Id
+                elif pt > 25:
+                    return \
+                        abs(eta)       < 2.4 \
+                        and iso < 0.8 \
+                        and abs(dxy)       < 0.1 \
+                        and abs(dz)        < 0.5 \
+                        and Id
+        else:
+            def func():
+                return \
+                    pt >3.5 \
+                    and abs(eta)       < 2.4
+            
+        return func
