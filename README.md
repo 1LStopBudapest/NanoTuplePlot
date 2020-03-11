@@ -18,4 +18,4 @@ python 1DPlot.py --sample TTSingleLep_pow --startfile 0 --nfiles 10
 
 ```
 
-Likewise, run RatioPlot.py to make Ration plots.
+Likewise, run RatioPlot.py to make Ratio plots.
