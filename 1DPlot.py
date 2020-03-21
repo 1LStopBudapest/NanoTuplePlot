@@ -28,8 +28,11 @@ sample  = options.sample
 
 
 histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+histos['Njet20'] = HistInfo(hname = 'Njet20', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
 histos['Nbjet20'] = HistInfo(hname = 'Nbjet20', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
-
+histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+histos['Nmu'] = HistInfo(hname = 'Nmu', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
+histos['Ne'] = HistInfo(hname = 'Ne', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
 
 ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
 print ch.GetEntries()
