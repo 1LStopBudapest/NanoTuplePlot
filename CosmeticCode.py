@@ -17,7 +17,8 @@ XlabelDict = {
     'Elept' : 'e p_{T}',
     'Eledxy' : 'e d_{xy}',
     'Eledz' : 'e d_{z}',
-
+    'Nmu'   : 'N_{#mu}',
+    'Ne'  :  'N_{e}',
 }
 
 colDict = {
