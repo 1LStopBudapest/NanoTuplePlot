@@ -18,6 +18,7 @@ def get_parser():
     argParser.add_argument('--year',              action='store',                     type=int,            default=2016,                                            help="Which year?" )
     argParser.add_argument('--startfile',         action='store',                     type=int,            default=0,                                               help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',            action='store',                     type=int,            default=-1,                                              help="No of files to run. -1 means all files" )
+    argParser.add_argument('--nevents',            action='store',                     type=int,            default=-1,                                              help="No of events to run. -1 means all events" )
 
 
     return argParser
@@ -43,7 +44,11 @@ histos1['Elept'] = HistInfo(hname = 'Elept', sample = sample1, binning=[50,0,50]
 histos1['Eledxy'] = HistInfo(hname = 'Eledxy', sample = sample1, binning=[20,0,5], histclass = ROOT.TH1F).make_hist()
 histos1['Eledz'] = HistInfo(hname = 'Eledz', sample = sample1, binning=[20,0,5], histclass = ROOT.TH1F).make_hist()
 
-
+histos1['GenMuonpt'] = HistInfo(hname = 'GenMuonpt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos1['GenElept'] = HistInfo(hname = 'GenElept', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos1['GenBpt'] = HistInfo(hname = 'GenBpt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos1['GenStoppt'] = HistInfo(hname = 'GenStoppt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos1['GenLSPpt'] = HistInfo(hname = 'GenLSPpt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 
 histos2 = {}
 sample2  = options.sample2
@@ -61,13 +66,19 @@ histos2['Elept'] = HistInfo(hname = 'Elept', sample = sample2, binning=[50,0,50]
 histos2['Eledxy'] = HistInfo(hname = 'Eledxy', sample = sample2, binning=[20,0,5], histclass = ROOT.TH1F).make_hist()
 histos2['Eledz'] = HistInfo(hname = 'Eledz', sample = sample2, binning=[20,0,5], histclass = ROOT.TH1F).make_hist()
 
+histos2['GenMuonpt'] = HistInfo(hname = 'GenMuonpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos2['GenElept'] = HistInfo(hname = 'GenElept', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos2['GenBpt'] = HistInfo(hname = 'GenBpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos2['GenStoppt'] = HistInfo(hname = 'GenStoppt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos2['GenLSPpt'] = HistInfo(hname = 'GenLSPpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+
 ch1 = SampleChain(sample1, options.startfile, options.nfiles).getchain()
 print ch1.GetEntries()
 ch2 = SampleChain(sample2, options.startfile, options.nfiles).getchain()
 print ch2.GetEntries()
 
-FillHistos(histos1, ch1, options.year).fill()
-FillHistos(histos2, ch2, options.year).fill()
+FillHistos(histos1, ch1, options.year, options.nevents).fill()
+FillHistos(histos2, ch2, options.year, options.nevents).fill()
 
 
 
