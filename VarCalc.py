@@ -9,11 +9,30 @@ def DeltaPhi(phi1, phi2):
         dphi += 2.0*pi
     return abs(dphi)
 
+def DeltaR(eta1, phi1, eta2, phi2):
+    return sqrt(DeltaPhi(phi1, phi2)**2 + (eta1 - eta2)**2)
+
+def DeltaRMatched(eta, phi, L, thr):
+    dr = 99
+    for l in L:
+        dri = DeltaR(l['eta'], l['phi'], eta, phi)
+        if dri < dr: dr = dri
+    return True if dr < thr else False
+
 def sortedlist(l, k='pt'):
     sl = sorted(l, key = lambda d: d[k], reverse=True)
     return sl
 
+def MT(pt, phi, metpt, metphi):
+    return sqrt(2 * pt * metpt * (1 - cos(phi - metphi)))
 
+def CT1(met, HT):
+    return min(met, HT-100)
+
+def CT2(met, ISRpt):
+    return min(met, ISRpt)
+
+    
 def Fill1D(h, a, w=1):
     nbin = h.GetNbinsX()
     low = h.GetBinLowEdge(nbin)

@@ -6,7 +6,7 @@ from Style import *
 def Plot1D(h, dir, drawOption="hist", islogy=False, canvasX=600, canvasY=800):
     hname = h.GetName()
     htitle = h.GetTitle()
-    sname = hname.strip(htitle+"_")
+    sname = hname.replace(htitle+"_", "")
     outputdirpath = os.path.join(dir,"1DPlots",sname)
     if not os.path.exists(outputdirpath):
         os.makedirs(outputdirpath)
@@ -27,7 +27,7 @@ def Plot1D(h, dir, drawOption="hist", islogy=False, canvasX=600, canvasY=800):
 def CompareHist(h1, h2, comparetype, dir, drawOption="hist", islogy=False, scaleOption='unitscaling', canvasX=600, canvasY=800):
     hname = h1.GetName()
     htitle = h1.GetTitle()
-    sname = hname.strip(htitle+"_")
+    sname = hname.replace(htitle+"_", "")
     outputdirpath = os.path.join(dir,"RatioPlots",comparetype)
     if not os.path.exists(outputdirpath):
         if os.path.exists(os.path.join(dir,"RatioPlots")):
@@ -51,8 +51,8 @@ def CompareHist(h1, h2, comparetype, dir, drawOption="hist", islogy=False, scale
     p1.SetBottomMargin(0) # Upper and lower plot are joined
     p1.Draw()             # Draw the upper pad: p1
     p1.cd()
-    h1.Draw(drawOption)
-    h2.Draw(drawOption+"SAME")
+    h1.Draw(drawOption+"E")
+    h2.Draw(drawOption+"ESAME")
     leg.Draw("SAME")
     if islogy:ROOT.gPad.SetLogy()
     c.cd()
