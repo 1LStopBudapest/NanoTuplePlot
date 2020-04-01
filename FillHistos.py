@@ -1,26 +1,31 @@
 import ROOT
 import types
+import os, sys
 
 from VarHandler import VarHandler
-from VarCalc import *
+
+sys.path.append('../')
+from Helper.VarCalc import *
 
 class FillHistos():
 
-    def __init__(self, histos, chain, year, nEvents, isData=False):
+    def __init__(self, histos, chain, year, nEvents, sample):
         self.histos = histos
         self.chain = chain
         self.year = year
         self.nEvents = nEvents
-        self.isData = isData
+        self.sample = sample
         
     def fill(self):
         tr = self.chain
+        isData = True if 'Run' in self.sample else False
+        isSignal = True if ('Stop' in self.sample or 'T2' in self.sample) else False 
         n_entries = tr.GetEntries()
         for ientry in range(n_entries):
             if not self.nEvents == -1 and ientry > self.nEvents - 1: break
             tr.GetEntry(ientry)
             getvar = VarHandler(tr, self.year)
-            cut = getvar.ISRcut() and getvar.METcut() and getvar.HTcut() and getvar.lepcut() and getvar.dphicut()
+            cut = getvar.ISRcut() and getvar.METcut() and getvar.HTcut() #and getvar.lepcut() and getvar.dphicut()
             var = {}
             if cut:
                 var['MET'] = tr.MET_pt
@@ -42,12 +47,11 @@ class FillHistos():
                 var['CT1'] = getvar.calCT(1)
                 var['CT2'] = getvar.calCT(2)
                 
-                if not self.isData:
-                    var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
-                    var['GenElept'] = [x['pt'] for x in getvar.genEle()]
-                    var['GenBpt'] = [x['pt'] for x in getvar.genB()]
-                    var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
-                    var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]
+                var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()] if isSignal else 0
+                var['GenElept'] = [x['pt'] for x in getvar.genEle()] if isSignal else 0
+                var['GenBpt'] = [x['pt'] for x in getvar.genB()] if isSignal else 0
+                var['GenStoppt'] = [x['pt'] for x in getvar.genStop()] if isSignal else 0
+                var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()] if isSignal else 0
                     
                 for key in self.histos:
                     try:
