@@ -1,11 +1,13 @@
 import os, sys
 import ROOT
 
-from HistInfo import HistInfo
-from SampleChain import SampleChain
 from FillHistos import FillHistos
-from PlotHelper import *
-from Dir import plotDir
+
+sys.path.append('../')
+from Sample.SampleChain import SampleChain
+from Sample.Dir import plotDir
+from Helper.HistInfo import HistInfo
+from Helper.PlotHelper import *
 
 
 def get_parser():
@@ -77,8 +79,8 @@ print ch1.GetEntries()
 ch2 = SampleChain(sample2, options.startfile, options.nfiles).getchain()
 print ch2.GetEntries()
 
-FillHistos(histos1, ch1, options.year, options.nevents).fill()
-FillHistos(histos2, ch2, options.year, options.nevents).fill()
+FillHistos(histos1, ch1, options.year, options.nevents, sample).fill()
+FillHistos(histos2, ch2, options.year, options.nevents, sample).fill()
 
 
 
