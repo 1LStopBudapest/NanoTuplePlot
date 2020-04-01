@@ -4,12 +4,20 @@ More stuff will be added time to time.
 
 ```
 git clone git@github.com:1LStopBudapest/NanoTuplePlot.git
+git clone git@github.com:1LStopBudapest/Sample.git
+git clone git@github.com:1LStopBudapest/Helper.git
 
-cd 1LStopBudapest/NanoTuplePlot
+cd Sample
 
 ```
 change path name under Dir.py file
 
+Now plotting script
+
+```
+cd ../NanoTuplePlot
+
+```
 Run 1DPlot.py for producing 1D histograms.
 Foe example,
 
