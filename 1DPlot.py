@@ -1,11 +1,14 @@
 import os, sys
 import ROOT
 
-from HistInfo import HistInfo
-from SampleChain import SampleChain
+
 from FillHistos import FillHistos
-from PlotHelper import *
-from Dir import plotDir
+
+sys.path.append('../')
+from Sample.SampleChain import SampleChain
+from Sample.Dir import plotDir
+from Helper.HistInfo import HistInfo
+from Helper.PlotHelper import *
 
 def get_parser():
     ''' Argument parser.
@@ -46,7 +49,8 @@ histos['GenBpt'] = HistInfo(hname = 'GenBpt', sample = sample, binning=[50,0,100
 ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
 print ch.GetEntries()
 
-FillHistos(histos, ch, options.year, options.nevents).fill()
+
+FillHistos(histos, ch, options.year, options.nevents, sample).fill()
 
 #outputDir = os.getcwd()
 

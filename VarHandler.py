@@ -1,7 +1,9 @@
 import ROOT
 import math
+import os, sys
 
-from VarCalc import *
+sys.path.append('../')
+from Helper.VarCalc import *
 
 class VarHandler():
     
@@ -272,7 +274,7 @@ class VarHandler():
         L = []
         for i in range(self.tr.nGenPart):
             if abs(self.tr.GenPart_pdgId[i]) ==5 and self.tr.GenPart_genPartIdxMother[i] != -1:
-                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006 or abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==6:
+                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006:# or abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==6:
                     L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
         return L
 
