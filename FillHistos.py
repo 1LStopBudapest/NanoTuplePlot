@@ -15,18 +15,30 @@ class FillHistos():
         self.year = year
         self.nEvents = nEvents
         self.sample = sample
-        
+
+        keylist = ['MET', 'HT', 'Njet20', 'Njet30', 'ISRJetPt', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'LepMT', 'CT1', 'CT2', 'GenMuonpt', 'GenElept', 'GenBpt', 'GenStoppt', 'GenLSPpt']
+        self.var = {key: None for key in keylist}
+    
     def fill(self):
         tr = self.chain
         isData = True if 'Run' in self.sample else False
         isSignal = True if ('Stop' in self.sample or 'T2' in self.sample) else False 
+        var = self.var
         n_entries = tr.GetEntries()
+        nevtcut = n_entries -1 if self.nEvents == - 1 else self.nEvents - 1
+        print 'Running over total events: ', nevtcut+1
         for ientry in range(n_entries):
-            if not self.nEvents == -1 and ientry > self.nEvents - 1: break
+            if ientry > nevtcut: break
+            if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
             tr.GetEntry(ientry)
             getvar = VarHandler(tr, self.year)
             cut = getvar.ISRcut() and getvar.METcut() and getvar.HTcut() #and getvar.lepcut() and getvar.dphicut()
-            var = {}
+            if isSignal:
+                var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
+                var['GenElept'] = [x['pt'] for x in getvar.genEle()]
+                var['GenBpt'] = [x['pt'] for x in getvar.genB()]
+                var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
+                var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]                
             if cut:
                 var['MET'] = tr.MET_pt
                 var['HT'] = getvar.calHT()
@@ -47,17 +59,15 @@ class FillHistos():
                 var['CT1'] = getvar.calCT(1)
                 var['CT2'] = getvar.calCT(2)
                 
-                var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()] if isSignal else 0
-                var['GenElept'] = [x['pt'] for x in getvar.genEle()] if isSignal else 0
-                var['GenBpt'] = [x['pt'] for x in getvar.genB()] if isSignal else 0
-                var['GenStoppt'] = [x['pt'] for x in getvar.genStop()] if isSignal else 0
-                var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()] if isSignal else 0
+
                     
-                for key in self.histos:
-                    try:
+            for key in self.histos:
+                try: #if key in var.keys():
+                    if var[key] is not None:
                         if isinstance(var[key], types.ListType):
                             for x in var[key]: Fill1D(self.histos[key], x)
                         else:
                             Fill1D(self.histos[key], var[key])
-                    except:
-                        raise ValueError("You are trying to fill the histos for the keys which are missing in var dictionary")
+                except: #else:
+                    raise ValueError("You are trying to fill the histos for the keys which are missing in var dictionary")
+                    #print "You are trying to fill the histos for the keys", key, " which are missing in var dictionary"

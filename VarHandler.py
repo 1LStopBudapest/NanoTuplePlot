@@ -99,14 +99,14 @@ class VarHandler():
     def	selectEleIdx(self):
         idx = []
         for i in range(len(self.tr.Electron_pt)):
-            if self.eleSelector(self.tr.Electron_pt[i], self.tr.Electron_eta[i], self.tr.Electron_pfRelIso03_all[i], self.tr.Electron_cutBased_Fall17_V1, self.tr.Electron_dxy[i], self.tr.Electron_dz[i], 'looseHybridIso'):
+            if self.eleSelector(self.tr.Electron_pt[i], self.tr.Electron_eta[i], self.tr.Electron_pfRelIso03_all[i], self.tr.Electron_dxy[i], self.tr.Electron_dz[i], self.tr.Electron_cutBased_Fall17_V1[i],'looseHybridIso'):
                 idx.append(i)              
 	return idx
 
     def selectMuIdx(self):
         idx = []
         for i in range(len(self.tr.Muon_pt)):
-            if self.muonSelector(self.tr.Muon_pt[i], self.tr.Muon_eta[i], self.tr.Muon_pfRelIso03_all[i], self.tr.Muon_mediumId[i], self.tr.Muon_dxy[i], self.tr.Muon_dz[i], 'looseHybridIso'):
+            if self.muonSelector(self.tr.Muon_pt[i], self.tr.Muon_eta[i], self.tr.Muon_pfRelIso03_all[i], self.tr.Muon_dxy[i], self.tr.Muon_dz[i], self.tr.Muon_mediumId[i], 'looseHybridIso'):
                 idx.append(i)
         return idx
     
@@ -114,10 +114,10 @@ class VarHandler():
         muon = {'pt':[], 'dxy':[], 'dz':[]}
         for i in range(len(self.tr.Muon_pt)):
             if self.tr.Muon_pt[i]>3.5 and abs(self.tr.Muon_eta[i])<2.4 and self.tr.Muon_isPFcand[i] and (self.tr.Muon_isGlobal[i] or self.tr.Muon_isTracker[i]):
-                if DeltaRMatched(self.tr.Muon_eta[i], self.tr.Muon_phi[i], self.genMuon(), 0.3):
+                if DeltaRMatched(self.tr.Muon_eta[i], self.tr.Muon_phi[i], self.genMuon(), 0.1):
                     muon['pt'].append(self.tr.Muon_pt[i])
-                    if self.tr.Muon_dz[i] < 0.1 :
-                        muon['dxy'].append(self.tr.Muon_dxy[i])
+                    #if self.tr.Muon_dz[i] < 0.1 :
+                    muon['dxy'].append(self.tr.Muon_dxy[i])
                     muon['dz'].append(self.tr.Muon_dz[i])
 
         return muon
@@ -128,10 +128,10 @@ class VarHandler():
         ele = {'pt':[], 'dxy':[], 'dz':[]}
         for i in range(len(self.tr.Electron_pt)):
             if self.tr.Electron_pt[i]>5 and abs(self.tr.Electron_eta[i])<2.5 :
-                if DeltaRMatched(self.tr.Electron_eta[i], self.tr.Electron_phi[i], self.genEle(), 0.3):
+                if DeltaRMatched(self.tr.Electron_eta[i], self.tr.Electron_phi[i], self.genEle(), 0.1):
                     ele['pt'].append(self.tr.Electron_pt[i])
-	            if self.tr.Electron_dz[i] < 0.1 :
-                        ele['dxy'].append(self.tr.Electron_dxy[i])
+	            #if self.tr.Electron_dz[i] < 0.1 :
+                    ele['dxy'].append(self.tr.Electron_dxy[i])
 	            ele['dz'].append(self.tr.Electron_dz[i])
         return ele
 
@@ -162,7 +162,7 @@ class VarHandler():
             return True
         
 
-    def muonSelector( self, pt, eta, iso, Id, dxy, dz, lepton_selection='hybridIso', year=2016):
+    def muonSelector( self, pt, eta, iso, dxy, dz, Id = True, lepton_selection='hybridIso', year=2016):
         if lepton_selection == 'hybridIso':
             def func():
                 if pt <= 25 and pt >3.5:
@@ -205,7 +205,7 @@ class VarHandler():
         return func
 
 
-    def eleSelector(self, pt, eta, iso, Id, dxy, dz, lepton_selection='hybridIso', year=2016):
+    def eleSelector(self, pt, eta, iso, dxy, dz, Id, lepton_selection='hybridIso', year=2016):
         if lepton_selection == 'hybridIso':
             def func():
                 if pt <= 25 and pt >5:
