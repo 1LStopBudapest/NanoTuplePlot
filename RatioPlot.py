@@ -75,14 +75,16 @@ histos2['GenStoppt'] = HistInfo(hname = 'GenStoppt', sample = sample2, binning=[
 histos2['GenLSPpt'] = HistInfo(hname = 'GenLSPpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 
 ch1 = SampleChain(sample1, options.startfile, options.nfiles).getchain()
-print ch1.GetEntries()
+print 'sample1 events: ', ch1.GetEntries()
 ch2 = SampleChain(sample2, options.startfile, options.nfiles).getchain()
-print ch2.GetEntries()
+print 'sample2 events: ', ch2.GetEntries()
 
-FillHistos(histos1, ch1, options.year, options.nevents, sample).fill()
-FillHistos(histos2, ch2, options.year, options.nevents, sample).fill()
+FillHistos(histos1, ch1, options.year, options.nevents, sample1).fill()
+FillHistos(histos2, ch2, options.year, options.nevents, sample2).fill()
 
-
+print 'Histogram Entries:'
+print 'Muondxy:'
+print 'sample1', histos1['Muondxy'].GetEntries(), 'sample2', histos2['Muondxy'].GetEntries()
 
 #outputDir = os.getcwd()
 outputDir = plotDir
