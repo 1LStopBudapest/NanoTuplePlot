@@ -114,7 +114,7 @@ class VarHandler():
         muon = {'pt':[], 'dxy':[], 'dz':[]}
         for i in range(len(self.tr.Muon_pt)):
             if self.tr.Muon_pt[i]>3.5 and abs(self.tr.Muon_eta[i])<2.4 and self.tr.Muon_isPFcand[i] and (self.tr.Muon_isGlobal[i] or self.tr.Muon_isTracker[i]):
-                if DeltaRMatched(self.tr.Muon_eta[i], self.tr.Muon_phi[i], self.genMuon(), 0.1):
+                if DeltaRMatched(self.tr.Muon_eta[i], self.tr.Muon_phi[i], self.genMuon(), 0.3):
                     muon['pt'].append(self.tr.Muon_pt[i])
                     #if self.tr.Muon_dz[i] < 0.1 :
                     muon['dxy'].append(self.tr.Muon_dxy[i])
@@ -128,7 +128,7 @@ class VarHandler():
         ele = {'pt':[], 'dxy':[], 'dz':[]}
         for i in range(len(self.tr.Electron_pt)):
             if self.tr.Electron_pt[i]>5 and abs(self.tr.Electron_eta[i])<2.5 :
-                if DeltaRMatched(self.tr.Electron_eta[i], self.tr.Electron_phi[i], self.genEle(), 0.1):
+                if DeltaRMatched(self.tr.Electron_eta[i], self.tr.Electron_phi[i], self.genEle(), 0.3):
                     ele['pt'].append(self.tr.Electron_pt[i])
 	            #if self.tr.Electron_dz[i] < 0.1 :
                     ele['dxy'].append(self.tr.Electron_dxy[i])
@@ -257,16 +257,16 @@ class VarHandler():
     def genEle(self):
         L = []
         for i in range(self.tr.nGenPart):
-            if abs(self.tr.GenPart_pdgId[i]) ==11 and self.tr.GenPart_statusFlags[i]%2 ==1 and self.tr.GenPart_genPartIdxMother[i] != -1:
-                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==24:
+            if abs(self.tr.GenPart_pdgId[i]) ==11 and GenFlagString(self.tr.GenPart_statusFlags[i])[-1]=='1' and GenFlagString(self.tr.GenPart_statusFlags[i])[6]=='1' and self.tr.GenPart_status[i]==1 and self.tr.GenPart_genPartIdxMother[i] != -1:
+                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])!=21:
                     L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
         return L
 
     def genMuon(self):
         L = []
         for i in range(self.tr.nGenPart):
-            if abs(self.tr.GenPart_pdgId[i]) ==13 and self.tr.GenPart_statusFlags[i]%2 ==1 and self.tr.GenPart_genPartIdxMother[i] != -1:
-                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==24:
+            if abs(self.tr.GenPart_pdgId[i]) ==13 and GenFlagString(self.tr.GenPart_statusFlags[i])[-1]=='1' and GenFlagString(self.tr.GenPart_statusFlags[i])[6]=='1' and self.tr.GenPart_status[i]==1 and self.tr.GenPart_genPartIdxMother[i] != -1:
+                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])!=22:
                     L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
         return L
 
@@ -274,8 +274,9 @@ class VarHandler():
         L = []
         for i in range(self.tr.nGenPart):
             if abs(self.tr.GenPart_pdgId[i]) ==5 and self.tr.GenPart_genPartIdxMother[i] != -1:
-                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006:# or abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==6:
+                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006 and self.tr.GenPart_statusFlags[self.tr.GenPart_genPartIdxMother[i]]==10497:
                     L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
+                    
         return L
 
     def genStop(self):
@@ -289,6 +290,13 @@ class VarHandler():
         L = []
         for i in range(self.tr.nGenPart):
             if abs(self.tr.GenPart_pdgId[i]) ==1000022 and self.tr.GenPart_genPartIdxMother[i] != -1:
-                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006:
+                if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006 and self.tr.GenPart_statusFlags[self.tr.GenPart_genPartIdxMother[i]]==10497:
                     L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
         return L
+
+    def selectGenjetIdx(self, flavor = 5):
+        idx = []
+        for i in range(self.tr.nGenJet):
+            if abs(self.tr.GenJet_partonFlavour[i])==flavor:
+                idx.append(i)
+        return idx

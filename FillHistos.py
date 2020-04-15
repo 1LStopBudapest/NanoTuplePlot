@@ -16,13 +16,21 @@ class FillHistos():
         self.nEvents = nEvents
         self.sample = sample
 
-        keylist = ['MET', 'HT', 'Njet20', 'Njet30', 'ISRJetPt', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'LepMT', 'CT1', 'CT2', 'GenMuonpt', 'GenElept', 'GenBpt', 'GenStoppt', 'GenLSPpt']
+
+        self.isData = True if 'Run' in self.sample else False
+        self.isSignal = True if ('Stop' in self.sample or 'T2' in self.sample) else False
+
+        keylist = ['MET', 'HT', 'Njet20', 'Njet30', 'ISRJetPt', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'LepMT', 'CT1', 'CT2']
+        if not self.isData:
+            keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt', 'GenStoppt', 'GenLSPpt'])
+
+        if self.isSignal:
+            keylist.extend(['GenBjetpt', 'NGenBjets'])#currently genjets are not stored in posrprocessed samples
+
         self.var = {key: None for key in keylist}
     
     def fill(self):
         tr = self.chain
-        isData = True if 'Run' in self.sample else False
-        isSignal = True if ('Stop' in self.sample or 'T2' in self.sample) else False 
         var = self.var
         n_entries = tr.GetEntries()
         nevtcut = n_entries -1 if self.nEvents == - 1 else self.nEvents - 1
@@ -33,12 +41,15 @@ class FillHistos():
             tr.GetEntry(ientry)
             getvar = VarHandler(tr, self.year)
             cut = getvar.ISRcut() and getvar.METcut() and getvar.HTcut() #and getvar.lepcut() and getvar.dphicut()
-            if isSignal:
+            if not self.isData:
                 var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
                 var['GenElept'] = [x['pt'] for x in getvar.genEle()]
                 var['GenBpt'] = [x['pt'] for x in getvar.genB()]
                 var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
                 var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]                
+            if self.isSignal:
+                var['GenBjetpt'] = [tr.GenJet_pt[x] for x in getvar.selectGenjetIdx()]
+                var['NGenBjets'] = len(getvar.selectGenjetIdx())
             if cut:
                 var['MET'] = tr.MET_pt
                 var['HT'] = getvar.calHT()
