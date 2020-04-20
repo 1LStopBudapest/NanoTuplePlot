@@ -22,7 +22,7 @@ class FillHistos():
         
         keylist = ['MET', 'HT', 'Njet20', 'Njet30', 'ISRJetPt', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'LepMT', 'CT1', 'CT2']
         if not self.isData:
-            keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt_fstop', 'GenBpt_istop', 'GenStoppt', 'GenLSPpt'])
+            keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt', 'GenStoppt', 'GenLSPpt'])
 
         if self.isSignal:
             keylist.extend(['GenBjetpt', 'NGenBjets'])
@@ -67,8 +67,7 @@ class FillHistos():
             if not self.isData:
                 var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
                 var['GenElept'] = [x['pt'] for x in getvar.genEle()]
-                var['GenBpt_fstop'] = [x['pt'] for x in getvar.genB()]
-                var['GenBpt_istop'] = [x['pt'] for x in getvar.genB('istop')]
+                var['GenBpt'] = [x['pt'] for x in getvar.genB()]
                 var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
                 var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]                
             if self.isSignal:
