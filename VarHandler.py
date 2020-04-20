@@ -7,10 +7,11 @@ from Helper.VarCalc import *
 
 class VarHandler():
     
-    def __init__(self, tr, yr):
+    def __init__(self, tr, isData, yr):
         self.tr = tr
         self.yr = yr
-
+        self.isData = isData
+        
     #cuts
     def ISRcut(self):
         return len(self.selectISRjetIdx())>0
@@ -110,30 +111,6 @@ class VarHandler():
                 idx.append(i)
         return idx
     
-    def getMuonvar(self):
-        muon = {'pt':[], 'dxy':[], 'dz':[]}
-        for i in range(len(self.tr.Muon_pt)):
-            if self.tr.Muon_pt[i]>3.5 and abs(self.tr.Muon_eta[i])<2.4 and self.tr.Muon_isPFcand[i] and (self.tr.Muon_isGlobal[i] or self.tr.Muon_isTracker[i]):
-                if DeltaRMatched(self.tr.Muon_eta[i], self.tr.Muon_phi[i], self.genMuon(), 0.3):
-                    muon['pt'].append(self.tr.Muon_pt[i])
-                    #if self.tr.Muon_dz[i] < 0.1 :
-                    muon['dxy'].append(self.tr.Muon_dxy[i])
-                    muon['dz'].append(self.tr.Muon_dz[i])
-
-        return muon
-
-
-
-    def	getElevar(self):
-        ele = {'pt':[], 'dxy':[], 'dz':[]}
-        for i in range(len(self.tr.Electron_pt)):
-            if self.tr.Electron_pt[i]>5 and abs(self.tr.Electron_eta[i])<2.5 :
-                if DeltaRMatched(self.tr.Electron_eta[i], self.tr.Electron_phi[i], self.genEle(), 0.3):
-                    ele['pt'].append(self.tr.Electron_pt[i])
-	            #if self.tr.Electron_dz[i] < 0.1 :
-                    ele['dxy'].append(self.tr.Electron_dxy[i])
-	            ele['dz'].append(self.tr.Electron_dz[i])
-        return ele
 
     def getLepVar(self, muId, eId):
         Llist = []
@@ -254,6 +231,38 @@ class VarHandler():
     def eleID(idval, idtype):
         return idval==idtype
 
+    def getMuonvar(self):
+        muon = {'pt':[], 'dxy':[], 'dz':[]}
+        for i in range(len(self.tr.Muon_pt)):
+            if self.tr.Muon_pt[i]>3.5 and abs(self.tr.Muon_eta[i])<2.4 and self.tr.Muon_isPFcand[i] and (self.tr.Muon_isGlobal[i] or self.tr.Muon_isTracker[i]):
+                if not self.isData:
+                    if DeltaRMatched(self.tr.Muon_eta[i], self.tr.Muon_phi[i], self.genMuon(), 0.3):
+                        muon['pt'].append(self.tr.Muon_pt[i])
+                        muon['dxy'].append(self.tr.Muon_dxy[i])
+                        muon['dz'].append(self.tr.Muon_dz[i])
+                else:
+                    muon['pt'].append(self.tr.Muon_pt[i])
+                    muon['dxy'].append(self.tr.Muon_dxy[i])
+                    muon['dz'].append(self.tr.Muon_dz[i])
+        return muon
+
+
+
+    def	getElevar(self):
+        ele = {'pt':[], 'dxy':[], 'dz':[]}
+        for i in range(len(self.tr.Electron_pt)):
+            if self.tr.Electron_pt[i]>5 and abs(self.tr.Electron_eta[i])<2.5 :
+                if not self.isData:
+                    if DeltaRMatched(self.tr.Electron_eta[i], self.tr.Electron_phi[i], self.genEle(), 0.3):
+                        ele['pt'].append(self.tr.Electron_pt[i])
+	                ele['dxy'].append(self.tr.Electron_dxy[i])
+	                ele['dz'].append(self.tr.Electron_dz[i])
+                else:
+                    ele['pt'].append(self.tr.Electron_pt[i])
+	            ele['dxy'].append(self.tr.Electron_dxy[i])
+                    ele['dz'].append(self.tr.Electron_dz[i])
+        return ele
+    
     def genEle(self):
         L = []
         for i in range(self.tr.nGenPart):
@@ -276,7 +285,7 @@ class VarHandler():
             if abs(self.tr.GenPart_pdgId[i]) ==5 and self.tr.GenPart_genPartIdxMother[i] != -1:
                 if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006 and self.tr.GenPart_statusFlags[self.tr.GenPart_genPartIdxMother[i]]==10497:
                     L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
-                    
+        
         return L
 
     def genStop(self):
