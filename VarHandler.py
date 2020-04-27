@@ -18,14 +18,14 @@ class VarHandler():
 
     def METcut(self):
         cut = False
-        if self.tr.MET_pt >280:
+        if self.tr.MET_pt >200:
             cut = True
         return cut
         
     def HTcut(self):
         cut = False
         HT = self.calHT()
-        if HT >200:
+        if HT >300:
             cut = True
         return cut
 
@@ -47,6 +47,18 @@ class VarHandler():
             cut = False
         return cut
 
+    def XtraJetVeto(self):
+        cut = True
+        if len(self.selectjetIdx(30)) >=3 and self.tr.Jet_pt[self.selectjetIdx(30)[2]]> 60:
+            cut = False
+        return cut
+
+    def tauVeto(self):
+        cut = True
+        if self.tr.nTau>=1:#only applicable to postprocessed sample where lepton(e,mu)-cleaned (dR<0.4) tau collection is stored
+            cut = False
+        return cut
+            
     def getLepMT(self):
         lepvar = sortedlist(self.getLepVar(self.selectMuIdx(), self.selectEleIdx()))
         return MT(lepvar[0]['pt'], lepvar[0]['phi'], self.tr.MET_pt, self.tr.MET_phi) if len(lepvar) else 0
@@ -100,14 +112,14 @@ class VarHandler():
     def	selectEleIdx(self):
         idx = []
         for i in range(len(self.tr.Electron_pt)):
-            if self.eleSelector(self.tr.Electron_pt[i], self.tr.Electron_eta[i], self.tr.Electron_pfRelIso03_all[i], self.tr.Electron_dxy[i], self.tr.Electron_dz[i], self.tr.Electron_cutBased_Fall17_V1[i],'looseHybridIso'):
+            if self.eleSelector(self.tr.Electron_pt[i], self.tr.Electron_eta[i], self.tr.Electron_pfRelIso03_all[i], self.tr.Electron_dxy[i], self.tr.Electron_dz[i], self.tr.Electron_cutBased_Fall17_V1[i],'HybridIso'):
                 idx.append(i)              
 	return idx
 
     def selectMuIdx(self):
         idx = []
         for i in range(len(self.tr.Muon_pt)):
-            if self.muonSelector(self.tr.Muon_pt[i], self.tr.Muon_eta[i], self.tr.Muon_pfRelIso03_all[i], self.tr.Muon_dxy[i], self.tr.Muon_dz[i], self.tr.Muon_mediumId[i], 'looseHybridIso'):
+            if self.muonSelector(self.tr.Muon_pt[i], self.tr.Muon_eta[i], self.tr.Muon_pfRelIso03_all[i], self.tr.Muon_dxy[i], self.tr.Muon_dz[i], 'HybridIso'):
                 idx.append(i)
         return idx
     
@@ -282,9 +294,9 @@ class VarHandler():
     def genB(self):
         L = []
         for i in range(self.tr.nGenPart):
-            if abs(self.tr.GenPart_pdgId[i]) ==5 and self.tr.GenPart_genPartIdxMother[i] != -1:
+            if abs(self.tr.GenPart_pdgId[i]) ==5 and self.tr.GenPart_genPartIdxMother[i] != -1 and self.tr.GenPart_genPartIdxMother[i]<self.tr.nGenPart:
                 if abs(self.tr.GenPart_pdgId[self.tr.GenPart_genPartIdxMother[i]])==1000006 and self.tr.GenPart_statusFlags[self.tr.GenPart_genPartIdxMother[i]]==10497:
-                    L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
+                        L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
         
         return L
 

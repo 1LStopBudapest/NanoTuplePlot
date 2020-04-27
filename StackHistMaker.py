@@ -1,6 +1,6 @@
 import os, sys
 import ROOT
-
+import types
 
 from FillHistos import FillHistos
 
@@ -28,18 +28,30 @@ options = get_parser().parse_args()
 
 
 
-sample  = options.sample
+samples  = options.sample
 
-hfile = ROOT.TFile( 'StackHist_'+sample+'.root', 'RECREATE')
-histos = {}
-histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+if isinstance(SampleChain.samplelist[samples][0], types.ListType):
+    for s in SampleChain.samplelist[samples]:
+        sample = list(SampleChain.samplelist.keys())[list(SampleChain.samplelist.values()).index(s)]
+        print 'running over: ', sample
+        hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        histos = {}
+        histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+        
+        ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
+        print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
+        FillHistos(histos, ch, options.year, options.nevents, sample, SampleChain.luminosity_2016).fill()
+        hfile.Write()
+else:
+    sample = samples
+    print 'running over: ', sample
+    hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    histos = {}
+    histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+    
+    ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
+    print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
+    FillHistos(histos, ch, options.year, options.nevents, sample, SampleChain.luminosity_2016).fill()
+    hfile.Write()
 
-ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
-print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-
-
-FillHistos(histos, ch, options.year, options.nevents, sample, SampleChain.luminosity_2016).fill()
-
-
-hfile.Write()
 
