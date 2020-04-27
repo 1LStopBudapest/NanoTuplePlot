@@ -37,13 +37,13 @@ python RatioPlot.py --sample1 Stop_500_480_tau10mm_fast --sample2 Stop_500_480_t
 
 For the Data-MC comparison, we have stack plotting script
 ```
-StackPlotScript.py
+python StackPlotScript.py
 
 ```
-This file runs StackHistMaker.py script for the given samples using GPU parallel program.
-for that parallel program needs to be installed in the system (can be checked just typing parallel in terminal)
+This StackPlotScript.py file runs StackHistMaker.py script for the given samples using GPU parallel program.
+For this, parallel program needs to be installed in the system (can be checked just typing parallel in terminal).
 if not installed, please install it.
 
-Few parameters need to be provided like samplesRun (lisf of samples) , fileperjobMC, fileperjobData, TotJobs(number parallel jobs)
+Few parameters need to be provided like samplesRun (lisf of samples) , fileperjobMC, fileperjobData, TotJobs(number parallel jobs)inside StackPlotScript.py
 A txt file is created with run command of  StackHistMaker.py . The number of lines of the txt file will run in parallel
-A shell file is produced, and then executed. First, the txt files will be processed to produce root files with histograms then it runs StackPlot.py with the list of sample (from given samplesRun) which creats the stack histograms.
+A shell file is produced, and then executed. First, the txt files will be processed to produce root files with histograms then it runs StackPlot.py with the list of samples (from given samplesRun) which creats the stack histograms.
