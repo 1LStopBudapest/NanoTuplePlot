@@ -41,6 +41,8 @@ class FillHistos():
             tr.GetEntry(ientry)
             if self.isData:
                 lumiscale = 1.0
+            elif self.isSignal:
+                lumiscale = 1.0
             else:
                 lumiscale = (self.DataLumi/1000.0) * tr.weight    
             getvar = VarHandler(tr, self.isData, self.year)
