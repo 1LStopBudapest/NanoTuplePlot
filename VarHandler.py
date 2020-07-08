@@ -112,14 +112,14 @@ class VarHandler():
     def	selectEleIdx(self):
         idx = []
         for i in range(len(self.tr.Electron_pt)):
-            if self.eleSelector(self.tr.Electron_pt[i], self.tr.Electron_eta[i], self.tr.Electron_pfRelIso03_all[i], self.tr.Electron_dxy[i], self.tr.Electron_dz[i], self.tr.Electron_cutBased_Fall17_V1[i],'HybridIso'):
+            if self.eleSelector(pt=self.tr.Electron_pt[i], eta=self.tr.Electron_eta[i], iso=self.tr.Electron_pfRelIso03_all[i], dxy=self.tr.Electron_dxy[i], dz=self.tr.Electron_dz[i], Id=self.tr.Electron_cutBased_Fall17_V1[i],lepton_selection='HybridIso'):
                 idx.append(i)              
 	return idx
 
     def selectMuIdx(self):
         idx = []
         for i in range(len(self.tr.Muon_pt)):
-            if self.muonSelector(self.tr.Muon_pt[i], self.tr.Muon_eta[i], self.tr.Muon_pfRelIso03_all[i], self.tr.Muon_dxy[i], self.tr.Muon_dz[i], 'HybridIso'):
+            if self.muonSelector(pt=self.tr.Muon_pt[i], eta=self.tr.Muon_eta[i], iso=self.tr.Muon_pfRelIso03_all[i], dxy=self.tr.Muon_dxy[i], dz=self.tr.Muon_dz[i], lepton_selection='HybridIso'):
                 idx.append(i)
         return idx
     
@@ -151,8 +151,8 @@ class VarHandler():
             return True
         
 
-    def muonSelector( self, pt, eta, iso, dxy, dz, Id = True, lepton_selection='hybridIso', year=2016):
-        if lepton_selection == 'hybridIso':
+    def muonSelector( self, pt, eta, iso, dxy, dz, Id = True, lepton_selection='HybridIso', year=2016):
+        if lepton_selection == 'HybridIso':
             def func():
                 if pt <= 25 and pt >3.5:
                     return \
@@ -191,11 +191,11 @@ class VarHandler():
                     pt >3.5 \
                     and abs(eta)       < 2.4 \
                     and Id
-        return func
+        return func()
 
 
-    def eleSelector(self, pt, eta, iso, dxy, dz, Id, lepton_selection='hybridIso', year=2016):
-        if lepton_selection == 'hybridIso':
+    def eleSelector(self, pt, eta, iso, dxy, dz, Id, lepton_selection='HybridIso', year=2016):
+        if lepton_selection == 'HybridIso':
             def func():
                 if pt <= 25 and pt >5:
                     return \
@@ -235,7 +235,7 @@ class VarHandler():
                     pt >5 \
                     and abs(eta)       < 2.5 \
                     and self.eleID(Id,1)
-        return func
+        return func()
 
 
 
