@@ -78,9 +78,9 @@ histos2['GenLSPpt'] = HistInfo(hname = 'GenLSPpt', sample = sample2, binning=[50
 histos2['GenBjetpt'] = HistInfo(hname = 'GenBjetpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 histos2['NGenBjets'] = HistInfo(hname = 'NGenBjets', sample = sample2, binning=[5,0,5], histclass = ROOT.TH1F).make_hist()
 
-ch1 = SampleChain(sample1, options.startfile, options.nfiles).getchain()
+ch1 = SampleChain(sample1, options.startfile, options.nfiles, options.year).getchain()
 print 'sample1 events: ', ch1.GetEntries()
-ch2 = SampleChain(sample2, options.startfile, options.nfiles).getchain()
+ch2 = SampleChain(sample2, options.startfile, options.nfiles, options.year).getchain()
 print 'sample2 events: ', ch2.GetEntries()
 
 FillHistos(histos1, ch1, options.year, options.nevents, sample1).fill()
