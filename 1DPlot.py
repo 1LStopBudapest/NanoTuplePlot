@@ -10,6 +10,7 @@ from Sample.Dir import plotDir
 from Helper.HistInfo import HistInfo
 from Helper.PlotHelper import *
 
+
 def get_parser():
     ''' Argument parser.
     '''
@@ -30,7 +31,6 @@ histos = {}
 
 sample  = options.sample
 
-
 histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 histos['Njet20'] = HistInfo(hname = 'Njet20', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
 histos['Nbjet20'] = HistInfo(hname = 'Nbjet20', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
@@ -46,7 +46,7 @@ histos['GenElept'] = HistInfo(hname = 'GenElept', sample = sample, binning=[50,0
 histos['GenBpt'] = HistInfo(hname = 'GenBpt', sample = sample, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 
 
-ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
+ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
 print ch.GetEntries()
 
 
