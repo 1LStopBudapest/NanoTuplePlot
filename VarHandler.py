@@ -240,7 +240,7 @@ class VarHandler():
 
 
 
-    def eleID(idval, idtype):
+    def eleID(self, idval, idtype):
         return idval==idtype
 
     def getMuonvar(self):
