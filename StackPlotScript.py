@@ -49,7 +49,7 @@ bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
 
 for sL in samplesRun:
     if 'Data' in sL:
-        SLi = sL.replace('Data','')+'Run'
+        sLi = sL.replace('Data','')+'Run'
         bashline.append('hadd StackHist_%s.root StackHist_%s*.root\n'%(sL, sLi))
     else:
         bashline.append('hadd StackHist_%s.root StackHist_%s_*.root\n'%(sL, sL))
