@@ -6,6 +6,7 @@ from VarHandler import VarHandler
 
 sys.path.append('../')
 from Helper.VarCalc import *
+from Helper.TreeVarSel import TreeVarSel
 
 class FillHistos():
 
@@ -20,18 +21,18 @@ class FillHistos():
         self.isData = True if ('Run' in self.sample or 'Data' in self.sample) else False
         self.isSignal = True if ('Stop' in self.sample or 'T2tt' in self.sample) else False
         
-        keylist = ['MET', 'HT', 'Njet20', 'Njet30', 'ISRJetPt', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'LepMT', 'CT1', 'CT2']
+        keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz']
         if not self.isData:
             keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt'])
 
         if self.isSignal:
             keylist.extend(['GenStoppt', 'GenLSPpt', 'GenBjetpt', 'NGenBjets'])
 
-        self.var = {key: None for key in keylist}
+        self.vardic = {key: None for key in keylist}
     
     def fill(self):
         tr = self.chain
-        var = self.var
+        vardic = self.vardic
         n_entries = tr.GetEntries()
         nevtcut = n_entries -1 if self.nEvents == - 1 else self.nEvents - 1
         print 'Running over total events: ', nevtcut+1
@@ -45,27 +46,31 @@ class FillHistos():
                 lumiscale = 1.0
             else:
                 lumiscale = (self.DataLumi/1000.0) * tr.weight    
+            var = {key: None for key in vardic}#reseting the var dictionary for each event
+            getsel = TreeVarSel(tr, self.isData, self.year)
             getvar = VarHandler(tr, self.isData, self.year)
-            cut = getvar.ISRcut() and getvar.METcut() and getvar.HTcut() and getvar.lepcut() and getvar.dphicut() and getvar.XtralepVeto() and getvar.XtraJetVeto() and getvar.tauVeto() #signal region cut
-            if cut:
+            if getsel.passFilters() and getsel.PreSelection():
                 var['MET'] = tr.MET_pt
-                var['HT'] = getvar.calHT()
+                var['HT'] = getsel.calHT()
+                var['Leppt'] = [x['pt'] for x in getsel.getLepVar(getsel.selectMuIdx(), getsel.selectEleIdx())]
+                var['LepMT'] = getsel.getLepMT()
+                var['CT1'] = getsel.calCT(1)
+                var['CT2'] = getsel.calCT(2)
+                var['ISRJetPt'] = getsel.getISRPt()
+
                 var['Njet20'] = getvar.calNj(20)
                 var['Njet30'] = getvar.calNj(30)
-                var['ISRJetPt'] = getvar.getISRPt()
                 var['Nbjet20'] = getvar.cntBtagjet('CSVV2', 20)
                 var['Nbjet30'] = getvar.cntBtagjet('CSVV2', 30)
                 var['Nmu'] =     getvar.cntMuon()
                 var['Ne'] =     getvar.cntEle()
-                var['Muonpt'] = [x for x in getvar.getMuonvar()['pt']]
-                var['Muondxy'] = [x for x in getvar.getMuonvar()['dxy']]
-                var['Muondz'] = [x for x in getvar.getMuonvar()['dz']]
-                var['Elept'] = [x for x in getvar.getElevar()['pt']]
-                var['Eledxy'] = [x for x in getvar.getElevar()['dxy']]
-                var['Eledz'] = [x for x in getvar.getElevar()['dz']]
-                var['LepMT'] = getvar.getLepMT()
-                var['CT1'] = getvar.calCT(1)
-                var['CT2'] = getvar.calCT(2)
+                var['Muonpt'] = [x for x in getvar.getMuVar()['pt']]
+                var['Muondxy'] = [x for x in getvar.getMuVar()['dxy']]
+                var['Muondz'] = [x for x in getvar.getMuVar()['dz']]
+                var['Elept'] = [x for x in getvar.getEleVar()['pt']]
+                var['Eledxy'] = [x for x in getvar.getEleVar()['dxy']]
+                var['Eledz'] = [x for x in getvar.getEleVar()['dz']]
+                
             if not self.isData:
                 var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
                 var['GenElept'] = [x['pt'] for x in getvar.genEle()]
