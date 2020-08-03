@@ -243,7 +243,7 @@ class VarHandler():
     def eleID(self, idval, idtype):
         return idval==idtype
 
-    def getMuonvar(self):
+    def getMuVar(self):
         muon = {'pt':[], 'dxy':[], 'dz':[]}
         for i in range(len(self.tr.Muon_pt)):
             if self.tr.Muon_pt[i]>3.5 and abs(self.tr.Muon_eta[i])<2.4 and self.tr.Muon_isPFcand[i] and (self.tr.Muon_isGlobal[i] or self.tr.Muon_isTracker[i]):
@@ -260,7 +260,7 @@ class VarHandler():
 
 
 
-    def	getElevar(self):
+    def	getEleVar(self):
         ele = {'pt':[], 'dxy':[], 'dz':[]}
         for i in range(len(self.tr.Electron_pt)):
             if self.tr.Electron_pt[i]>5 and abs(self.tr.Electron_eta[i])<2.5 :
