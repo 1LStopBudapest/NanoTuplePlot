@@ -51,6 +51,9 @@ for sL in samplesRun:
     if 'Data' in sL:
         sLi = sL.replace('Data','')+'Run'
         bashline.append('hadd StackHist_%s.root StackHist_%s*.root\n'%(sL, sLi))
+    elif isinstance(samplelist[sL][0], types.ListType):
+        sLi = 'hadd StackHist_'+sL+'.root'+str("".join(' StackHist_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
+        bashline.append('%s\n'%sLi)
     else:
         bashline.append('hadd StackHist_%s.root StackHist_%s_*.root\n'%(sL, sL))
     bashline.append('mv StackHist_%s.root %s\n'%(sL, Rootfilesdirpath))
