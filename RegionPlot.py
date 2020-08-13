@@ -28,6 +28,7 @@ options = get_parser().parse_args()
 samples  = options.sample
 year = options.year
 region = options.region
+nEvents = options.nevents
 
 isData = True if ('Run' in samples or 'Data' in samples) else False
 DataLumi=1.0
@@ -44,11 +45,16 @@ else:
 
 if region == 'SR':
     bins = 44
+    binLabel = SRBinLabelList
 elif region == 'CR':
     bins = 12
-else:
+    binLabel = CRBinLabelList
+elif region == 'SR+CR':
     bins = 44 + 12
-
+    binLabel = SRBinLabelList+CRBinLabelList
+else:
+    bins = 1
+    binLabel = ['REG']
 histext = ''
 
 if isinstance(samplelist[samples][0], types.ListType):
@@ -59,7 +65,7 @@ if isinstance(samplelist[samples][0], types.ListType):
         hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 	histos = {}
         histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-	
+	for b in range(bins): histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
 
 	ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -118,6 +124,7 @@ else:
     hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    for b in range(bins): histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
     
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
