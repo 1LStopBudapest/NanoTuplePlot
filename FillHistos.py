@@ -7,16 +7,18 @@ from VarHandler import VarHandler
 sys.path.append('../')
 from Helper.VarCalc import *
 from Helper.TreeVarSel import TreeVarSel
+from Helper.MCWeight import MCWeight
 
 class FillHistos():
 
-    def __init__(self, histos, chain, year, nEvents, sample, DataLumi=1.0):
+    def __init__(self, histos, chain, year, nEvents, sample, DataLumi=1.0, NoMCWeight = True):
         self.histos = histos
         self.chain = chain
         self.year = year
         self.nEvents = nEvents
         self.sample = sample
         self.DataLumi = DataLumi
+        self.NoCorr = NoMCWeight
 
         self.isData = True if ('Run' in self.sample or 'Data' in self.sample) else False
         self.isSignal = True if ('Stop' in self.sample or 'T2tt' in self.sample) else False
@@ -46,6 +48,12 @@ class FillHistos():
                 lumiscale = 1.0
             else:
                 lumiscale = (self.DataLumi/1000.0) * tr.weight    
+
+            if self.isData or self.isSignal or self.NoCorr:
+                MCcorr = 1.0
+            else:
+                MCcorr = MCWeight(tr, self.year).getTotalWeight()
+                
             var = {key: None for key in vardic}#reseting the var dictionary for each event
             getsel = TreeVarSel(tr, self.isData, self.year)
             getvar = VarHandler(tr, self.isData, self.year)
@@ -88,9 +96,9 @@ class FillHistos():
                 if key in var.keys():
                     if var[key] is not None:
                         if isinstance(var[key], types.ListType):
-                            for x in var[key]: Fill1D(self.histos[key], x, lumiscale)
+                            for x in var[key]: Fill1D(self.histos[key], x, lumiscale * MCcorr)
                         else:
-                            Fill1D(self.histos[key], var[key], lumiscale)
+                            Fill1D(self.histos[key], var[key], lumiscale * MCcorr)
                 else:
                     #raise ValueError("You are trying to fill the histos for the keys which are missing in var dictionary")
                     print "You are trying to fill the histos for the keys", key, " which are missing in var dictionary"

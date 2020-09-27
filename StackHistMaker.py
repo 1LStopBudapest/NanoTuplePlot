@@ -56,7 +56,7 @@ if isinstance(samplelist[samples][0], types.ListType):
         
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-        FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi).fill()
+        FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
         hfile.Write()
 else:
     histext = samples
@@ -70,7 +70,7 @@ else:
         
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-    FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi).fill()
+    FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
     hfile.Write()
 
 
