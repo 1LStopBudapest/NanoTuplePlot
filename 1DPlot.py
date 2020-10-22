@@ -30,6 +30,10 @@ options = get_parser().parse_args()
 histos = {}
 
 sample  = options.sample
+Rootfilesdirpath = os.path.join(plotDir, "1DFiles")
+if not os.path.exists(Rootfilesdirpath): os.makedirs(Rootfilesdirpath)
+
+hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 
 histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 histos['Njet20'] = HistInfo(hname = 'Njet20', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
@@ -51,8 +55,20 @@ print ch.GetEntries()
 
 
 FillHistos(histos, ch, options.year, options.nevents, sample).fill()
+hfile.Write()
 
 #outputDir = os.getcwd()
+
+bashline = []    
+bashline.append('hadd 1DHist_%s.root 1DHist_%s_*.root\n'%(sample, sample))
+bashline.append('mv 1DHist_%s.root %s\n'%(sample, Rootfilesdirpath))
+
+fsh = open("parallelHist.sh", "w")
+fsh.write(''.join(bashline))
+fsh.close()
+os.system('chmod 744 parallelHist.sh')
+os.system('./parallelHist.sh')
+os.system('rm *.root parallelHist.sh')
 
 outputDir = plotDir
 for key in histos:
