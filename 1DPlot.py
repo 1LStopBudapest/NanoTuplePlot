@@ -104,8 +104,17 @@ else:
 #outputDir = os.getcwd()
 
 bashline = []    
-bashline.append('hadd 1DHist_%s.root 1DHist_%s_*.root\n'%(sample, sample))
-bashline.append('mv 1DHist_%s.root %s\n'%(sample, Rootfilesdirpath))
+
+if 'Data' in samples:
+    sLi = samples.replace('Data','')+'Run'
+    bashline.append('hadd 1DHist_%s.root 1DHist_%s*.root\n'%(samples, sLi))
+elif isinstance(samplelist[samples][0], types.ListType):
+    sLi = 'hadd 1DHist_'+samples+'.root'+str("".join(' StackHist_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[samples]))
+    bashline.append('%s\n'%sLi)
+else:
+    bashline.append('hadd 1DHist_%s.root 1DHist_%s_*.root\n'%(samples, samples))
+    bashline.append('mv 1DHist_%s.root %s\n'%(samples, Rootfilesdirpath))
+
 
 fsh = open("parallelHist.sh", "w")
 fsh.write(''.join(bashline))
