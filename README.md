@@ -28,6 +28,8 @@ python 1DPlot.py --sample TTSingleLep_pow --startfile 0 --nfiles 10
 
 ```
 
+For the signal sample, give the sample name like T2tt_500_490. T2tt is the name of the signal (though its 4 body but saved bt this name), the fist value is stop mass and the next one is neutralino.
+
 Likewise, run RatioPlot.py to make Ratio plots. This is for shape comparison so for now, histograms are unit normalised. More option can be added later.
 
 ```
