@@ -317,7 +317,8 @@ class VarHandler():
 
     def selectGenjetIdx(self, flavor = 5):
         idx = []
-        for i in range(self.tr.nGenJet):
-            if abs(self.tr.GenJet_partonFlavour[i])==flavor:
-                idx.append(i)
+        if hasattr(self.tr, 'nGenJet'):
+            for i in range(self.tr.nGenJet):
+                if abs(self.tr.GenJet_partonFlavour[i])==flavor:
+                    idx.append(i)
         return idx
