@@ -7,7 +7,7 @@ from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
 from Sample.FileList_2016 import samples as samples_2016
 
-samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'MET_Data',]
+samplesRun = ['MET_Data'] #['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'MET_Data']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4
@@ -40,7 +40,7 @@ fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
 
-Rootfilesdirpath = os.path.join(plotDir,"StackFiles")
+Rootfilesdirpath = os.path.join(plotDir,"StackFiles/final")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
