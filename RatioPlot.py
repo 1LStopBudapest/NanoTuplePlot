@@ -48,8 +48,7 @@ histos1['Eledz'] = HistInfo(hname = 'Eledz', sample = sample1, binning=[20,0,5],
 
 histos1['GenMuonpt'] = HistInfo(hname = 'GenMuonpt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 histos1['GenElept'] = HistInfo(hname = 'GenElept', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
-histos1['GenBpt_fstop'] = HistInfo(hname = 'GenBpt_fstop', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
-histos1['GenBpt_istop'] = HistInfo(hname = 'GenBpt_istop', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos1['GenBpt'] = HistInfo(hname = 'GenBpt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 histos1['GenStoppt'] = HistInfo(hname = 'GenStoppt', sample = sample1, binning=[50,0,1000], histclass = ROOT.TH1F).make_hist()
 histos1['GenLSPpt'] = HistInfo(hname = 'GenLSPpt', sample = sample1, binning=[50,0,1000], histclass = ROOT.TH1F).make_hist()
 histos1['GenBjetpt'] = HistInfo(hname = 'GenBjetpt', sample = sample1, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
@@ -73,24 +72,20 @@ histos2['Eledz'] = HistInfo(hname = 'Eledz', sample = sample2, binning=[20,0,5],
 
 histos2['GenMuonpt'] = HistInfo(hname = 'GenMuonpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 histos2['GenElept'] = HistInfo(hname = 'GenElept', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
-histos2['GenBpt_fstop'] = HistInfo(hname = 'GenBpt_fstop', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
-histos2['GenBpt_istop'] = HistInfo(hname = 'GenBpt_istop', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos2['GenBpt'] = HistInfo(hname = 'GenBpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 histos2['GenStoppt'] = HistInfo(hname = 'GenStoppt', sample = sample2, binning=[50,0,1000], histclass = ROOT.TH1F).make_hist()
 histos2['GenLSPpt'] = HistInfo(hname = 'GenLSPpt', sample = sample2, binning=[50,0,1000], histclass = ROOT.TH1F).make_hist()
 histos2['GenBjetpt'] = HistInfo(hname = 'GenBjetpt', sample = sample2, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
 histos2['NGenBjets'] = HistInfo(hname = 'NGenBjets', sample = sample2, binning=[5,0,5], histclass = ROOT.TH1F).make_hist()
 
-ch1 = SampleChain(sample1, options.startfile, options.nfiles).getchain()
+ch1 = SampleChain(sample1, options.startfile, options.nfiles, options.year).getchain()
 print 'sample1 events: ', ch1.GetEntries()
-ch2 = SampleChain(sample2, options.startfile, options.nfiles).getchain()
+ch2 = SampleChain(sample2, options.startfile, options.nfiles, options.year).getchain()
 print 'sample2 events: ', ch2.GetEntries()
 
 FillHistos(histos1, ch1, options.year, options.nevents, sample1).fill()
 FillHistos(histos2, ch2, options.year, options.nevents, sample2).fill()
 
-#print 'Histogram Entries:'
-#print 'Muondxy:'
-#print 'sample1', histos1['Muondxy'].GetEntries(), 'sample2', histos2['Muondxy'].GetEntries()
 
 #outputDir = os.getcwd()
 outputDir = plotDir

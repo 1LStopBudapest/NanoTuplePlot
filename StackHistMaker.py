@@ -1,6 +1,6 @@
 import os, sys
 import ROOT
-
+import types
 
 from FillHistos import FillHistos
 
@@ -9,6 +9,7 @@ from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
 from Helper.HistInfo import HistInfo
 from Helper.PlotHelper import *
+from Sample.FileList_2016 import samples as samples_2016
 
 def get_parser():
     ''' Argument parser.
@@ -26,20 +27,50 @@ def get_parser():
 
 options = get_parser().parse_args()
 
+samples  = options.sample
+year = options.year
 
 
-sample  = options.sample
+DataLumi=1.0
 
-hfile = ROOT.TFile( 'StackHist_'+sample+'.root', 'RECREATE')
-histos = {}
-histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+if year==2016:
+    samplelist = samples_2016 
+    DataLumi = SampleChain.luminosity_2016
+elif year==2017:
+    samplelist = samples_2017
+    DataLumi = SampleChain.luminosity_2017
+else:
+    samplelist = samples_2018
+    DataLumi = SampleChain.luminosity_2018
 
-ch = SampleChain(sample, options.startfile, options.nfiles).getchain()
-print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
+histext = ''
 
+if isinstance(samplelist[samples][0], types.ListType):
+    histext = samples
+    for s in samplelist[samples]:
+        sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
+        print 'running over: ', sample
+        hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        histos = {}
+        histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+        
+        ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
+        print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
+        FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
+        hfile.Write()
+else:
+    histext = samples
+    for l in list(samplelist.values()):
+        if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
+    sample = samples
+    print 'running over: ', sample
+    hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    histos = {}
+    histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+        
+    ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
+    print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
+    FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
+    hfile.Write()
 
-FillHistos(histos, ch, options.year, options.nevents, sample, SampleChain.luminosity_2016).fill()
-
-
-hfile.Write()
 
