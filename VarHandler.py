@@ -1,6 +1,7 @@
 import ROOT
 import math
 import os, sys
+import collections as coll
 
 sys.path.append('../')
 from Helper.VarCalc import *
@@ -13,27 +14,27 @@ class VarHandler():
         self.isData = isData
         
     #cuts
-    def ISRcut(self):
-        return len(self.selectISRjetIdx())>0
+    def ISRcut(self, thr=100):
+        return len(self.selectjetIdx(thr)) > 0
 
-    def METcut(self):
+    def METcut(self, thr=200):
         cut = False
-        if self.tr.MET_pt >200:
+        if self.tr.MET_pt > thr:
             cut = True
         return cut
         
-    def HTcut(self):
+    def HTcut(self, thr=300):
         cut = False
         HT = self.calHT()
-        if HT >300:
+        if HT > thr:
             cut = True
         return cut
 
     def dphicut(self):
-        cut = False
-        if len(self.selectjetIdx(30)) >=2 and self.tr.JetGood_pt[self.selectjetIdx(30)[1]]> 60:
-            if DeltaPhi(self.tr.JetGood_phi[self.selectjetIdx(30)[0]], self.tr.JetGood_phi[self.selectjetIdx(30)[1]])<2.5:
-                cut = True
+        cut = True
+        if len(self.selectjetIdx(30)) >=2 and self.tr.Jet_pt[self.selectjetIdx(30)[0]]> 100 and self.tr.Jet_pt[self.selectjetIdx(30)[1]]> 60:
+            if DeltaPhi(self.tr.Jet_phi[self.selectjetIdx(30)[0]], self.tr.Jet_phi[self.selectjetIdx(30)[1]]) > 2.5:
+                cut = False
         return cut
 
     def lepcut(self):
@@ -47,16 +48,16 @@ class VarHandler():
             cut = False
         return cut
 
-    def XtraJetVeto(self):
+    def XtraJetVeto(self, thrJet=30, thrExtra=60):
         cut = True
-        if len(self.selectjetIdx(30)) >=3 and self.tr.JetGood_pt[self.selectjetIdx(30)[2]]> 60:
+        if len(self.selectjetIdx(thrJet)) >= 3 and self.tr.Jet_pt[self.selectjetIdx(thrJet)[2]] > thrExtra:
             cut = False
         return cut
 
     def tauVeto(self):
         cut = True
-        if self.tr.nTau>=1:#only applicable to postprocessed sample where lepton(e,mu)-cleaned (dR<0.4) tau collection is stored
-            cut = False
+        if self.tr.nGoodTaus >= 1: #only applicable to postprocessed sample where lepton(e,mu)-cleaned (dR<0.4) tau collection is stored, https://github.com/HephyAnalysisSW/StopsCompressed/blob/master/Tools/python/objectSelection.py#L303-L316
+            cut = False 
         return cut
             
     def getLepMT(self):
@@ -69,17 +70,17 @@ class VarHandler():
     def calHT(self):
         HT = 0
         for i in self.selectjetIdx(30):
-            HT = HT + self.tr.JetGood_pt[i]
+            HT = HT + self.tr.Jet_pt[i]
         return HT
 
     def calNj(self, thrsld):
         return len(self.selectjetIdx(thrsld))
         
     def getISRPt(self):
-        return self.tr.JetGood_pt[self.selectISRjetIdx()[0]] if len(self.selectISRjetIdx()) else 0
+        return self.tr.Jet_pt[self.selectjetIdx(100)[0]] if len(self.selectjetIdx(100)) else 0
     
-    def cntBtagjet(self, discOpt='DeepCSV', ptthrsld=20):
-        return len(self.selectBjetIdx(discOpt, ptthrsld))
+    def cntBtagjet(self, discOpt='CSVV2', pt=30):
+        return len(self.selectBjetIdx(discOpt, pt))
 
     def cntMuon(self):
         return len(self.selectMuIdx())
@@ -88,24 +89,38 @@ class VarHandler():
     	return len(self.selectEleIdx())
     
     def selectjetIdx(self, thrsld):
+        lepvar = sortedlist(self.getLepVar(self.selectMuIdx(), self.selectEleIdx()))
         idx = []
-        for i in range(len(self.tr.JetGood_pt)):
-            if self.tr.JetGood_pt[i]>thrsld and abs(self.tr.JetGood_eta[i])<2.4:
-                idx.append(i)
+        d = {}
+        for j in range(len(self.tr.Jet_pt)):
+            clean = False
+            if self.tr.Jet_pt[j] > thrsld and abs(self.tr.Jet_eta[j]) < 2.4 and self.tr.Jet_jetId[j] > 0:
+                clean = True
+                for l in range(len(lepvar)):
+                    dR = DeltaR(lepvar[l]['eta'], lepvar[l]['phi'], self.tr.Jet_eta[j], self.tr.Jet_phi[j])
+                    ptRatio = float(self.tr.Jet_pt[j])/float(lepvar[l]['pt'])
+                    if dR < 0.4 and ptRatio < 2:
+                        clean = False
+                        break
+                if clean:
+                    d[self.tr.Jet_pt[j]] = j
+        od = coll.OrderedDict(sorted(d.items(), reverse=True))
+        for jetpt in od:
+            idx.append(od[jetpt])
         return idx
 
-    def selectISRjetIdx(self, thrsld=100):
-        idx = []
-        for i in range(len(self.tr.JetGood_pt)):
-            if self.tr.JetGood_pt[i]>thrsld and abs(self.tr.JetGood_eta[i])<2.4:
-                idx.append(i)
-        return idx
+    #def selectISRjetIdx(self, thrsld=100):
+    #    idx = []
+    #    for i in range(len(self.tr.JetGood_pt)):
+    #        if self.tr.JetGood_pt[i]>thrsld and abs(self.tr.JetGood_eta[i])<2.4:
+    #            idx.append(i)
+    #    return idx
 
-    def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=20):
+    def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=30):
         idx = []
-        for i in range(len(self.tr.JetGood_pt)):
-            if self.tr.JetGood_pt[i]>ptthrsld and abs(self.tr.JetGood_eta[i])<2.4:
-                if (self.isBtagCSVv2(self.tr.JetGood_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.JetGood_btagDeepB[i], self.yr)):
+        for i in range(len(self.tr.Jet_pt)):
+            if self.tr.Jet_pt[i] > ptthrsld and abs(self.tr.Jet_eta[i])<2.4:
+                if (self.isBtagCSVv2(self.tr.Jet_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.Jet_btagDeepB[i], self.yr)):
                     idx.append(i)
         return idx
 
