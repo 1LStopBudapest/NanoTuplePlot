@@ -47,7 +47,7 @@ else:
 
 histext = ''
 
-Rootfilesdirpath = os.path.join(plotDir, "1DFiles")
+Rootfilesdirpath = os.path.join(plotDir, "1DFiles/final")
 if not os.path.exists(Rootfilesdirpath): 
     os.makedirs(Rootfilesdirpath)
 
