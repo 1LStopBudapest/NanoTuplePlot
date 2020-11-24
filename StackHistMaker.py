@@ -53,6 +53,11 @@ if isinstance(samplelist[samples][0], types.ListType):
         hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
         histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+        histos['Leppt'] = HistInfo(hname = 'Leppt', sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+        histos['LepMT'] = HistInfo(hname = 'LepMT', sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+        histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[40,200,1000], histclass = ROOT.TH1F).make_hist()
+        histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[40,100,1000], histclass = ROOT.TH1F).make_hist()
+        histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = histext, binning=[40,100,1000], histclass = ROOT.TH1F).make_hist()
         
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -67,6 +72,11 @@ else:
     hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+    histos['Leppt'] = HistInfo(hname = 'Leppt', sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+    histos['LepMT'] = HistInfo(hname = 'LepMT', sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+    histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[40,200,1000], histclass = ROOT.TH1F).make_hist()
+    histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[40,100,1000], histclass = ROOT.TH1F).make_hist()
+    histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = histext, binning=[40,100,1000], histclass = ROOT.TH1F).make_hist()
         
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()

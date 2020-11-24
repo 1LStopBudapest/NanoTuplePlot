@@ -1,6 +1,7 @@
 import ROOT
 import math
 import os, sys
+import collections as coll
 
 sys.path.append('../')
 from Helper.VarCalc import *
@@ -13,27 +14,27 @@ class VarHandler():
         self.isData = isData
         
     #cuts
-    def ISRcut(self):
-        return len(self.selectISRjetIdx())>0
+    def ISRcut(self, thr=100):
+        return len(self.selectjetIdx(thr)) > 0
 
-    def METcut(self):
+    def METcut(self, thr=200):
         cut = False
-        if self.tr.MET_pt >200:
+        if self.tr.MET_pt > thr:
             cut = True
         return cut
         
-    def HTcut(self):
+    def HTcut(self, thr=300):
         cut = False
         HT = self.calHT()
-        if HT >300:
+        if HT > thr:
             cut = True
         return cut
 
-    def dphicut(self):
-        cut = False
-        if len(self.selectjetIdx(30)) >=2 and self.tr.JetGood_pt[self.selectjetIdx(30)[1]]> 60:
-            if DeltaPhi(self.tr.JetGood_phi[self.selectjetIdx(30)[0]], self.tr.JetGood_phi[self.selectjetIdx(30)[1]])<2.5:
-                cut = True
+    def dphicut(self, thr=30):
+        cut = True
+        if len(self.selectjetIdx(thr)) >=2 and self.tr.Jet_pt[self.selectjetIdx(thr)[0]]> 100 and self.tr.Jet_pt[self.selectjetIdx(thr)[1]]> 60:
+            if DeltaPhi(self.tr.Jet_phi[self.selectjetIdx(thr)[0]], self.tr.Jet_phi[self.selectjetIdx(thr)[1]]) > 2.5:
+                cut = False
         return cut
 
     def lepcut(self):
@@ -47,16 +48,16 @@ class VarHandler():
             cut = False
         return cut
 
-    def XtraJetVeto(self):
+    def XtraJetVeto(self, thrJet=30, thrExtra=60):
         cut = True
-        if len(self.selectjetIdx(30)) >=3 and self.tr.JetGood_pt[self.selectjetIdx(30)[2]]> 60:
+        if len(self.selectjetIdx(thrJet)) >= 3 and self.tr.Jet_pt[self.selectjetIdx(thrJet)[2]] > thrExtra:
             cut = False
         return cut
 
     def tauVeto(self):
         cut = True
-        if self.tr.nTau>=1:#only applicable to postprocessed sample where lepton(e,mu)-cleaned (dR<0.4) tau collection is stored
-            cut = False
+        if self.tr.nGoodTaus >= 1: #only applicable to postprocessed sample where lepton(e,mu)-cleaned (dR<0.4) tau collection is stored, https://github.com/HephyAnalysisSW/StopsCompressed/blob/master/Tools/python/objectSelection.py#L303-L316
+            cut = False 
         return cut
             
     def getLepMT(self):
@@ -69,17 +70,17 @@ class VarHandler():
     def calHT(self):
         HT = 0
         for i in self.selectjetIdx(30):
-            HT = HT + self.tr.JetGood_pt[i]
+            HT = HT + self.tr.Jet_pt[i]
         return HT
 
     def calNj(self, thrsld):
         return len(self.selectjetIdx(thrsld))
         
     def getISRPt(self):
-        return self.tr.JetGood_pt[self.selectISRjetIdx()[0]] if len(self.selectISRjetIdx()) else 0
+        return self.tr.Jet_pt[self.selectjetIdx(100)[0]] if len(self.selectjetIdx(100)) else 0
     
-    def cntBtagjet(self, discOpt='DeepCSV', ptthrsld=20):
-        return len(self.selectBjetIdx(discOpt, ptthrsld))
+    def cntBtagjet(self, discOpt='CSVV2', pt=30):
+        return len(self.selectBjetIdx(discOpt, pt))
 
     def cntMuon(self):
         return len(self.selectMuIdx())
@@ -88,31 +89,44 @@ class VarHandler():
     	return len(self.selectEleIdx())
     
     def selectjetIdx(self, thrsld):
+        lepvar = sortedlist(self.getLepVar(self.selectMuIdx(), self.selectEleIdx()))
         idx = []
-        for i in range(len(self.tr.JetGood_pt)):
-            if self.tr.JetGood_pt[i]>thrsld and abs(self.tr.JetGood_eta[i])<2.4:
-                idx.append(i)
+        d = {}
+        for j in range(len(self.tr.Jet_pt)):
+            clean = False
+            if self.tr.Jet_pt[j] > thrsld and abs(self.tr.Jet_eta[j]) < 2.4 and self.tr.Jet_jetId[j] > 0:
+                clean = True
+                for l in range(len(lepvar)):
+                    dR = DeltaR(lepvar[l]['eta'], lepvar[l]['phi'], self.tr.Jet_eta[j], self.tr.Jet_phi[j])
+                    ptRatio = float(self.tr.Jet_pt[j])/float(lepvar[l]['pt'])
+                    if dR < 0.4 and ptRatio < 2:
+                        clean = False
+                        break
+                if clean:
+                    d[self.tr.Jet_pt[j]] = j
+        od = coll.OrderedDict(sorted(d.items(), reverse=True))
+        for jetpt in od:
+            idx.append(od[jetpt])
         return idx
 
-    def selectISRjetIdx(self, thrsld=100):
-        idx = []
-        for i in range(len(self.tr.JetGood_pt)):
-            if self.tr.JetGood_pt[i]>thrsld and abs(self.tr.JetGood_eta[i])<2.4:
-                idx.append(i)
-        return idx
+    #def selectISRjetIdx(self, thrsld=100):
+    #    idx = []
+    #    for i in range(len(self.tr.JetGood_pt)):
+    #        if self.tr.JetGood_pt[i]>thrsld and abs(self.tr.JetGood_eta[i])<2.4:
+    #            idx.append(i)
+    #    return idx
 
-    def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=20):
+    def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=30):
         idx = []
-        for i in range(len(self.tr.JetGood_pt)):
-            if self.tr.JetGood_pt[i]>ptthrsld and abs(self.tr.JetGood_eta[i])<2.4:
-                if (self.isBtagCSVv2(self.tr.JetGood_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.JetGood_btagDeepB[i], self.yr)):
-                    idx.append(i)
+        for i in self.selectjetIdx(ptthrsld):
+            if (self.isBtagCSVv2(self.tr.Jet_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.Jet_btagDeepB[i], self.yr)):
+                idx.append(i)
         return idx
 
     def	selectEleIdx(self):
         idx = []
         for i in range(len(self.tr.Electron_pt)):
-            if self.eleSelector(pt=self.tr.Electron_pt[i], eta=self.tr.Electron_eta[i], iso=self.tr.Electron_pfRelIso03_all[i], dxy=self.tr.Electron_dxy[i], dz=self.tr.Electron_dz[i], Id=self.tr.Electron_cutBased_Fall17_V1[i],lepton_selection='HybridIso'):
+            if self.eleSelector(pt=self.tr.Electron_pt[i], eta=self.tr.Electron_eta[i], deltaEtaSC=self.tr.Electron_deltaEtaSC[i], iso=self.tr.Electron_pfRelIso03_all[i], dxy=self.tr.Electron_dxy[i], dz=self.tr.Electron_dz[i], Id=self.tr.Electron_cutBased_Fall17_V1[i],lepton_selection='HybridIso'):
                 idx.append(i)              
 	return idx
 
@@ -129,7 +143,7 @@ class VarHandler():
         for id in muId:
             Llist.append({'pt':self.tr.Muon_pt[id], 'eta':self.tr.Muon_eta[id], 'phi':self.tr.Muon_phi[id], 'dxy':self.tr.Muon_dxy[id], 'dz': self.tr.Muon_dz[id]})
         for id in eId:
-            Llist.append({'pt':self.tr.Electron_pt[id], 'eta':self.tr.Electron_eta[id], 'phi':self.tr.Electron_phi[id], 'dxy':self.tr.Electron_dxy[id], 'dz': self.tr.Electron_dz[id]})
+            Llist.append({'pt':self.tr.Electron_pt[id], 'eta':self.tr.Electron_eta[id], 'deltaEtaSC':self.tr.Electron_deltaEtaSC[id], 'phi':self.tr.Electron_phi[id], 'dxy':self.tr.Electron_dxy[id], 'dz': self.tr.Electron_dz[id]})
         return Llist
 
     def isBtagDeepCSV(self, jetb, year):
@@ -194,12 +208,13 @@ class VarHandler():
         return func()
 
 
-    def eleSelector(self, pt, eta, iso, dxy, dz, Id, lepton_selection='HybridIso', year=2016):
+    def eleSelector(self, pt, eta, deltaEtaSC, iso, dxy, dz, Id, lepton_selection='HybridIso', year=2016):
         if lepton_selection == 'HybridIso':
             def func():
                 if pt <= 25 and pt >5:
                     return \
                         abs(eta)       < 2.5 \
+                        and (abs(eta+deltaEtaSC)<1.4442 or abs(eta+deltaEtaSC)>1.566) \
                         and (iso* pt) < 5.0 \
                         and abs(dxy)       < 0.02 \
                         and abs(dz)        < 0.1 \
@@ -207,6 +222,7 @@ class VarHandler():
                 elif pt > 25:
                     return \
                         abs(eta)       < 2.5 \
+                        and (abs(eta+deltaEtaSC)<1.4442 or abs(eta+deltaEtaSC)>1.566) \
                         and iso < 0.2 \
                         and abs(dxy)       < 0.02 \
                         and abs(dz)        < 0.1 \
@@ -217,6 +233,7 @@ class VarHandler():
                 if pt <= 25 and pt >5:
                     return \
                         abs(eta)       < 2.5 \
+                        and (abs(eta+deltaEtaSC)<1.4442 or abs(eta+deltaEtaSC)>1.566) \
                         and (iso*pt) < 20.0 \
                         and abs(dxy)       < 0.1 \
                         and abs(dz)        < 0.5 \
@@ -224,6 +241,7 @@ class VarHandler():
                 elif pt > 25:
                     return \
                         abs(eta)       < 2.5 \
+                        and (abs(eta+deltaEtaSC)<1.4442 or abs(eta+deltaEtaSC)>1.566) \
                         and iso < 0.8 \
                         and abs(dxy)       < 0.1 \
                         and abs(dz)        < 0.5 \
@@ -234,6 +252,7 @@ class VarHandler():
                 return \
                     pt >5 \
                     and abs(eta)       < 2.5 \
+                    and (abs(eta+deltaEtaSC)<1.4442 or abs(eta+deltaEtaSC)>1.566) \
                     and self.eleID(Id,1)
         return func()
 
@@ -241,7 +260,7 @@ class VarHandler():
 
 
     def eleID(self, idval, idtype):
-        return idval==idtype
+        return idval >= idtype
 
     def getMuVar(self):
         muon = {'pt':[], 'dxy':[], 'dz':[]}
