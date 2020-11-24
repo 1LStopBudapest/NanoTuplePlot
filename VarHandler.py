@@ -118,10 +118,9 @@ class VarHandler():
 
     def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=30):
         idx = []
-        for i in range(len(self.tr.Jet_pt)):
-            if self.tr.Jet_pt[i] > ptthrsld and abs(self.tr.Jet_eta[i])<2.4:
-                if (self.isBtagCSVv2(self.tr.Jet_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.Jet_btagDeepB[i], self.yr)):
-                    idx.append(i)
+        for i in self.selectjetIdx(ptthrsld):
+            if (self.isBtagCSVv2(self.tr.Jet_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.Jet_btagDeepB[i], self.yr)):
+                idx.append(i)
         return idx
 
     def	selectEleIdx(self):
