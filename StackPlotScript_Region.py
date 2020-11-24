@@ -7,7 +7,7 @@ from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
 from Sample.FileList_2016 import samples as samples_2016
 
-samplesRun = ['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'MET_Data']
+samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'QCD', 'MET_Data']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4
@@ -29,18 +29,18 @@ for sL in samplesRun:
             fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
             tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
             for i in range(0, tfiles, fileperjobMC):
-                txtline.append("python StackHistMaker.py --sample %s --startfile %i --nfiles %i\n"%(sample, i, fileperjobMC))
+                txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i\n"%(sample, i, fileperjobMC))
     else:
         tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
         fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
         for i in range(0, tfiles, fileperjobMC):
-            txtline.append("python StackHistMaker.py --sample %s --startfile %i --nfiles %i\n"%(sL, i, fileperjobMC))
+            txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i\n"%(sL, i, fileperjobMC))
                 
 fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
 
-Rootfilesdirpath = os.path.join(plotDir,"StackFiles/final")
+Rootfilesdirpath = os.path.join(plotDir,"RegionFiles")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
@@ -50,16 +50,16 @@ bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
 for sL in samplesRun:
     if 'Data' in sL:
         sLi = sL.replace('Data','')+'Run'
-        bashline.append('hadd StackHist_%s.root StackHist_%s*.root\n'%(sL, sLi))
+        bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s*.root\n'%(sL, sLi))
     elif isinstance(samplelist[sL][0], types.ListType):
-        sLi = 'hadd StackHist_'+sL+'.root'+str("".join(' StackHist_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
+        sLi = 'hadd RegionPlot_SR_'+sL+'.root'+str("".join(' RegionPlot_SR_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
         bashline.append('%s\n'%sLi)
     else:
-        bashline.append('hadd StackHist_%s.root StackHist_%s_*.root\n'%(sL, sL))
-    bashline.append('mv StackHist_%s.root %s\n'%(sL, Rootfilesdirpath))
+        bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s_*.root\n'%(sL, sL))
+    bashline.append('mv RegionPlot_SR_%s.root %s\n'%(sL, Rootfilesdirpath))
 
 l = str(" ".join(s for s in samplesRun))
-bashline.append('python  StackPlot.py -l %s'%l)
+bashline.append('python StackPlot_Region.py -l %s'%l)
     
 fsh = open("parallelStackHist.sh", "w")
 fsh.write(''.join(bashline))
