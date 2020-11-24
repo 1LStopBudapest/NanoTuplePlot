@@ -30,10 +30,10 @@ class VarHandler():
             cut = True
         return cut
 
-    def dphicut(self):
+    def dphicut(self, thr=30):
         cut = True
-        if len(self.selectjetIdx(30)) >=2 and self.tr.Jet_pt[self.selectjetIdx(30)[0]]> 100 and self.tr.Jet_pt[self.selectjetIdx(30)[1]]> 60:
-            if DeltaPhi(self.tr.Jet_phi[self.selectjetIdx(30)[0]], self.tr.Jet_phi[self.selectjetIdx(30)[1]]) > 2.5:
+        if len(self.selectjetIdx(thr)) >=2 and self.tr.Jet_pt[self.selectjetIdx(thr)[0]]> 100 and self.tr.Jet_pt[self.selectjetIdx(thr)[1]]> 60:
+            if DeltaPhi(self.tr.Jet_phi[self.selectjetIdx(thr)[0]], self.tr.Jet_phi[self.selectjetIdx(thr)[1]]) > 2.5:
                 cut = False
         return cut
 
@@ -261,7 +261,7 @@ class VarHandler():
 
 
     def eleID(self, idval, idtype):
-        return idval==idtype
+        return idval >= idtype
 
     def getMuVar(self):
         muon = {'pt':[], 'dxy':[], 'dz':[]}
