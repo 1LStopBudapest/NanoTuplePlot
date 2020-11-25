@@ -59,6 +59,7 @@ else:
 histext = ''
 
 if 'T2tt' in samples:
+    histext = samples
     sample = samples
     print 'running over: ', sample
     hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
