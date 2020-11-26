@@ -18,14 +18,16 @@ def get_parser():
     nargs='+',                              # one or more parameters to this switch
     type=str,                               # /parameters/ are ints
     dest='alist',                           # store in 'list'.
-    default=['WJetsToLNu', 'MET_Data'],     # last sample should be data as to be consistent with StackHists funtion.
+    default=['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'T2tt_500_470', 'T2tt_250_240', 'MET_Data'],     # last sample should be data as to be consistent with StackHists funtion.
     )
+    argParser.add_argument('--cut',            action='store',                    type=str,            default='jet30',          help="Which selection?" )
+    
     return argParser
 
 options = get_parser().parse_args()
 
 samplelists = options.alist
-
+cut = options.cut
 
 files = []
 doplots = True
@@ -33,8 +35,8 @@ doplots = True
 for sl in samplelists:
     if os.path.exists('RegionPlot_SR_'+sl+'.root'):
         files.append(ROOT.TFile.Open('RegionPlot_SR_'+sl+'.root'))
-    elif os.path.exists(plotDir+'RegionFiles/RegionPlot_SR_'+sl+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'RegionFiles/RegionPlot_SR_'+sl+'.root'))
+    elif os.path.exists(plotDir+'RegionFiles_'+cut+'/RegionPlot_SR_'+sl+'.root'):
+        files.append(ROOT.TFile.Open(plotDir+'RegionFiles_'+cut+'/RegionPlot_SR_'+sl+'.root'))
     else:
         doplots = False        
         print 'Root files for', sl, 'sample soes not exist. Please run python StackHistMaker.py --sample', sl
