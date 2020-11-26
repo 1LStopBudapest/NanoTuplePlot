@@ -9,7 +9,7 @@ from Sample.FileList_2016 import samples as samples_2016
 
 #samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'MET_Data',]
 samplesRun = ['MET_Data',]
-fileperjobMC = 2
+fileperjobMC = 5
 fileperjobData = fileperjobMC
 TotJobs = 4
 year = 2016
@@ -63,6 +63,6 @@ for sL in samplesRun:
 fsh = open("parallelCFHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
-#os.system('chmod 744 parallelStackHist.sh')
-#os.system('./parallelStackHist.sh')
+os.system('chmod 744 parallelCFHist.sh')
+os.system('./parallelCFHist.sh')
 #os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
