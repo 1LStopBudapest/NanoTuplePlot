@@ -77,7 +77,7 @@ if 'T2tt' in samples:
         if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
         ch.GetEntry(ientry)
         lumiscale = (DataLumi/1000.0) * ch.weight
-        MCcorr = MCWeight(ch, year).getTotalWeight()
+        MCcorr = MCWeight(ch, year, sample).getTotalWeight()
         getsel = TreeVarSel(ch, isData, year)
         if not getsel.PreSelection(): continue
         if region == 'SR':
@@ -138,7 +138,7 @@ else:
                     MCcorr = 1.0
                 else:
                     lumiscale = (DataLumi/1000.0) * ch.weight
-                    MCcorr = MCWeight(ch, year).getTotalWeight()
+                    MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
                 if not getsel.PreSelection(): continue
                 if region == 'SR':
@@ -199,7 +199,7 @@ else:
                 MCcorr = 1.0
             else:
                 lumiscale = (DataLumi/1000.0) * ch.weight
-                MCcorr = MCWeight(ch, year).getTotalWeight()
+                MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
             if not getsel.PreSelection(): continue
             if region == 'SR':

@@ -8,7 +8,7 @@ from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
 from Helper.HistInfo import HistInfo
 from Helper.PlotHelper import *
-from Helper.TreeVarSel_test import TreeVarSel
+from Helper.TreeVarSel import TreeVarSel
 from Helper.VarCalc import *
 from Sample.FileList_2016 import samples as samples_2016
 
@@ -76,7 +76,7 @@ if isinstance(samplelist[samples][0], types.ListType):
             if isData:
                 MCcorr = 1.0
             else:
-                MCcorr = MCWeight(tr, year).getTotalWeight()
+                MCcorr = MCWeight(tr, year, sample).getTotalWeight()
             Fill1D(histos['MET_nocut'], ch.MET_pt, lumiscale * MCcorr)
             if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_nocut'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
             if getsel.METcut():
@@ -130,7 +130,7 @@ else:
         if isData:
             MCcorr = 1.0
         else:
-            MCcorr = MCWeight(tr, year).getTotalWeight()
+            MCcorr = MCWeight(tr, year, sample).getTotalWeight()
         Fill1D(histos['MET_nocut'], ch.MET_pt, lumiscale * MCcorr)
         if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_nocut'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
         if getsel.METcut():

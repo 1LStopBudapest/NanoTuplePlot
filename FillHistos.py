@@ -52,7 +52,7 @@ class FillHistos():
             if self.isData or self.isSignal or self.NoCorr:
                 MCcorr = 1.0
             else:
-                MCcorr = MCWeight(tr, self.year).getTotalWeight()
+                MCcorr = MCWeight(tr, self.year, self.sample).getTotalWeight()
                 
             var = {key: None for key in vardic}#reseting the var dictionary for each event
             getsel = TreeVarSel(tr, self.isData, self.year)
