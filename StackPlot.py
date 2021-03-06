@@ -33,8 +33,8 @@ doplots = True
 for sl in samplelists:
     if os.path.exists('StackHist_'+sl+'.root'):
         files.append(ROOT.TFile.Open('StackHist_'+sl+'.root'))
-    elif os.path.exists(plotDir+'StackFiles/final/StackHist_'+sl+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'StackFiles/final/StackHist_'+sl+'.root'))
+    elif os.path.exists(plotDir+'StackFiles/StackHist_'+sl+'.root'):
+        files.append(ROOT.TFile.Open(plotDir+'StackFiles/StackHist_'+sl+'.root'))
     else:
         doplots = False        
         print 'Root files for',sl,'sample soes not exist. Please run python StackHistMaker.py --sample',sl
@@ -45,4 +45,10 @@ if doplots :
     StackHists(files, samplelists, 'LepMT', plotDir, 'final')
     StackHists(files, samplelists, 'HT', plotDir, 'final')
     StackHists(files, samplelists, 'CT1', plotDir, 'final')
+    StackHists(files, samplelists, 'CT2', plotDir, 'final')
     StackHists(files, samplelists, 'ISRJetPt', plotDir, 'final')
+    StackHists(files, samplelists, 'ISRJetEta', plotDir, 'final')
+    StackHists(files, samplelists, 'SSRJetPt', plotDir, 'final')
+    StackHists(files, samplelists, 'Njet', plotDir, 'final')
+    StackHists(files, samplelists, 'BjetPt', plotDir, 'final')
+    StackHists(files, samplelists, 'Nbjet30', plotDir, 'final')

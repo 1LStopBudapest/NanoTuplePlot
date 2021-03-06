@@ -23,7 +23,8 @@ class FillHistos():
         self.isData = True if ('Run' in self.sample or 'Data' in self.sample) else False
         self.isSignal = True if ('Stop' in self.sample or 'T2tt' in self.sample) else False
         
-        keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz']
+        keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu',
+                   'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'SSRJetPt', 'ISRJetEta', 'Njet', 'BjetPt']
         if not self.isData:
             keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt'])
 
@@ -65,11 +66,15 @@ class FillHistos():
                 var['CT1'] = getsel.calCT(1)
                 var['CT2'] = getsel.calCT(2)
                 var['ISRJetPt'] = getsel.getISRPt()
+                var['SSRJetPt'] = getsel.getSSRPt()
+                var['ISRJetEta'] = getsel.getISREta()
 
+                var['Njet'] = getvar.calNj()
                 var['Njet20'] = getvar.calNj(20)
                 var['Njet30'] = getvar.calNj(30)
                 var['Nbjet20'] = getvar.cntBtagjet('CSVV2', 20)
                 var['Nbjet30'] = getvar.cntBtagjet('CSVV2', 30)
+                var['BjetPt'] = [x for x in getvar.getBjetPt()]
                 var['Nmu'] =     getvar.cntMuon()
                 var['Ne'] =     getvar.cntEle()
                 var['Muonpt'] = [x for x in getvar.getMuVar()['pt']]
