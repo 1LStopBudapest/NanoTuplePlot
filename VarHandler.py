@@ -84,7 +84,7 @@ class VarHandler():
     def cntBtagjet(self, discOpt='CSVV2', pt=30):
         return len(self.selectBjetIdx(discOpt, pt))
 
-    def getBjetPt(self, pt=30):
+    def getBjetPt(self, discOpt='CSVV2', pt=30):
         b_pt = []
         for i in range(len(self.selectBjetIdx(discOpt, pt))):
             b_pt.append(self.tr.Jet_pt[self.selectBjetIdx()[i]])
