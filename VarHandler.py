@@ -12,8 +12,7 @@ class VarHandler():
         self.tr = tr
         self.yr = yr
         self.isData = isData
-
-    JetThreshold = 30
+        self.JetThreshold = 30
         
     #cuts
     def ISRcut(self, thr=100):
@@ -32,7 +31,7 @@ class VarHandler():
             cut = True
         return cut
 
-    def dphicut(self, thr=JetThreshold):
+    def dphicut(self, thr=self.JetThreshold):
         cut = True
         if len(self.selectjetIdx(thr)) >=2 and self.tr.Jet_pt[self.selectjetIdx(thr)[0]]> 100 and self.tr.Jet_pt[self.selectjetIdx(thr)[1]]> 60:
             if DeltaPhi(self.tr.Jet_phi[self.selectjetIdx(thr)[0]], self.tr.Jet_phi[self.selectjetIdx(thr)[1]]) > 2.5:
@@ -50,7 +49,7 @@ class VarHandler():
             cut = False
         return cut
 
-    def XtraJetVeto(self, thrJet=JetThreshold, thrExtra=60):
+    def XtraJetVeto(self, thrJet=self.JetThreshold, thrExtra=60):
         cut = True
         if len(self.selectjetIdx(thrJet)) >= 3 and self.tr.Jet_pt[self.selectjetIdx(thrJet)[2]] > thrExtra:
             cut = False
@@ -71,11 +70,11 @@ class VarHandler():
         
     def calHT(self):
         HT = 0
-        for i in self.selectjetIdx(JetThreshold):
+        for i in self.selectjetIdx(self.JetThreshold):
             HT = HT + self.tr.Jet_pt[i]
         return HT
 
-    def calNj(self, thrsld=JetThreshold):
+    def calNj(self, thrsld=self.JetThreshold):
         return len(self.selectjetIdx(thrsld))
         
     def getISRPt(self):
