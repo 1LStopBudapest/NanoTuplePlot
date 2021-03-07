@@ -37,18 +37,22 @@ for sl in samplelists:
         files.append(ROOT.TFile.Open(plotDir+'StackFiles/StackHist_'+sl+'.root'))
     else:
         doplots = False        
-        print 'Root files for',sl,'sample soes not exist. Please run python StackHistMaker.py --sample',sl
+        print 'Root files for',sl,'sample does not exist. Please run python StackHistMaker.py --sample',sl
 
 if doplots :
-    StackHists(files, samplelists, 'MET', plotDir, 'final')
-    StackHists(files, samplelists, 'Leppt', plotDir, 'final')
-    StackHists(files, samplelists, 'LepMT', plotDir, 'final')
-    StackHists(files, samplelists, 'HT', plotDir, 'final')
-    StackHists(files, samplelists, 'CT1', plotDir, 'final')
-    StackHists(files, samplelists, 'CT2', plotDir, 'final')
-    StackHists(files, samplelists, 'ISRJetPt', plotDir, 'final')
-    StackHists(files, samplelists, 'ISRJetEta', plotDir, 'final')
-    StackHists(files, samplelists, 'SSRJetPt', plotDir, 'final')
-    StackHists(files, samplelists, 'Njet', plotDir, 'final')
-    StackHists(files, samplelists, 'BjetPt', plotDir, 'final')
-    StackHists(files, samplelists, 'Nbjet30', plotDir, 'final')
+    StackHists(files, samplelists, 'MET', plotDir, 'cut')
+    StackHists(files, samplelists, 'Leppt', plotDir, 'cut')
+    StackHists(files, samplelists, 'LepMT', plotDir, 'cut')
+    StackHists(files, samplelists, 'HT', plotDir, 'cut')
+    StackHists(files, samplelists, 'CT1', plotDir, 'cut')
+    StackHists(files, samplelists, 'CT2', plotDir, 'cut')
+    StackHists(files, samplelists, 'ISRJetPt', plotDir, 'cut')
+    StackHists(files, samplelists, 'ISRJetEta', plotDir, 'cut')
+    StackHists(files, samplelists, 'JetEta', plotDir, 'cut')
+    StackHists(files, samplelists, '2ndJetPt', plotDir, 'cut')
+    StackHists(files, samplelists, '2ndJetPt_100', plotDir, 'cut')
+    StackHists(files, samplelists, 'BjetPt', plotDir, 'cut')
+    StackHists(files, samplelists, 'Njet20', plotDir, 'cut')
+    StackHists(files, samplelists, 'Njet30', plotDir, 'cut')
+    StackHists(files, samplelists, 'Nbjet20', plotDir, 'cut')
+    StackHists(files, samplelists, 'Nbjet30', plotDir, 'cut')

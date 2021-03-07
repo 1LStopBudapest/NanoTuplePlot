@@ -81,14 +81,14 @@ class VarHandler():
     def getISRPt(self):
         return self.tr.Jet_pt[self.selectjetIdx(100)[0]] if len(self.selectjetIdx(100)) else 0
     
-    def cntBtagjet(self, discOpt='CSVV2', pt=30):
+    def cntBtagjet(self, discOpt='CSVV2', pt=JetThreshold):
         return len(self.selectBjetIdx(discOpt, pt))
 
-    def getBjetPt(self, discOpt='CSVV2', pt=30):
+    def getBjetPt(self, discOpt='CSVV2', pt=JetThreshold):
         b_pt = []
         for i in range(len(self.selectBjetIdx(discOpt, pt))):
-            b_pt.append(self.tr.Jet_pt[self.selectBjetIdx()[i]])
-        return b_pt
+            b_pt.append(self.tr.Jet_pt[self.selectBjetIdx(discOpt, pt)[i]])
+        return b_pt #if len(b_pt) else 0
 
     def cntMuon(self):
         return len(self.selectMuIdx())
@@ -124,7 +124,7 @@ class VarHandler():
     #            idx.append(i)
     #    return idx
 
-    def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=30):
+    def selectBjetIdx(self, discOpt='DeepCSV', ptthrsld=JetThreshold):
         idx = []
         for i in self.selectjetIdx(ptthrsld):
             if (self.isBtagCSVv2(self.tr.Jet_btagCSVV2[i], self.yr) if discOpt == 'CSVV2' else self.isBtagDeepCSV(self.tr.Jet_btagDeepB[i], self.yr)):
