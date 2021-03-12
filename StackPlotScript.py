@@ -7,7 +7,7 @@ from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
 from Sample.FileList_2016 import samples as samples_2016
 
-samplesRun = ['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'MET_Data']
+samplesRun = ['TTV', 'QCD', 'DYJetsToLL', 'ZJetsToNuNu', 'VV', 'ST', 'TTSingleLep_pow', 'TTLep_pow', 'WJetsToLNu', 'MET_Data', 'T2tt_500_420', 'T2tt_500_490']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4
