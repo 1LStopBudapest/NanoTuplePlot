@@ -131,6 +131,7 @@ else:
             MCcorr = 1.0
         else:
             MCcorr = MCWeight(tr, year, sample).getTotalWeight()
+
         Fill1D(histos['MET_nocut'], ch.MET_pt, lumiscale * MCcorr)
         if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_nocut'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
         if getsel.METcut():
