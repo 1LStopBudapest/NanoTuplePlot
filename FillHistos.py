@@ -23,8 +23,9 @@ class FillHistos():
         self.isData = True if ('Run' in self.sample or 'Data' in self.sample) else False
         self.isSignal = True if ('Stop' in self.sample or 'T2tt' in self.sample) else False
         
-        keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu',
-                   'Ne', 'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', '2ndJetPt', '2ndJetPt_100', 'ISRJetEta', 'JetEta', 'BjetPt']
+        keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 
+                   'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', '2ndJetPt', '2ndJetEta', 'ISRJetEta', '3rdJetPt', '3rdJetEta',
+                   'JetPt', 'JetEta', 'BjetPt', '1stBjetPt', '1stBjetEta', 'DeltaPhi_Jets', 'DeltaPhi_Jets60']
         if not self.isData:
             keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt'])
 
@@ -66,10 +67,18 @@ class FillHistos():
                 var['CT1'] = getsel.calCT(1)
                 var['CT2'] = getsel.calCT(2)
                 var['ISRJetPt'] = getsel.getISRPt()
-                var['2ndJetPt_100'] = getsel.get2ndJetPt(100)
-                var['2ndJetPt'] = getsel.get2ndJetPt()
                 var['ISRJetEta'] = getsel.getISRJetEta()
+                var['2ndJetPt'] = getsel.getNthJetPt(N=2)
+                var['2ndJetEta'] = getsel.getNthJetEta(N=2)
+                var['3rdJetPt'] = getsel.getNthJetPt(N=3)
+                var['3rdJetEta'] = getsel.getNthJetEta(N=3)
+                var['JetPt'] = [x for x in getsel.getJetPt()]
                 var['JetEta'] = [x for x in getsel.getJetEta()]
+
+                var['DeltaPhi_Jets'] = getvar.getDeltaPhiJets()
+                var['DeltaPhi_Jets60'] = getvar.getDeltaPhiJets(secondJetPt=60)
+                var['1stBjetPt'] = getvar.get1stBjetPt()
+                var['1stBjetEta'] = getvar.get1stBjetEta()
 
                 var['Njet20'] = getvar.calNj(20)
                 var['Njet30'] = getvar.calNj(30)
