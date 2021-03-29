@@ -79,7 +79,7 @@ class VarHandler():
         return len(self.selectjetIdx(thrsld))
         
     def getISRPt(self):
-        return self.tr.Jet_pt[self.selectjetIdx(100)[0]] if len(self.selectjetIdx(100)) else 0
+        return self.tr.Jet_pt[self.selectjetIdx(100)[0]] if len(self.selectjetIdx(100)) else -1
     
     def cntBtagjet(self, discOpt='CSVV2', pt=JetPtThreshold):
         return len(self.selectBjetIdx(discOpt, pt))
@@ -94,13 +94,7 @@ class VarHandler():
         return self.tr.Jet_pt[self.selectBjetIdx(discOpt, pt)[0]] if len(self.selectBjetIdx(discOpt, pt)) else -1
 
     def get1stBjetEta(self, discOpt='CSVV2', pt=JetPtThreshold):
-        return self.tr.Jet_eta[self.selectBjetIdx(discOpt, pt)[0]] if len(self.selectBjetIdx(discOpt, pt)) else -1
-
-    def getDeltaPhiJets(self, secondJetPt=JetPtThreshold):
-        if len(self.selectjetIdx(100)) and len(self.selectjetIdx(secondJetPt)) > 1:
-            return DeltaPhi(self.tr.Jet_phi[self.selectjetIdx(100)[0]], self.tr.Jet_phi[self.selectjetIdx(secondJetPt)[1]])
-        else:
-            return -1
+        return self.tr.Jet_eta[self.selectBjetIdx(discOpt, pt)[0]] if len(self.selectBjetIdx(discOpt, pt)) else -99
 
     def cntMuon(self):
         return len(self.selectMuIdx())

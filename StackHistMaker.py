@@ -75,6 +75,7 @@ if 'T2tt' in samples:
     histos['DeltaPhi_Jets60'] = HistInfo(hname = 'DeltaPhi_Jets60', sample = histext, binning=[40,0,4], histclass = ROOT.TH1F).make_hist()
     histos['1stBjetPt'] = HistInfo(hname = '1stBjetPt', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['1stBjetEta'] = HistInfo(hname = '1stBjetEta', sample = histext, binning=[40,-3,3], histclass = ROOT.TH1F).make_hist()
+    histos['JetPhi'] = HistInfo(hname = 'JetPhi', sample = histext, binning=[40,-4,4], histclass = ROOT.TH1F).make_hist()
     
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -112,6 +113,7 @@ else:
             histos['DeltaPhi_Jets60'] = HistInfo(hname = 'DeltaPhi_Jets60', sample = histext, binning=[40,0,4], histclass = ROOT.TH1F).make_hist()
             histos['1stBjetPt'] = HistInfo(hname = '1stBjetPt', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
             histos['1stBjetEta'] = HistInfo(hname = '1stBjetEta', sample = histext, binning=[40,-3,3], histclass = ROOT.TH1F).make_hist()
+            histos['JetPhi'] = HistInfo(hname = 'JetPhi', sample = histext, binning=[40,-4,4], histclass = ROOT.TH1F).make_hist()
 
             
             ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
@@ -149,6 +151,7 @@ else:
         histos['DeltaPhi_Jets60'] = HistInfo(hname = 'DeltaPhi_Jets60', sample = histext, binning=[40,0,4], histclass = ROOT.TH1F).make_hist()
         histos['1stBjetPt'] = HistInfo(hname = '1stBjetPt', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['1stBjetEta'] = HistInfo(hname = '1stBjetEta', sample = histext, binning=[40,-3,3], histclass = ROOT.TH1F).make_hist()
+        histos['JetPhi'] = HistInfo(hname = 'JetPhi', sample = histext, binning=[40,-4,4], histclass = ROOT.TH1F).make_hist()
             
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()

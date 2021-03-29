@@ -63,3 +63,4 @@ if doplots :
     StackHists(files, samplelists, 'DeltaPhi_Jets60', plotDir, 'cut')
     StackHists(files, samplelists, '1stBjetPt', plotDir, 'cut')
     StackHists(files, samplelists, '1stBjetEta', plotDir, 'cut')
+    StackHists(files, samplelists, 'JetPhi', plotDir, 'cut')

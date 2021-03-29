@@ -25,7 +25,7 @@ class FillHistos():
         
         keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 
                    'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', '2ndJetPt', '2ndJetEta', 'ISRJetEta', '3rdJetPt', '3rdJetEta',
-                   'JetPt', 'JetEta', 'BjetPt', '1stBjetPt', '1stBjetEta', 'DeltaPhi_Jets', 'DeltaPhi_Jets60']
+                   'JetPt', 'JetEta', 'BjetPt', '1stBjetPt', '1stBjetEta', 'DeltaPhi_Jets', 'DeltaPhi_Jets60', 'JetPhi']
         if not self.isData:
             keylist.extend(['GenMuonpt', 'GenElept', 'GenBpt'])
 
@@ -75,8 +75,9 @@ class FillHistos():
                 var['JetPt'] = [x for x in getsel.getJetPt()]
                 var['JetEta'] = [x for x in getsel.getJetEta()]
 
-                var['DeltaPhi_Jets'] = getvar.getDeltaPhiJets()
-                var['DeltaPhi_Jets60'] = getvar.getDeltaPhiJets(secondJetPt=60)
+                var['DeltaPhi_Jets'] = getsel.getDeltaPhiJets()
+                var['DeltaPhi_Jets60'] = getsel.getDeltaPhiJets(thr=60)
+                var['JetPhi'] = [x for x in getsel.getJetPhi()]
                 var['1stBjetPt'] = getvar.get1stBjetPt()
                 var['1stBjetEta'] = getvar.get1stBjetEta()
 
