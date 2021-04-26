@@ -78,16 +78,16 @@ class FillHistos():
                 var['DeltaPhi_Jets'] = getsel.getDeltaPhiJets()
                 var['DeltaPhi_Jets60'] = getsel.getDeltaPhiJets(thr=60)
                 var['JetPhi'] = [x for x in getsel.getJetPhi()]
-                var['1stBjetPt'] = getvar.get1stBjetPt()
-                var['1stBjetEta'] = getvar.get1stBjetEta()
+                var['1stBjetPt'] = getsel.get1stBjetPt()
+                var['1stBjetEta'] = getsel.get1stBjetEta()
 
-                var['Njet20'] = getvar.calNj(20)
-                var['Njet30'] = getvar.calNj(30)
-                var['Nbjet20'] = getvar.cntBtagjet('CSVV2', 20)
-                var['Nbjet30'] = getvar.cntBtagjet('CSVV2', 30)
-                var['BjetPt'] = [x for x in getvar.getBjetPt()]
-                var['Nmu'] =     getvar.cntMuon()
-                var['Ne'] =     getvar.cntEle()
+                var['Njet20'] = getsel.calNj(20)
+                var['Njet30'] = getsel.calNj(30)
+                var['Nbjet20'] = getsel.cntBtagjet('CSVV2', 20)
+                var['Nbjet30'] = getsel.cntBtagjet('CSVV2', 30)
+                var['BjetPt'] = [x for x in getsel.getBjetPt()]
+                var['Nmu'] = getsel.cntMuon()
+                var['Ne'] = getsel.cntEle()
                 var['Muonpt'] = [x for x in getvar.getMuVar()['pt']]
                 var['Muondxy'] = [x for x in getvar.getMuVar()['dxy']]
                 var['Muondz'] = [x for x in getvar.getMuVar()['dz']]
