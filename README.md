@@ -51,3 +51,13 @@ Few parameters need to be provided like samplesRun (lisf of samples) , fileperjo
 A txt file is created with run command of  StackHistMaker.py . The number of lines of the txt file will run in parallel
 
 A shell file is produced, and then executed. First, the txt files will be processed to produce root files with histograms then it runs StackPlot.py with the list of samples (from given samplesRun) which creats the stack histograms.
+
+
+To Make root fiels containing Region histogram for all signal points and SM processes and data, run the following script
+
+```
+python MakeRegionHistScripy.py --sample Signal
+```
+This will run over all the signal points. For SM and data, use --sample Other
+
+The deafault region is SR, to make histogram with other region, use --region option

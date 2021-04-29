@@ -51,7 +51,10 @@ if SigScan:
 
 
     bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
-    bashline.append('mv RegionPlot_%s_*.root %s\n'%(reg, Rootfilesdirpath))
+    for sig in signals:
+        sname = 'T2tt_'+sig
+        bashline.append('mv RegionPlot_%s_%s*.root RegionPlot_%s_%s.root\n'%(reg, sname, reg, sname))
+    bashline.append('mv RegionPlot_%s*.root %s\n'%(reg, Rootfilesdirpath))
 
 else:
     print 'Running over all the bkgs as well as data (MET)'
