@@ -7,6 +7,7 @@ from Helper.TreeVarSel import TreeVarSel
 from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
 from Helper.Binning import *
+from Helper.GenFilterEff import GenFilterEff
 from Sample.SampleChain import SampleChain
 from Sample.FileList_2016 import samples as samples_2016
 
@@ -62,6 +63,11 @@ if 'T2tt' in samples:
     histext = samples
     sample = samples
     print 'running over: ', sample
+    ms = int(sample.split('_')[1])
+    ml = int(sample.split('_')[2])
+    gfiltr = GenFilterEff(year)
+    gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
+    print 'Gen filter eff: ',gfltreff
     hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -111,7 +117,7 @@ if 'T2tt' in samples:
                 if getsel.CR2():
                     idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  44 + 6
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
- 
+    histos['h_reg'].Scale(gfltreff)
     hfile.Write()
 else:
     if isinstance(samplelist[samples][0], types.ListType):
