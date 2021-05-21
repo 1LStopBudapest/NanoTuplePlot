@@ -8,7 +8,7 @@ from Sample.Dir import plotDir
 from Sample.FileList_2016 import samples as samples_2016
 
 samplesRun = ['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'MET_Data']
-fileperjobMC = 1 
+fileperjobMC = 2 
 fileperjobData = 1
 TotJobs = 4
 year = 2016
@@ -39,7 +39,7 @@ for sL in samplesRun:
 fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
-
+'''
 Rootfilesdirpath = os.path.join(plotDir,"StackFiles/final")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
@@ -67,3 +67,4 @@ fsh.close()
 os.system('chmod 744 parallelStackHist.sh')
 os.system('./parallelStackHist.sh')
 os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
+'''
