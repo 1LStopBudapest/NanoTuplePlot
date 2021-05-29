@@ -82,7 +82,7 @@ else:
     for sL in samplesRun:
         if 'Data' in sL:
             sLi = sL.replace('Data','')+'Run'
-            bashline.append('hadd RegionPlot_%s_%s.root RegionPlot_SR_%s*.root\n'%(reg, sL, sLi))
+            bashline.append('hadd RegionPlot_%s_%s.root RegionPlot_%s_%s*.root\n'%(reg, sL, reg, sLi))
         elif isinstance(samplelist[sL][0], types.ListType):
             sLi = 'hadd RegionPlot_'+reg+'_'+sL+'.root'+str("".join(' RegionPlot_'+reg+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
             bashline.append('%s\n'%sLi)
@@ -94,5 +94,5 @@ fsh = open("parallelRegionHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallelRegionHist.sh')
-os.system('./parallelRegionHist.sh')
-os.system('rm *.root parallelJobsubmit.txt parallelRegionHist.sh')
+#os.system('./parallelRegionHist.sh')
+#os.system('rm *.root parallelJobsubmit.txt parallelRegionHist.sh')
