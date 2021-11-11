@@ -49,8 +49,8 @@ class FillHistos_IVF():
                 
             var = {key: None for key in vardic}
             getivf = IVFhelper(tr, self.isData, self.year)
-            if getivf.IVFSelection() and getivf.HadronicSelection: 
-                var['nSV'] = tr.nSV
+            if getivf.IVFSelection() and getivf.HadronicSelection: # ==> before cut
+                var['nSV'] = tr.nSV                                # \t ==> after cut
             var['Ntracks'] = [x for x in getivf.getNtracks()]
             var['SVdxy'] = [x for x in getivf.getSVdxy()]
             var['SVdxySig'] = [x for x in getivf.getS2D()]
