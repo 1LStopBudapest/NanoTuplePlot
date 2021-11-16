@@ -49,16 +49,18 @@ class FillHistos_IVF():
                 
             var = {key: None for key in vardic}
             getivf = IVFhelper(tr, self.isData, self.year)
-            if getivf.IVFSelection() and getivf.HadronicSelection: # ==> before cut
-                var['nSV'] = tr.nSV                                # \t ==> after cut
-            var['Ntracks'] = [x for x in getivf.getNtracks()]
-            var['SVdxy'] = [x for x in getivf.getSVdxy()]
-            var['SVdxySig'] = [x for x in getivf.getS2D()]
-            var['SVmass'] = [x for x in getivf.getSVmass()]
-            var['SVdlenSig'] = [x for x in getivf.getS3D()]
-            var['SVpAngle'] = [x for x in getivf.getSVangle()]
-            var['SVpT'] = [x for x in getivf.getSVpT()]
-            var['SVdR'] = [x for x in getivf.getSVdR()]
+            getsel = TreeVarSel(tr, self.isData, self.year)
+            if getsel.PreSelection() and getsel.cntBtagjet(pt=20)==0:
+                if getivf.IVFSelection() and getivf.HadronicSelection(): # # ==> before cut
+                    var['nSV'] = tr.nSV                                  # \t ==> after cut
+                var['Ntracks'] = [x for x in getivf.getNtracks()]
+                var['SVdxy'] = [x for x in getivf.getSVdxy()]
+                var['SVdxySig'] = [x for x in getivf.getS2D()]
+                var['SVmass'] = [x for x in getivf.getSVmass()]
+                var['SVdlenSig'] = [x for x in getivf.getS3D()]
+                var['SVpAngle'] = [x for x in getivf.getSVangle()]
+                var['SVpT'] = [x for x in getivf.getSVpT()]
+                var['SVdR'] = [x for x in getivf.getSVdR()]
                
 
             for key in self.histos:
