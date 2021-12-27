@@ -53,14 +53,21 @@ class FillHistos_IVF():
             if getsel.PreSelection() and getsel.cntBtagjet(pt=20)==0:
                 if getivf.IVFSelection() and getivf.HadronicSelection(): # # ==> before cut
                     var['nSV'] = tr.nSV                                  # \t ==> after cut
-                var['Ntracks'] = [x for x in getivf.getNtracks()]
-                var['SVdxy'] = [x for x in getivf.getSVdxy()]
-                var['SVdxySig'] = [x for x in getivf.getS2D()]
-                var['SVmass'] = [x for x in getivf.getSVmass()]
-                var['SVdlenSig'] = [x for x in getivf.getS3D()]
-                var['SVpAngle'] = [x for x in getivf.getSVangle()]
-                var['SVpT'] = [x for x in getivf.getSVpT()]
-                var['SVdR'] = [x for x in getivf.getSVdR()]
+                    var['MET'] = tr.MET_pt
+                    var['HT'] = getsel.calHT()
+                    var['Leppt'] = [x['pt'] for x in getsel.getLepVar(getsel.selectMuIdx(), getsel.selectEleIdx())]
+                    var['LepMT'] = getsel.getLepMT()
+                    var['CT1'] = getsel.calCT(1)
+                    var['CT2'] = getsel.calCT(2)
+                    var['ISRJetPt'] = getsel.getISRPt()
+                    var['Ntracks'] = [x for x in getivf.getNtracks()]
+                    var['SVdxy'] = [x for x in getivf.getSVdxy()]
+                    var['SVdxySig'] = [x for x in getivf.getS2D()]
+                    var['SVmass'] = [x for x in getivf.getSVmass()]
+                    var['SVdlenSig'] = [x for x in getivf.getS3D()]
+                    var['SVpAngle'] = [x for x in getivf.getSVangle()]
+                    var['SVpT'] = [x for x in getivf.getSVpT()]
+                    var['SVdR'] = getivf.getSVdR()
                
 
             for key in self.histos:

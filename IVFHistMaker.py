@@ -60,39 +60,28 @@ sample = samples
 print 'running over: ', sample
 hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 histos = {}
-histos['nSV'] = HistInfo(hname = 'nSV', sample = histext, binning=[15,0,15], histclass = ROOT.TH1F).make_hist()
-histos['Ntracks'] = HistInfo(hname = 'Ntracks', sample = histext, binning=[20,0,20], histclass = ROOT.TH1F).make_hist()
-histos['SVdxy'] = HistInfo(hname = 'SVdxy', sample = histext, binning=[50,0,5], histclass = ROOT.TH1F).make_hist()
-histos['SVdxySig'] = HistInfo(hname = 'SVdxySig', sample = histext, binning=[50,0,50], histclass = ROOT.TH1F).make_hist()
-histos['SVmass'] = HistInfo(hname = 'SVmass', sample = histext, binning=[20,0,10], histclass = ROOT.TH1F).make_hist()
-histos['SVdlenSig'] = HistInfo(hname = 'SVdlenSig', sample = histext, binning=[50,0,50], histclass = ROOT.TH1F).make_hist()
-histos['SVpAngle'] = HistInfo(hname = 'SVpAngle', sample = histext, binning=[50,0.5,3.5], histclass = ROOT.TH1F).make_hist()
-histos['SVpT'] = HistInfo(hname = 'SVpT', sample = histext, binning=[50,0,50], histclass = ROOT.TH1F).make_hist()
-histos['SVdR'] = HistInfo(hname = 'SVdR', sample = histext, binning=[40,0,4], histclass = ROOT.TH1F).make_hist()
+histos['nSV'] = HistInfo(hname = 'nSV', sample = sample, binning=[15,0,15], histclass = ROOT.TH1F).make_hist()
+histos['Ntracks'] = HistInfo(hname = 'Ntracks', sample = sample, binning=[20,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SVdxy'] = HistInfo(hname = 'SVdxy', sample = sample, binning=[50,0,5], histclass = ROOT.TH1F).make_hist()
+histos['SVdxySig'] = HistInfo(hname = 'SVdxySig', sample = sample, binning=[50,0,50], histclass = ROOT.TH1F).make_hist()
+histos['SVmass'] = HistInfo(hname = 'SVmass', sample = sample, binning=[20,0,10], histclass = ROOT.TH1F).make_hist()
+histos['SVdlenSig'] = HistInfo(hname = 'SVdlenSig', sample = sample, binning=[50,0,50], histclass = ROOT.TH1F).make_hist()
+histos['SVpAngle'] = HistInfo(hname = 'SVpAngle', sample = sample, binning=[50,0.5,3.5], histclass = ROOT.TH1F).make_hist()
+histos['SVpT'] = HistInfo(hname = 'SVpT', sample = sample, binning=[50,0,50], histclass = ROOT.TH1F).make_hist()
+histos['SVdR'] = HistInfo(hname = 'SVdR', sample = sample, binning=[40,0,4], histclass = ROOT.TH1F).make_hist()
+
+histos['MET'] = HistInfo(hname = 'MET', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+histos['Leppt'] = HistInfo(hname = 'Leppt', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+histos['LepMT'] = HistInfo(hname = 'LepMT', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+histos['HT'] = HistInfo(hname = 'HT', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+histos['CT1'] = HistInfo(hname = 'CT1', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+histos['CT2'] = HistInfo(hname = 'CT2', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
+histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 
 ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
 print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 n_entries = ch.GetEntries()
 nevtcut = n_entries -1 if nEvents == - 1 else nEvents - 1
 print 'Running over total events: ', nevtcut+1
-
-ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
-print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 FillHistos_IVF(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
 hfile.Write()
-
-bashline = []    
-bashline.append('hadd 1DHist_%s.root 1DHist_%s_*.root\n'%(samples, samples))
-bashline.append('mv 1DHist_%s.root %s\n'%(samples, Rootfilesdirpath))
-
-
-fsh = open("FileHandle.sh", "w")
-fsh.write(''.join(bashline))
-fsh.close()
-os.system('chmod 744 FileHandle.sh')
-os.system('./FileHandle.sh')
-os.system('rm *.root FileHandle.sh')
-
-outputDir = plotDir
-for key in histos:
-    Plot1D(histos[key], outputDir, islogy=True)
