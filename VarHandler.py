@@ -326,21 +326,6 @@ class VarHandler():
                 L.append({'pt':self.tr.GenPart_pt[i], 'eta':self.tr.GenPart_eta[i], 'phi':self.tr.GenPart_phi[i]})
         return L
 
-    #GenPart = generated particle vertex
-    #GenVt = generated primary vertex
-    #PV = primary vertex
-    def genClosest(self):
-        genPart = []
-        genVt = []
-        PV = []
-        for i in range(self.tr.nGenPart): #it shoul be GenPart(Stop)
-            if abs(self.tr.GenPart_pdgId[i])==1000006 and self.tr.GenPart_statusFlags[i]==10497: #1000006 == stop_1, 10497 -> 0214_kerdesek
-                genPart.append({'x':self.tr.GenPart_vx, 'y':self.tr.GenPart_vy, 'z':self.tr.GenPart_vz}) # is this ok?
-        #for j in range(len(self.tr.GenVtx_x)):
-        genVt.append({'x':self.tr.GenVtx_x, 'y':self.tr.GenVtx_y, 'z':self.tr.GenVtx_z})
-        PV.append({'x':self.tr.PV_x, 'y':self.tr.PV_y, 'z':self.tr.PV_z})    
-        return [genPart, genVt, PV]
-
     def genLSP(self):
         L = []
         for i in range(self.tr.nGenPart):
