@@ -9,7 +9,7 @@ from Helper.MCWeight import MCWeight
 from Helper.Binning import *
 from Helper.GenFilterEff import GenFilterEff
 from Sample.SampleChain import SampleChain
-from Sample.FileList_2016 import samples as samples_2016
+from Sample.FileList_UL2016PostVFP import samples as samples_2016
 
 def get_parser():
     ''' Argument parser.                                                                                                                                                                                                                     
