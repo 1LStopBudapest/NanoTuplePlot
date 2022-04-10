@@ -70,6 +70,12 @@ histos['gStop_gAStop_3D'] = HistInfo(hname = 'gStop_gAStop_3D', sample = sample,
 histos['gLSP_gStop_3D'] = HistInfo(hname = 'gLSP_gStop_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['PV_gVtx_3D'] = HistInfo(hname = 'PV_gVtx_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['PV_gLSP_3D'] = HistInfo(hname = 'PV_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
+#new
+histos['gVtx_gLSP_dx'] = HistInfo(hname = 'gVtx_gLSP_dx', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_dy'] = HistInfo(hname = 'gVtx_gLSP_dy', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_dz'] = HistInfo(hname = 'gVtx_gLSP_dz', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_2D'] = HistInfo(hname = 'gVtx_gLSP_2D', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 
 
 ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()

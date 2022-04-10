@@ -26,7 +26,8 @@ class TrueFill():
                    'gLSP_gStop_dx', 'gLSP_gStop_dy', 'gLSP_gStop_dz', 'PV_gVtx_dx', 'PV_gVtx_dy', 'PV_gVtx_dz',
                    'PV_gLSP_dx', 'PV_gLSP_dy', 'PV_gLSP_dz', 
                    'gStop_gVtx_2D', 'gStop_gAStop_2D', 'gLSP_gStop_2D', 'PV_gVtx_2D', 'PV_gLSP_2D',
-                   'gStop_gVtx_3D', 'gStop_gAStop_3D', 'gLSP_gStop_3D', 'PV_gVtx_3D', 'PV_gLSP_3D']
+                   'gStop_gVtx_3D', 'gStop_gAStop_3D', 'gLSP_gStop_3D', 'PV_gVtx_3D', 'PV_gLSP_3D',
+                   'gVtx_gLSP_dx', 'gVtx_gLSP_dy', 'gVtx_gLSP_dz', 'gVtx_gLSP_2D', 'gVtx_gLSP_3D']
         self.vardic = {key: None for key in keylist}
 
     def fill(self):
@@ -83,7 +84,11 @@ class TrueFill():
                 var['PV_gLSP_2D'] = sqrt(var['PV_gLSP_dx']**2 + var['PV_gLSP_dy']**2)
                 var['gLSP_gStop_3D'] = sqrt(var['gLSP_gStop_dx']**2 + var['gLSP_gStop_dy']**2 + var['gLSP_gStop_dz']**2)
                 var['PV_gLSP_3D'] = sqrt(var['PV_gLSP_dx']**2 + var['PV_gLSP_dy']**2 + var['PV_gLSP_dz']**2)
-
+                var['gVtx_gLSP_dx'] = getsel.distance(genVtx, genLSP[0], 'x')
+                var['gVtx_gLSP_dy'] = getsel.distance(genVtx, genLSP[0], 'y')
+                var['gVtx_gLSP_dz'] = getsel.distance(genVtx, genLSP[0], 'z')
+                var['gVtx_gLSP_2D'] = sqrt(var['gVtx_gLSP_dx']**2 + var['gVtx_gLSP_dy']**2)
+                var['gVtx_gLSP_3D'] = sqrt(var['gVtx_gLSP_dx']**2 + var['gVtx_gLSP_dy']**2 + var['gVtx_gLSP_dz']**2)
 
             for key in self.histos:
                 if key in var.keys():
