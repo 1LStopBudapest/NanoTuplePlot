@@ -11,13 +11,13 @@ samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'QCD', 'MET_Data']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4
-year = 2016
+year = '2016'
 
 txtline = []
 
-if year==2016:
+if year=='2016':
     samplelist = samples_2016
-elif year==2017:
+elif year=='2017':
     samplelist = samples_2017
 else:
     samplelist = samples_2018

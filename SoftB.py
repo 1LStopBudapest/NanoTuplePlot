@@ -12,15 +12,16 @@ from Helper.TreeVarSel import TreeVarSel
 from Helper.VarCalc import *
 from Helper.GenFilterEff import GenFilterEff
 from Helper.MCWeight import MCWeight
-from Sample.FileList_2016 import samples as samples_2016
+from Sample.FileList_UL2016PostVFP import samples as samples_2016PostVFP
+
 
 def get_parser():
     ''' Argument parser.
     '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',           action='store',                     type=str,            default='SB_TTSingleLep',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=int,            default=2016,                                             help="Which year?" )
+    argParser.add_argument('--sample',           action='store',                     type=str,            default='TTSingleLep_pow',                                help="Which sample?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -47,10 +48,13 @@ DataLumi=1.0
 
 isData = True if ('Run' in samples or 'Data' in samples) else False
 
-if year==2016:
-    samplelist = samples_2016 
-    DataLumi = SampleChain.luminosity_2016
-elif year==2017:
+if year=='2016PreVFP':
+    samplelist = samples_2016PreVFP
+    DataLumi = SampleChain.luminosity_2016PreVFP
+elif year=='2016PostVFP':
+    samplelist = samples_2016PostVFP
+    DataLumi = SampleChain.luminosity_2016PostVFP
+elif year=='2017':
     samplelist = samples_2017
     DataLumi = SampleChain.luminosity_2017
 else:
@@ -187,21 +191,19 @@ else:
             if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
             ch.GetEntry(ientry)
             getsel = TreeVarSel(ch, isData, year)
-            #if isData:
-            lumiscale = 1.0
-            #else:
-            #lumiscale = (DataLumi/1000.0) * ch.weight
-            #if isData:
-            MCcorr = 1.0
-            #else:
-            #MCcorr = MCWeight(ch, year, sample).getTotalWeight()
+            if isData:
+                lumiscale = 1.0
+                MCcorr = 1.0
+            else:
+                lumiscale = (DataLumi/1000.0) * ch.weight
+                MCcorr = MCWeight(ch, year, sample).getTotalWeight()
 
             Fill1D(histos['RecoMET'], ch.MET_pt, lumiscale * MCcorr)
             Fill1D(histos['GenMET'], ch.GenMET_pt, lumiscale  * MCcorr)
             for b in genB(ch):
                 Fill1D(histos['Genb_pT'], b['pt'], lumiscale * MCcorr)
-            Fill1D(histos['NSV'], ch.nSV, lumiscale  * MCcorr)
-            for i in range(ch.nSV):
+            Fill1D(histos['NSV'], getsel.cntSoftB(), lumiscale  * MCcorr)
+            for i in getsel.selectSoftBIdx():
                 Fill1D(histos['SV_pT'], ch.SV_pt[i], lumiscale  * MCcorr)
                 Fill1D(histos['SV_m'], ch.SV_mass[i], lumiscale  * MCcorr)
                 Fill1D(histos['SV_dl'], ch.SV_dlen[i], lumiscale  * MCcorr)
@@ -209,8 +211,8 @@ else:
                 Fill1D(histos['SV_pAngle'], ch.SV_pAngle[i], lumiscale  * MCcorr)
                 Fill1D(histos['SV_nDOF'], ch.SV_ndof[i], lumiscale  * MCcorr)
                 Fill1D(histos['SV_Chi_nDOF'], ch.SV_chi2[i]/ch.SV_ndof[i], lumiscale  * MCcorr)
-                #Fill1D(histos['SV_dxy'], ch.SV_dxy, lumiscale  * MCcorr)
-                #Fill1D(histos['SV_Sigdxy'], ch.SV_mass, lumiscale  * MCcorr)
+                Fill1D(histos['SV_dxy'], ch.SV_dxy[i], lumiscale  * MCcorr)
+                Fill1D(histos['SV_Sigdxy'], ch.SV_dxySig[i], lumiscale  * MCcorr)
         hfile.Write()
 
 
