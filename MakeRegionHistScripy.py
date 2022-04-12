@@ -21,14 +21,14 @@ reg = options.region
 sample = options.sample
 
 SigScan =  True if 'Signal' in sample else False
-year = 2016
+year = '2016'
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
 
-if year==2016:
+if year=='2016':
     samplelist = samples_2016
-elif year==2017:
+elif year=='2017':
     samplelist = samples_2017
 else:
     samplelist = samples_2018

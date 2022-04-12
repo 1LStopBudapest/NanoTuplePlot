@@ -20,7 +20,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',           action='store',                     type=str,            default='MET_Run2016B',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=int,            default=2016,                                             help="Which year?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -38,10 +38,10 @@ DataLumi=1.0
 
 isData = True if ('Run' in samples or 'Data' in samples) else False
 
-if year==2016:
+if year=='2016':
     samplelist = samples_2016 
     DataLumi = SampleChain.luminosity_2016
-elif year==2017:
+elif year=='2017':
     samplelist = samples_2017
     DataLumi = SampleChain.luminosity_2017
 else:
