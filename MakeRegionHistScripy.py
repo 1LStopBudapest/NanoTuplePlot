@@ -4,7 +4,8 @@ import types
 sys.path.append('../')
 from Sample.SampleList import *
 from Sample.Dir import plotDir
-from Sample.FileList_2016 import samples as samples_2016
+from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
+from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 from Sample.SampleChain import SampleChain
 
 def get_parser():
@@ -21,13 +22,15 @@ reg = options.region
 sample = options.sample
 
 SigScan =  True if 'Signal' in sample else False
-year = '2016'
+year = '2016Post'
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
 
-if year=='2016':
-    samplelist = samples_2016
+if year=='2016PreVFP':
+    samplelist = samples_2016Pre
+elif year=='2016PostVFP':
+    samplelist = samples_2016Post
 elif year=='2017':
     samplelist = samples_2017
 else:
@@ -44,7 +47,7 @@ if SigScan:
     txtline = []
     for sig in signals:
         sname = 'T2tt_'+sig
-        txtline.append("python RegionPlot.py --sample %s --region %s\n"%(sname, reg))
+        txtline.append("python RegionPlot.py --sample %s --region %s --year %s\n"%(sname, reg, year))
     fout = open("parallelJobsubmit.txt", "w")
     fout.write(''.join(txtline))
     fout.close()
@@ -68,12 +71,12 @@ else:
                 fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
                 tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
                 for i in range(0, tfiles, fileperjob):
-                    txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i --region %s\n"%(sample, i, fileperjob, reg))
+                    txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i --region %s --year %s\n"%(sample, i, fileperjob, reg, year))
         else:
             tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
             fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
             for i in range(0, tfiles, fileperjob):
-                txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i --region %s\n"%(sL, i, fileperjob, reg))
+                txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i --region %s --year %s\n"%(sL, i, fileperjob, reg, year))
     fout = open("parallelJobsubmit.txt", "w")
     fout.write(''.join(txtline))
     fout.close()
