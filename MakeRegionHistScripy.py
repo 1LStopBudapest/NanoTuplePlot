@@ -22,7 +22,7 @@ reg = options.region
 sample = options.sample
 
 SigScan =  True if 'Signal' in sample else False
-year = '2016Post'
+year = '2016PostVFP'
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
@@ -97,5 +97,5 @@ fsh = open("parallelRegionHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallelRegionHist.sh')
-#os.system('./parallelRegionHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallelRegionHist.sh')
+os.system('./parallelRegionHist.sh')
+os.system('rm *.root parallelJobsubmit.txt parallelRegionHist.sh')
