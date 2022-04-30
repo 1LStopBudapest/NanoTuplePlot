@@ -7,7 +7,7 @@ from Sample.Dir import plotDir
 from Sample.FileList_2016 import samples as samples_2016
 
 samplesRun = ['UL17V9_Full99mm', 'TTToSemiLeptonic', 'TTTo2L2Nu']
-fileperjobMC = 1 
+fileperjobMC = 1
 fileperjobData = 1
 TotJobs = 4
 year = 2016
@@ -26,7 +26,7 @@ for sL in samplesRun:
     fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
     for i in range(0, tfiles, fileperjobMC):
         txtline.append("python IVFHistMaker.py --sample %s --startfile %i --nfiles %i\n"%(sL, i, fileperjobMC))
-                
+
 fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
@@ -35,7 +35,7 @@ Rootfilesdirpath = os.path.join(plotDir, "1DFiles/IVF")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
-bashline = []    
+bashline = []
 bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
 
 for sL in samplesRun:
@@ -44,7 +44,7 @@ for sL in samplesRun:
 
 l = str(" ".join(s for s in samplesRun))
 bashline.append('python IVFPlot.py -l %s'%l)
-    
+
 fsh = open("parallelStackHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()

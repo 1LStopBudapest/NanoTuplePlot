@@ -36,7 +36,7 @@ isData = True if ('Run' in samples or 'Data' in samples) else False
 DataLumi=1.0
 
 if year==2016:
-    samplelist = samples_2016 
+    samplelist = samples_2016
     DataLumi = SampleChain.luminosity_2016
 elif year==2017:
     samplelist = samples_2017
@@ -50,7 +50,7 @@ else:
 histext = ''
 
 Rootfilesdirpath = os.path.join(plotDir, "1DFiles/IVF")
-if not os.path.exists(Rootfilesdirpath): 
+if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
 histext = samples

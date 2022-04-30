@@ -23,13 +23,13 @@ class FillHistos_IVF():
 
         self.isData = True if ('Run' in self.sample or 'Data' in self.sample) else False
         self.isSignal = True if ('Stop' in self.sample or 'T2tt' in self.sample) else False
-        
+
         keylist = ['MET', 'HT', 'Leppt', 'LepMT', 'CT1', 'CT2', 'ISRJetPt', 'Njet20', 'Njet30', 'Nbjet20', 'Nbjet30', 'Nmu', 'Ne', 
                    'Muonpt', 'Muondxy', 'Muondz', 'Elept', 'Eledxy', 'Eledz', 'nSV', 'Ntracks', 'SVdxy', 'SVdxySig', 'SVmass', 'SVdlenSig',
                    'SVpAngle', 'SVpT', 'SVdR']
-      
+
         self.vardic = {key: None for key in keylist}
-    
+
     def fill(self):
         tr = self.chain
         vardic = self.vardic
@@ -46,7 +46,7 @@ class FillHistos_IVF():
                 MCcorr = 1.0
             else:
                 MCcorr = MCWeight(tr, self.year, self.sample).getTotalWeight()
-                
+
             var = {key: None for key in vardic}
             getivf = IVFhelper(tr, self.isData, self.year)
             getsel = TreeVarSel(tr, self.isData, self.year)
@@ -68,7 +68,7 @@ class FillHistos_IVF():
                     var['SVpAngle'] = [x for x in getivf.getSVangle()]
                     var['SVpT'] = [x for x in getivf.getSVpT()]
                     var['SVdR'] = getivf.getSVdR()
-               
+
 
             for key in self.histos:
                 if key in var.keys():
