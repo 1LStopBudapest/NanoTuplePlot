@@ -39,7 +39,7 @@ for sl in samplelists:
         files.append(ROOT.TFile.Open(plotDir+'RegionFiles_'+cut+'/RegionPlot_SR_'+sl+'.root'))
     else:
         doplots = False        
-        print 'Root files for', sl, 'sample soes not exist. Please run python StackHistMaker.py --sample', sl
+        print 'Root files for', sl, 'sample soes not exist. Please run python RegionPlot.py --sample', sl
 
 if doplots:
     StackHists(files, samplelists, 'h_reg', plotDir, 'final')
