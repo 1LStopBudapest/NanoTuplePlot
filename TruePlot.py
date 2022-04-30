@@ -21,7 +21,7 @@ def get_parser():
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',          action='store',                     type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
-    
+
     return argParser
 
 options = get_parser().parse_args()
@@ -29,7 +29,7 @@ sample  = options.sample
 year = options.year
 
 Rootfilesdirpath = os.path.join(plotDir, "1DFiles/truce")
-if not os.path.exists(Rootfilesdirpath): 
+if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
 print 'running over: ', sample
@@ -88,7 +88,7 @@ print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries
 TrueFill(histos, ch, options.year, options.nevents, sample).fill()
 
 hfile.Write()
-bashline = []    
+bashline = []
 bashline.append('hadd 1DHist_%s.root 1DHist_%s_*.root\n'%(sample, sample))
 bashline.append('mv 1DHist_%s.root %s\n'%(sample, Rootfilesdirpath))
 

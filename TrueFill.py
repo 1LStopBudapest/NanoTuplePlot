@@ -24,7 +24,7 @@ class TrueFill():
         keylist = ['gStop_dx', 'gStop_dy', 'gStop_dz', 'gVtx_dx', 'gVtx_dy', 'gVtx_dz',
                    'gStop_gVtx_dx', 'gStop_gVtx_dy', 'gStop_gVtx_dz', 'gStop_gAStop_dx', 'gStop_gAStop_dy', 'gStop_gAStop_dz',
                    'gLSP_gStop_dx', 'gLSP_gStop_dy', 'gLSP_gStop_dz', 'PV_gVtx_dx', 'PV_gVtx_dy', 'PV_gVtx_dz',
-                   'PV_gLSP_dx', 'PV_gLSP_dy', 'PV_gLSP_dz', 
+                   'PV_gLSP_dx', 'PV_gLSP_dy', 'PV_gLSP_dz',
                    'gStop_gVtx_2D', 'gStop_gAStop_2D', 'gLSP_gStop_2D', 'PV_gVtx_2D', 'PV_gLSP_2D',
                    'gStop_gVtx_3D', 'gStop_gAStop_3D', 'gLSP_gStop_3D', 'PV_gVtx_3D', 'PV_gLSP_3D',
                    'gVtx_gLSP_dx', 'gVtx_gLSP_dy', 'gVtx_gLSP_dz', 'gVtx_gLSP_2D', 'gVtx_gLSP_3D',
@@ -41,7 +41,7 @@ class TrueFill():
         for ientry in range(n_entries):
             if ientry > nevtcut: break
             if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
-            tr.GetEntry(ientry) #ientry = i. event 
+            tr.GetEntry(ientry) #ientry = i. event
             getsel = TreeVarSel(tr, self.year)
             var = {key: None for key in vardic} #reseting the var dictionary for each event
             MCcorr = MCWeight(tr, self.year, self.sample).getTotalWeight()
@@ -63,8 +63,8 @@ class TrueFill():
             var['gStop_gVtx_dx'] = getsel.distance(genVtx, genStop[0], 'x')*10000 # original is in cm, right?
             var['gStop_gVtx_dy'] = getsel.distance(genVtx, genStop[0], 'y')*10000 # ==> um
             var['gStop_gVtx_dz'] = getsel.distance(genVtx, genStop[0], 'z')*10000
-            var['gStop_gAStop_dx'] = getsel.distance(genAntiStop[0], genStop[0], 'x')*10000 
-            var['gStop_gAStop_dy'] = getsel.distance(genAntiStop[0], genStop[0], 'y')*10000 
+            var['gStop_gAStop_dx'] = getsel.distance(genAntiStop[0], genStop[0], 'x')*10000
+            var['gStop_gAStop_dy'] = getsel.distance(genAntiStop[0], genStop[0], 'y')*10000
             var['gStop_gAStop_dz'] = getsel.distance(genAntiStop[0], genStop[0], 'z')*10000
             var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10000
             var['PV_gVtx_dy'] = getsel.distance(genVtx, pv, 'y')*10000
@@ -77,7 +77,7 @@ class TrueFill():
             var['PV_gVtx_3D'] = sqrt(var['PV_gVtx_dx']**2 + var['PV_gVtx_dy']**2 + var['PV_gVtx_dz']**2)
             if len(genLSP) > 0:
                 var['gLSP_gStop_dx'] = getsel.distance(genLSP[0], genStop[0], 'x')
-                var['gLSP_gStop_dy'] = getsel.distance(genLSP[0], genStop[0], 'y') 
+                var['gLSP_gStop_dy'] = getsel.distance(genLSP[0], genStop[0], 'y')
                 var['gLSP_gStop_dz'] = getsel.distance(genLSP[0], genStop[0], 'z')
                 var['PV_gLSP_dx'] = getsel.distance(genLSP[0], pv, 'x')
                 var['PV_gLSP_dy'] = getsel.distance(genLSP[0], pv, 'y')
