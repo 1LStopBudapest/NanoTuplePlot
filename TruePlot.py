@@ -77,6 +77,7 @@ histos['gVtx_gLSP_dz'] = HistInfo(hname = 'gVtx_gLSP_dz', sample = sample, binni
 histos['gVtx_gLSP_2D'] = HistInfo(hname = 'gVtx_gLSP_2D', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
 histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 #SV
+histos['nSV'] = HistInfo(hname = 'nSV', sample = sample, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_dx'] = HistInfo(hname = 'SV_gLSP_dx', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_dy'] = HistInfo(hname = 'SV_gLSP_dy', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_dz'] = HistInfo(hname = 'SV_gLSP_dz', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()

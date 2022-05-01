@@ -29,7 +29,7 @@ class TrueFill():
                    'gStop_gVtx_2D', 'gStop_gAStop_2D', 'gLSP_gStop_2D', 'PV_gVtx_2D', 'PV_gLSP_2D',
                    'gStop_gVtx_3D', 'gStop_gAStop_3D', 'gLSP_gStop_3D', 'PV_gVtx_3D', 'PV_gLSP_3D',
                    'gVtx_gLSP_dx', 'gVtx_gLSP_dy', 'gVtx_gLSP_dz', 'gVtx_gLSP_2D', 'gVtx_gLSP_3D',
-                   'SV_gLSP_dx', 'SV_gLSP_dy', 'SV_gLSP_dz', 'SV_gLSP_2D', 'SV_gLSP_3D']
+                   'SV_gLSP_dx', 'SV_gLSP_dy', 'SV_gLSP_dz', 'SV_gLSP_2D', 'SV_gLSP_3D', 'nSV']
         self.vardic = {key: None for key in keylist}
 
     def fill(self):
@@ -58,6 +58,7 @@ class TrueFill():
 
             #if getivf.IVFSelection() and getivf.HadronicSelection(): #after IVF cut
             if 1 > 0: #before IVF cut
+                var['nSV'] = getivf.getNSV()
                 var['gStop_dx'] = genStop['x']*10 #mm
                 var['gStop_dy'] = genStop['y']*10
                 var['gStop_dz'] = genStop['z']    #cm
