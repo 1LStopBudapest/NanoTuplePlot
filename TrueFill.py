@@ -10,6 +10,7 @@ from Helper.HistInfo import HistInfo
 from Helper.PlotHelper import *
 from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
+from Helper.IVFhelper import IVFhelper
 
 class TrueFill():
 
@@ -42,7 +43,8 @@ class TrueFill():
             if ientry > nevtcut: break
             if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
             tr.GetEntry(ientry) #ientry = i. event
-            getsel = TreeVarSel(tr, self.year)
+            getsel = TreeVarSel(tr, self.isData, self.year)
+            getivf = IVFhelper(tr, self.isData, self.year)
             var = {key: None for key in vardic} #reseting the var dictionary for each event
             MCcorr = MCWeight(tr, self.year, self.sample).getTotalWeight()
             lumiscale = 1.0
@@ -52,51 +54,53 @@ class TrueFill():
             genAntiStop = getsel.getGenPartAntiStop()
             genLSP = getsel.getLSP()
             pv = getsel.getPV()
-            sv = getsel.getSV()
+            sv = getivf.getSV()
 
-            var['gStop_dx'] = genStop['x']*10 #mm
-            var['gStop_dy'] = genStop['y']*10
-            var['gStop_dz'] = genStop['z']    #cm
-            var['gVtx_dx'] = genVtx['x']*10
-            var['gVtx_dy'] = genVtx['y']*10
-            var['gVtx_dz'] = genVtx['z']
-            var['gStop_gVtx_dx'] = getsel.distance(genVtx, genStop, 'x')*10000 #um
-            var['gStop_gVtx_dy'] = getsel.distance(genVtx, genStop, 'y')*10000
-            var['gStop_gVtx_dz'] = getsel.distance(genVtx, genStop, 'z')*10000
-            var['gStop_gAStop_dx'] = getsel.distance(genAntiStop, genStop, 'x')*10000
-            var['gStop_gAStop_dy'] = getsel.distance(genAntiStop, genStop, 'y')*10000
-            var['gStop_gAStop_dz'] = getsel.distance(genAntiStop, genStop, 'z')*10000
-            var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10000
-            var['PV_gVtx_dy'] = getsel.distance(genVtx, pv, 'y')*10000
-            var['PV_gVtx_dz'] = getsel.distance(genVtx, pv, 'z')*10000
-            var['gStop_gVtx_2D'] = sqrt(var['gStop_gVtx_dx']**2 + var['gStop_gVtx_dy']**2)
-            var['gStop_gAStop_2D'] = sqrt(var['gStop_gAStop_dx']**2 + var['gStop_gAStop_dy']**2)
-            var['PV_gVtx_2D'] = sqrt(var['PV_gVtx_dx']**2 + var['PV_gVtx_dy']**2)
-            var['gStop_gVtx_3D'] = sqrt(var['gStop_gVtx_dx']**2 + var['gStop_gVtx_dy']**2 + var['gStop_gVtx_dz']**2)
-            var['gStop_gAStop_3D'] = sqrt(var['gStop_gAStop_dx']**2 + var['gStop_gAStop_dy']**2 + var['gStop_gAStop_dz']**2)
-            var['PV_gVtx_3D'] = sqrt(var['PV_gVtx_dx']**2 + var['PV_gVtx_dy']**2 + var['PV_gVtx_dz']**2)
-            if len(genLSP) > 0:
-                var['gLSP_gStop_dx'] = [d for d in getsel.listDist(genLSP, [genStop], 'x')]
-                var['gLSP_gStop_dy'] = [d for d in getsel.listDist(genLSP, [genStop], 'y')]
-                var['gLSP_gStop_dz'] = [d for d in getsel.listDist(genLSP, [genStop], 'z')]
-                var['PV_gLSP_dx'] = [d for d in getsel.listDist(genLSP, [pv], 'x')]
-                var['PV_gLSP_dy'] = [d for d in getsel.listDist(genLSP, [pv], 'y')]
-                var['PV_gLSP_dz'] = [d for d in getsel.listDist(genLSP, [pv], 'z')]
-                var['gLSP_gStop_2D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
-                var['PV_gLSP_2D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
-                var['gLSP_gStop_3D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2 + var['gLSP_gStop_dz'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
-                var['PV_gLSP_3D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2 + var['PV_gLSP_dz'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
-                var['gVtx_gLSP_dx'] = [d for d in getsel.listDist([genVtx], genLSP, 'x')]
-                var['gVtx_gLSP_dy'] = [d for d in getsel.listDist([genVtx], genLSP, 'y')]
-                var['gVtx_gLSP_dz'] = [d for d in getsel.listDist([genVtx], genLSP, 'z')]
-                var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
-                var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
-                if len(sv) > 0:
-                    var['SV_gLSP_dx'] = [d for d in getsel.listDist(sv, genLSP, 'x')]
-                    var['SV_gLSP_dy'] = [d for d in getsel.listDist(sv, genLSP, 'y')]
-                    var['SV_gLSP_dz'] = [d for d in getsel.listDist(sv, genLSP, 'z')]
-                    var['SV_gLSP_2D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
-                    var['SV_gLSP_3D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2 + var['SV_gLSP_dz'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
+            #if getivf.IVFSelection() and getivf.HadronicSelection(): #after IVF cut
+            if 1 > 0: #before IVF cut
+                var['gStop_dx'] = genStop['x']*10 #mm
+                var['gStop_dy'] = genStop['y']*10
+                var['gStop_dz'] = genStop['z']    #cm
+                var['gVtx_dx'] = genVtx['x']*10
+                var['gVtx_dy'] = genVtx['y']*10
+                var['gVtx_dz'] = genVtx['z']
+                var['gStop_gVtx_dx'] = getsel.distance(genVtx, genStop, 'x')*10000 #um
+                var['gStop_gVtx_dy'] = getsel.distance(genVtx, genStop, 'y')*10000
+                var['gStop_gVtx_dz'] = getsel.distance(genVtx, genStop, 'z')*10000
+                var['gStop_gAStop_dx'] = getsel.distance(genAntiStop, genStop, 'x')*10000
+                var['gStop_gAStop_dy'] = getsel.distance(genAntiStop, genStop, 'y')*10000
+                var['gStop_gAStop_dz'] = getsel.distance(genAntiStop, genStop, 'z')*10000
+                var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10000
+                var['PV_gVtx_dy'] = getsel.distance(genVtx, pv, 'y')*10000
+                var['PV_gVtx_dz'] = getsel.distance(genVtx, pv, 'z')*10000
+                var['gStop_gVtx_2D'] = sqrt(var['gStop_gVtx_dx']**2 + var['gStop_gVtx_dy']**2)
+                var['gStop_gAStop_2D'] = sqrt(var['gStop_gAStop_dx']**2 + var['gStop_gAStop_dy']**2)
+                var['PV_gVtx_2D'] = sqrt(var['PV_gVtx_dx']**2 + var['PV_gVtx_dy']**2)
+                var['gStop_gVtx_3D'] = sqrt(var['gStop_gVtx_dx']**2 + var['gStop_gVtx_dy']**2 + var['gStop_gVtx_dz']**2)
+                var['gStop_gAStop_3D'] = sqrt(var['gStop_gAStop_dx']**2 + var['gStop_gAStop_dy']**2 + var['gStop_gAStop_dz']**2)
+                var['PV_gVtx_3D'] = sqrt(var['PV_gVtx_dx']**2 + var['PV_gVtx_dy']**2 + var['PV_gVtx_dz']**2)
+                if len(genLSP) > 0:
+                    var['gLSP_gStop_dx'] = [d for d in getsel.listDist(genLSP, [genStop], 'x')]
+                    var['gLSP_gStop_dy'] = [d for d in getsel.listDist(genLSP, [genStop], 'y')]
+                    var['gLSP_gStop_dz'] = [d for d in getsel.listDist(genLSP, [genStop], 'z')]
+                    var['PV_gLSP_dx'] = [d for d in getsel.listDist(genLSP, [pv], 'x')]
+                    var['PV_gLSP_dy'] = [d for d in getsel.listDist(genLSP, [pv], 'y')]
+                    var['PV_gLSP_dz'] = [d for d in getsel.listDist(genLSP, [pv], 'z')]
+                    var['gLSP_gStop_2D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
+                    var['PV_gLSP_2D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
+                    var['gLSP_gStop_3D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2 + var['gLSP_gStop_dz'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
+                    var['PV_gLSP_3D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2 + var['PV_gLSP_dz'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
+                    var['gVtx_gLSP_dx'] = [d for d in getsel.listDist([genVtx], genLSP, 'x')]
+                    var['gVtx_gLSP_dy'] = [d for d in getsel.listDist([genVtx], genLSP, 'y')]
+                    var['gVtx_gLSP_dz'] = [d for d in getsel.listDist([genVtx], genLSP, 'z')]
+                    var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
+                    var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
+                    if len(sv) > 0:
+                        var['SV_gLSP_dx'] = [d for d in getsel.listDist(sv, genLSP, 'x')]
+                        var['SV_gLSP_dy'] = [d for d in getsel.listDist(sv, genLSP, 'y')]
+                        var['SV_gLSP_dz'] = [d for d in getsel.listDist(sv, genLSP, 'z')]
+                        var['SV_gLSP_2D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
+                        var['SV_gLSP_3D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2 + var['SV_gLSP_dz'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
 
             for key in self.histos:
                 if key in var.keys():
