@@ -16,8 +16,8 @@ def get_parser():
     ''' Argument parser.'''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',           action='store',                     type=str,            default='UL17V9_Full99mm',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=int,            default=2016,                                             help="Which year?" )
+    argParser.add_argument('--sample',           action='store',                     type=str,            default='Sig_Displaced',                                  help="Which sample?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                    help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',          action='store',                     type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -36,19 +36,19 @@ print 'running over: ', sample
 hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 histos = {}
 #coordinates
-histos['gStop_dx'] = HistInfo(hname = 'gStop_dx', sample = sample, binning=[40,-0.3,-0.2], histclass = ROOT.TH1F).make_hist()
-histos['gStop_dy'] = HistInfo(hname = 'gStop_dy', sample = sample, binning=[40,0.65,0.75], histclass = ROOT.TH1F).make_hist()
+histos['gStop_dx'] = HistInfo(hname = 'gStop_dx', sample = sample, binning=[40,0.8,1.0], histclass = ROOT.TH1F).make_hist()
+histos['gStop_dy'] = HistInfo(hname = 'gStop_dy', sample = sample, binning=[40,1.6,1.8], histclass = ROOT.TH1F).make_hist()
 histos['gStop_dz'] = HistInfo(hname = 'gStop_dz', sample = sample, binning=[40,-15,15], histclass = ROOT.TH1F).make_hist()
-histos['gVtx_dx'] = HistInfo(hname = 'gVtx_dx', sample = sample, binning=[40,-0.3,-0.2], histclass = ROOT.TH1F).make_hist()
-histos['gVtx_dy'] = HistInfo(hname = 'gVtx_dy', sample = sample, binning=[40,0.65,0.75], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_dx'] = HistInfo(hname = 'gVtx_dx', sample = sample, binning=[40,0.8,1.0], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_dy'] = HistInfo(hname = 'gVtx_dy', sample = sample, binning=[40,1.6,1.8], histclass = ROOT.TH1F).make_hist()
 histos['gVtx_dz'] = HistInfo(hname = 'gVtx_dz', sample = sample, binning=[40,-15,15], histclass = ROOT.TH1F).make_hist()
 #distance
 histos['gStop_gVtx_dx'] = HistInfo(hname = 'gStop_gVtx_dx', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
 histos['gStop_gVtx_dy'] = HistInfo(hname = 'gStop_gVtx_dy', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
 histos['gStop_gVtx_dz'] = HistInfo(hname = 'gStop_gVtx_dz', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
-histos['gStop_gAStop_dx'] = HistInfo(hname = 'gStop_gAStop_dx', sample = sample, binning=[40,-1,1], histclass = ROOT.TH1F).make_hist()
-histos['gStop_gAStop_dy'] = HistInfo(hname = 'gStop_gAStop_dy', sample = sample, binning=[40,-1,1], histclass = ROOT.TH1F).make_hist()
-histos['gStop_gAStop_dz'] = HistInfo(hname = 'gStop_gAStop_dz', sample = sample, binning=[40,-1,1], histclass = ROOT.TH1F).make_hist()
+histos['gStop_gAStop_dx'] = HistInfo(hname = 'gStop_gAStop_dx', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
+histos['gStop_gAStop_dy'] = HistInfo(hname = 'gStop_gAStop_dy', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
+histos['gStop_gAStop_dz'] = HistInfo(hname = 'gStop_gAStop_dz', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
 histos['gLSP_gStop_dx'] = HistInfo(hname = 'gLSP_gStop_dx', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['gLSP_gStop_dy'] = HistInfo(hname = 'gLSP_gStop_dy', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['gLSP_gStop_dz'] = HistInfo(hname = 'gLSP_gStop_dz', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
@@ -65,7 +65,7 @@ histos['gLSP_gStop_2D'] = HistInfo(hname = 'gLSP_gStop_2D', sample = sample, bin
 histos['PV_gVtx_2D'] = HistInfo(hname = 'PV_gVtx_2D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['PV_gLSP_2D'] = HistInfo(hname = 'PV_gLSP_2D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 #3D
-histos['gStop_gVtx_3D'] = HistInfo(hname = 'gStop_gVtx_3D', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
+histos['gStop_gVtx_3D'] = HistInfo(hname = 'gStop_gVtx_3D', sample = sample, binning=[40,0,10], histclass = ROOT.TH1F).make_hist()
 histos['gStop_gAStop_3D'] = HistInfo(hname = 'gStop_gAStop_3D', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
 histos['gLSP_gStop_3D'] = HistInfo(hname = 'gLSP_gStop_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['PV_gVtx_3D'] = HistInfo(hname = 'PV_gVtx_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()

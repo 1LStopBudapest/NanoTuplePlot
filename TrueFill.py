@@ -4,7 +4,7 @@ import os, sys
 
 sys.path.append('../')
 from Helper.VarCalc import *
-from Helper.TreeVarSel_true import TreeVarSel
+from Helper.TreeVarSel_true import TreeVarSel_true
 from Helper.MCWeight import MCWeight
 from Helper.HistInfo import HistInfo
 from Helper.PlotHelper import *
@@ -21,6 +21,7 @@ class TrueFill():
         self.nEvents = nEvents
         self.sample = sample
         self.DataLumi = DataLumi
+        self.isData = True if ('Run' in self.sample or 'Data' in self.sample) else False
 
         keylist = ['gStop_dx', 'gStop_dy', 'gStop_dz', 'gVtx_dx', 'gVtx_dy', 'gVtx_dz',
                    'gStop_gVtx_dx', 'gStop_gVtx_dy', 'gStop_gVtx_dz', 'gStop_gAStop_dx', 'gStop_gAStop_dy', 'gStop_gAStop_dz',
@@ -43,7 +44,7 @@ class TrueFill():
             if ientry > nevtcut: break
             if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
             tr.GetEntry(ientry) #ientry = i. event
-            getsel = TreeVarSel(tr, self.isData, self.year)
+            getsel = TreeVarSel_true(tr, self.year)
             getivf = IVFhelper(tr, self.isData, self.year)
             var = {key: None for key in vardic} #reseting the var dictionary for each event
             MCcorr = MCWeight(tr, self.year, self.sample).getTotalWeight()
@@ -84,14 +85,14 @@ class TrueFill():
                     var['gLSP_gStop_dx'] = [d for d in getsel.listDist(genLSP, [genStop], 'x')]
                     var['gLSP_gStop_dy'] = [d for d in getsel.listDist(genLSP, [genStop], 'y')]
                     var['gLSP_gStop_dz'] = [d for d in getsel.listDist(genLSP, [genStop], 'z')]
-                    var['PV_gLSP_dx'] = [d for d in getsel.listDist(genLSP, [pv], 'x')]
+                    var['PV_gLSP_dx'] = [d for d in getsel.listDist(genLSP, [pv], 'x')] #d*10000 <--> Prompt
                     var['PV_gLSP_dy'] = [d for d in getsel.listDist(genLSP, [pv], 'y')]
                     var['PV_gLSP_dz'] = [d for d in getsel.listDist(genLSP, [pv], 'z')]
                     var['gLSP_gStop_2D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
                     var['PV_gLSP_2D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
                     var['gLSP_gStop_3D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2 + var['gLSP_gStop_dz'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
                     var['PV_gLSP_3D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2 + var['PV_gLSP_dz'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
-                    var['gVtx_gLSP_dx'] = [d for d in getsel.listDist([genVtx], genLSP, 'x')]
+                    var['gVtx_gLSP_dx'] = [d for d in getsel.listDist([genVtx], genLSP, 'x')] #d*10000 <--> Prompt
                     var['gVtx_gLSP_dy'] = [d for d in getsel.listDist([genVtx], genLSP, 'y')]
                     var['gVtx_gLSP_dz'] = [d for d in getsel.listDist([genVtx], genLSP, 'z')]
                     var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
