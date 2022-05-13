@@ -83,6 +83,20 @@ histos['SV_gLSP_dy'] = HistInfo(hname = 'SV_gLSP_dy', sample = sample, binning=[
 histos['SV_gLSP_dz'] = HistInfo(hname = 'SV_gLSP_dz', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_2D'] = HistInfo(hname = 'SV_gLSP_2D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_3D'] = HistInfo(hname = 'SV_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
+#05.09.
+histos['SV_gVtx_dx'] = HistInfo(hname = 'SV_gVtx_dx', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gVtx_dy'] = HistInfo(hname = 'SV_gVtx_dy', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gVtx_dz'] = HistInfo(hname = 'SV_gVtx_dz', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
+histos['SV_gVtx_2D'] = HistInfo(hname = 'SV_gVtx_2D', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gVtx_3D'] = HistInfo(hname = 'SV_gVtx_3D', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
+histos['SV_gB_dx'] = HistInfo(hname = 'SV_gB_dx', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gB_dy'] = HistInfo(hname = 'SV_gB_dy', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gB_dz'] = HistInfo(hname = 'SV_gB_dz', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gB_2D'] = HistInfo(hname = 'SV_gB_2D', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['SV_gB_3D'] = HistInfo(hname = 'SV_gB_3D', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['gB_dx'] = HistInfo(hname = 'gB_dx', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['gB_dy'] = HistInfo(hname = 'gB_dy', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
+histos['gB_dz'] = HistInfo(hname = 'gB_dz', sample = sample, binning=[40,0,20], histclass = ROOT.TH1F).make_hist()
 
 
 ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()

@@ -30,7 +30,11 @@ class TrueFill():
                    'gStop_gVtx_2D', 'gStop_gAStop_2D', 'gLSP_gStop_2D', 'PV_gVtx_2D', 'PV_gLSP_2D',
                    'gStop_gVtx_3D', 'gStop_gAStop_3D', 'gLSP_gStop_3D', 'PV_gVtx_3D', 'PV_gLSP_3D',
                    'gVtx_gLSP_dx', 'gVtx_gLSP_dy', 'gVtx_gLSP_dz', 'gVtx_gLSP_2D', 'gVtx_gLSP_3D',
-                   'SV_gLSP_dx', 'SV_gLSP_dy', 'SV_gLSP_dz', 'SV_gLSP_2D', 'SV_gLSP_3D', 'nSV']
+                   'SV_gLSP_dx', 'SV_gLSP_dy', 'SV_gLSP_dz', 'SV_gLSP_2D', 'SV_gLSP_3D', 'nSV',
+                   'SV_gVtx_dx', 'SV_gVtx_dy', 'SV_gVtx_dz', 'SV_gVtx_2D', 'SV_gVtx_3D',
+                   'SV_gB_dx', 'SV_gB_dy', 'SV_gB_dz', 'SV_gB_2D','SV_gB_3D',
+                   'gB_dx', 'gB_dy', 'gB_dz']
+
         self.vardic = {key: None for key in keylist}
 
     def fill(self):
@@ -56,6 +60,7 @@ class TrueFill():
             genLSP = getsel.getLSP()
             pv = getsel.getPV()
             sv = getivf.getSV()
+            b = getsel.genB()
 
             #if getivf.IVFSelection() and getivf.HadronicSelection(): #after IVF cut
             if 1 > 0: #before IVF cut
@@ -103,6 +108,19 @@ class TrueFill():
                         var['SV_gLSP_dz'] = [d for d in getsel.listDist(sv, genLSP, 'z')]
                         var['SV_gLSP_2D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
                         var['SV_gLSP_3D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2 + var['SV_gLSP_dz'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
+                        var['SV_gVtx_dx'] = [d for d in getsel.listDist(sv, [genVtx], 'x')]
+                        var['SV_gVtx_dy'] = [d for d in getsel.listDist(sv, [genVtx], 'y')]
+                        var['SV_gVtx_dz'] = [d for d in getsel.listDist(sv, [genVtx], 'z')]
+                        var['SV_gVtx_2D'] = [sqrt(var['SV_gVtx_dx'][i]**2 + var['SV_gVtx_dy'][i]**2) for i in range(len(var['SV_gVtx_dx']))]
+                        var['SV_gVtx_3D'] = [sqrt(var['SV_gVtx_dx'][i]**2 + var['SV_gVtx_dy'][i]**2 + var['SV_gVtx_dz'][i]**2) for i in range(len(var['SV_gVtx_dx']))]
+                        var['SV_gB_dx'] = [d/100 for d in getsel.listDist(sv, b, 'x')]
+                        var['SV_gB_dy'] = [d/100 for d in getsel.listDist(sv, b, 'y')]
+                        var['SV_gB_dz'] = [d/100 for d in getsel.listDist(sv, b, 'z')]
+                        var['SV_gB_2D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2) for i in range(len(var['SV_gB_dx']))]
+                        var['SV_gB_3D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2 + var['SV_gB_dz'][i]**2) for i in range(len(var['SV_gB_dx']))]
+                        var['gB_dx'] = [d['x']/100 for d in b]
+                        var['gB_dy'] = [d['y']/100 for d in b]
+                        var['gB_dz'] = [d['z']/100 for d in b]
 
             for key in self.histos:
                 if key in var.keys():

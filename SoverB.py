@@ -32,9 +32,10 @@ def get_parser():
     nargs='+',                              
     type=str,                               
     dest='clist',                           # store in 'list'.
-    default=['jet30', 'jet20'],
+    default=['default', 'new'], # default: SR1: 0 b jets, SR2: 0 hard, >= 1 soft b jets
+    # new: SR: 0 hard or soft b jets in both, but >= 1 SV jets
     )
-    argParser.add_argument('--sel',            action='store',                    type=str,            default='jetPt',          help="Which selection tag" )
+    argParser.add_argument('--sel',            action='store',                    type=str,            default='bJets',          help="Which selection tag" )
     return argParser
 
 options = get_parser().parse_args()

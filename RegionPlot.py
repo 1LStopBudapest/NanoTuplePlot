@@ -4,6 +4,7 @@ import types
 
 sys.path.append('../')
 from Helper.TreeVarSel import TreeVarSel
+from Helper.IVFhelper import IVFhelper
 from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
 from Helper.Binning import *
@@ -89,9 +90,11 @@ if 'T2tt' in samples:
         lumiscale = (DataLumi/1000.0) * ch.weight
         MCcorr = MCWeight(ch, year, sample).getTotalWeight()
         getsel = TreeVarSel(ch, isData, year)
+        getivf = IVFhelper(ch, isData, year)
         if not getsel.PreSelection(): continue
         if region == 'SR':
             if not getsel.SearchRegion(): continue
+            if not getivf.IVFSelection() and not getivf.HadronicSelection(): continue
             if getsel.SR1():
                 idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                 if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
@@ -150,9 +153,11 @@ else:
                     lumiscale = (DataLumi/1000.0) * ch.weight
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
+                getivf = IVFhelper(ch, isData, year)
                 if not getsel.PreSelection(): continue
                 if region == 'SR':
                     if not getsel.SearchRegion(): continue
+                    if getivf.IVFSelection() and getivf.HadronicSelection(): continue
                     if getsel.SR1():
                         idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                         if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
@@ -211,9 +216,11 @@ else:
                 lumiscale = (DataLumi/1000.0) * ch.weight
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
+            getivf = IVFhelper(ch, isData, year)
             if not getsel.PreSelection(): continue
             if region == 'SR':
                 if not getsel.SearchRegion(): continue
+                if getivf.IVFSelection() and getivf.HadronicSelection(): continue
                 if getsel.SR1():
                     idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
