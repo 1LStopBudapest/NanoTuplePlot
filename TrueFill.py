@@ -77,9 +77,9 @@ class TrueFill():
                 var['gStop_gAStop_dx'] = getsel.distance(genAntiStop, genStop, 'x')*10000
                 var['gStop_gAStop_dy'] = getsel.distance(genAntiStop, genStop, 'y')*10000
                 var['gStop_gAStop_dz'] = getsel.distance(genAntiStop, genStop, 'z')*10000
-                var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10000
-                var['PV_gVtx_dy'] = getsel.distance(genVtx, pv, 'y')*10000
-                var['PV_gVtx_dz'] = getsel.distance(genVtx, pv, 'z')*10000
+                var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10 #mm
+                var['PV_gVtx_dy'] = getsel.distance(genVtx, pv, 'y')*10
+                var['PV_gVtx_dz'] = getsel.distance(genVtx, pv, 'z')*10
                 var['gStop_gVtx_2D'] = sqrt(var['gStop_gVtx_dx']**2 + var['gStop_gVtx_dy']**2)
                 var['gStop_gAStop_2D'] = sqrt(var['gStop_gAStop_dx']**2 + var['gStop_gAStop_dy']**2)
                 var['PV_gVtx_2D'] = sqrt(var['PV_gVtx_dx']**2 + var['PV_gVtx_dy']**2)
@@ -113,14 +113,14 @@ class TrueFill():
                         var['SV_gVtx_dz'] = [d for d in getsel.listDist(sv, [genVtx], 'z')]
                         var['SV_gVtx_2D'] = [sqrt(var['SV_gVtx_dx'][i]**2 + var['SV_gVtx_dy'][i]**2) for i in range(len(var['SV_gVtx_dx']))]
                         var['SV_gVtx_3D'] = [sqrt(var['SV_gVtx_dx'][i]**2 + var['SV_gVtx_dy'][i]**2 + var['SV_gVtx_dz'][i]**2) for i in range(len(var['SV_gVtx_dx']))]
-                        var['SV_gB_dx'] = [d/100 for d in getsel.listDist(sv, b, 'x')]
-                        var['SV_gB_dy'] = [d/100 for d in getsel.listDist(sv, b, 'y')]
-                        var['SV_gB_dz'] = [d/100 for d in getsel.listDist(sv, b, 'z')]
+                        var['SV_gB_dx'] = [d for d in getsel.listDist(sv, b, 'x')]
+                        var['SV_gB_dy'] = [d for d in getsel.listDist(sv, b, 'y')]
+                        var['SV_gB_dz'] = [d for d in getsel.listDist(sv, b, 'z')]
                         var['SV_gB_2D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2) for i in range(len(var['SV_gB_dx']))]
                         var['SV_gB_3D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2 + var['SV_gB_dz'][i]**2) for i in range(len(var['SV_gB_dx']))]
-                        var['gB_dx'] = [d['x']/100 for d in b]
-                        var['gB_dy'] = [d['y']/100 for d in b]
-                        var['gB_dz'] = [d['z']/100 for d in b]
+                        var['gB_dx'] = [d['x'] for d in b]
+                        var['gB_dy'] = [d['y'] for d in b]
+                        var['gB_dz'] = [d['z'] for d in b]
 
             for key in self.histos:
                 if key in var.keys():
