@@ -18,14 +18,14 @@ def get_parser():
     nargs='+',                              
     type=str,                               
     dest='blist',                           # store in 'list'.
-    default=['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV'],
+    default=['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTbar', 'ST', 'VV'], #'TTSingleLep_pow', 'TTLep_pow'
     )
     argParser.add_argument(
     '-ls', '--Sigsamplelist',                 # either of this switches
     nargs='+',                              
     type=str,                               
     dest='slist',                           # store in 'list'.
-    default=['T2tt_500_490'],
+    default=['Sig_Displaced_350_335'],
     )
     argParser.add_argument(
     '-lcut', '--cutlist',                 # either of this switches
@@ -62,10 +62,10 @@ s = Siglists[0] #now only one signal point in one canvas
 for cut in Cutlists:
     hbk=[]
     for bk in BKlists:
-        f=ROOT.TFile.Open(plotDir+'RegionFiles_'+cut+'/RegionPlot_SR_'+bk+'.root')
+        f=ROOT.TFile.Open(plotDir+'RegionFiles/'+cut+'/RegionPlot_SR_'+bk+'.root')
         ROOT.TH1.AddDirectory(0)
         hbk.append(f.Get('h_reg_'+bk))
-    fs=ROOT.TFile.Open(plotDir+'RegionFiles_'+cut+'/RegionPlot_SR_'+s+'.root')
+    fs=ROOT.TFile.Open(plotDir+'RegionFiles/'+cut+'/RegionPlot_SR_'+s+'.root')
     ROOT.TH1.AddDirectory(0)
     hsigx =fs.Get('h_reg_'+s)
 
