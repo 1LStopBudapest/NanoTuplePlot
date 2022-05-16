@@ -92,9 +92,9 @@ if 'T2tt' in samples:
         getsel = TreeVarSel(ch, isData, year)
         getivf = IVFhelper(ch, isData, year)
         if not getsel.PreSelection(): continue
+        if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
         if region == 'SR':
             if not getsel.SearchRegion(): continue
-            if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
             if getsel.SR1():
                 idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                 if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
@@ -155,9 +155,9 @@ else:
                 getsel = TreeVarSel(ch, isData, year)
                 getivf = IVFhelper(ch, isData, year)
                 if not getsel.PreSelection(): continue
+                if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
                 if region == 'SR':
                     if not getsel.SearchRegion(): continue
-                    if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
                     if getsel.SR1():
                         idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                         if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
@@ -218,9 +218,9 @@ else:
             getsel = TreeVarSel(ch, isData, year)
             getivf = IVFhelper(ch, isData, year)
             if not getsel.PreSelection(): continue
+            if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
             if region == 'SR':
                 if not getsel.SearchRegion(): continue
-                if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
                 if getsel.SR1():
                     idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
