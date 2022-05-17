@@ -22,7 +22,7 @@ reg = options.region
 sample = options.sample
 
 SigScan =  True if 'Signal' in sample else False
-year = '2016Post'
+year = '2016PostVFP'
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
