@@ -4,7 +4,6 @@ import types
 
 sys.path.append('../')
 from Helper.TreeVarSel import TreeVarSel
-from Helper.IVFhelper import IVFhelper
 from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
 from Helper.Binning import *
@@ -90,9 +89,8 @@ if 'T2tt' in samples:
         lumiscale = (DataLumi/1000.0) * ch.weight
         MCcorr = MCWeight(ch, year, sample).getTotalWeight()
         getsel = TreeVarSel(ch, isData, year)
-        getivf = IVFhelper(ch, isData, year)
         if not getsel.PreSelection(): continue
-        if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
+        if getsel.cntSoftB() == 0: continue
         if region == 'SR':
             if not getsel.SearchRegion(): continue
             if getsel.SR1():
@@ -153,9 +151,8 @@ else:
                     lumiscale = (DataLumi/1000.0) * ch.weight
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
-                getivf = IVFhelper(ch, isData, year)
                 if not getsel.PreSelection(): continue
-                if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
+                if getsel.cntSoftB() == 0: continue
                 if region == 'SR':
                     if not getsel.SearchRegion(): continue
                     if getsel.SR1():
@@ -216,9 +213,8 @@ else:
                 lumiscale = (DataLumi/1000.0) * ch.weight
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
-            getivf = IVFhelper(ch, isData, year)
             if not getsel.PreSelection(): continue
-            if not getivf.IVFSelection() or not getivf.HadronicSelection(): continue
+            if getsel.cntSoftB() == 0: continue
             if region == 'SR':
                 if not getsel.SearchRegion(): continue
                 if getsel.SR1():
