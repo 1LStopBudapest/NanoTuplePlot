@@ -102,6 +102,7 @@ for i, cut in enumerate(hsb_cut):
         hsb_cut[cut].GetYaxis().SetTitleOffset(1.2)
         hsb_cut[cut].GetYaxis().SetLabelSize(0.03)
         hsb_cut[cut].Draw('hist')
+        hsb_cut[cut].LabelsOption('v')        
     else:
         hsb_cut[cut].Draw('histsame')
 leg1.Draw('same')
@@ -118,6 +119,7 @@ for i, cut in enumerate(hsspb_cut):
         hsspb_cut[cut].GetYaxis().SetTitleOffset(1.2)
         hsspb_cut[cut].GetYaxis().SetLabelSize(0.03)
         hsspb_cut[cut].Draw('hist')
+        hsspb_cut[cut].LabelsOption('v')  
     else:
         hsspb_cut[cut].Draw('histsame')
 leg2.Draw('same')
