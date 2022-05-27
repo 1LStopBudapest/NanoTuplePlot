@@ -106,7 +106,19 @@ histos['gB_gLSP_dy'] = HistInfo(hname = 'gB_gLSP_dy', sample = sample, binning=[
 histos['gB_gLSP_dz'] = HistInfo(hname = 'gB_gLSP_dz', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
 histos['gB_gLSP_2D'] = HistInfo(hname = 'gB_gLSP_2D', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
 histos['gB_gLSP_3D'] = HistInfo(hname = 'gB_gLSP_3D', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
-
+#
+histos['SV_dx'] = HistInfo(hname = 'SV_dx', sample = sample, binning=[50,-50,50], histclass = ROOT.TH1F).make_hist()
+histos['SV_dy'] = HistInfo(hname = 'SV_dy', sample = sample, binning=[50,-50,50], histclass = ROOT.TH1F).make_hist()
+histos['SV_dz'] = HistInfo(hname = 'SV_dz', sample = sample, binning=[50,-100,100], histclass = ROOT.TH1F).make_hist()
+histos['PV_dx'] = HistInfo(hname = 'PV_dx', sample = sample, binning=[50,-0.5,0.5], histclass = ROOT.TH1F).make_hist()
+histos['PV_dy'] = HistInfo(hname = 'PV_dy', sample = sample, binning=[50,-0.5,0.5], histclass = ROOT.TH1F).make_hist()
+histos['PV_dz'] = HistInfo(hname = 'PV_dz', sample = sample, binning=[60,-30,30], histclass = ROOT.TH1F).make_hist()
+#
+histos['SV_PV_dx'] = HistInfo(hname = 'SV_PV_dx', sample = sample, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos['SV_PV_dy'] = HistInfo(hname = 'SV_PV_dy', sample = sample, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos['SV_PV_dz'] = HistInfo(hname = 'SV_PV_dz', sample = sample, binning=[50,0,200], histclass = ROOT.TH1F).make_hist()
+histos['SV_PV_2D'] = HistInfo(hname = 'SV_PV_2D', sample = sample, binning=[50,0,100], histclass = ROOT.TH1F).make_hist()
+histos['SV_PV_3D'] = HistInfo(hname = 'SV_PV_3D', sample = sample, binning=[50,0,200], histclass = ROOT.TH1F).make_hist()
 
 
 ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
