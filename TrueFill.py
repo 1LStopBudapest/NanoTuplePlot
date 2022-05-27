@@ -139,9 +139,9 @@ class TrueFill():
                             var['gB_dx'] = [d['x'] for d in [b_S,b_A]] #d*10 <--> Prompt
                             var['gB_dy'] = [d['y'] for d in [b_S,b_A]]
                             var['gB_dz'] = [d['z'] for d in [b_S,b_A]]
-                            var['gB_gLSP_dx'] = [getsel.distance(b_S, genLSP_S, 'x')*10, getsel.distance(b_A, genLSP_A, 'x')*10]
-                            var['gB_gLSP_dy'] = [getsel.distance(b_S, genLSP_S, 'y')*10, getsel.distance(b_A, genLSP_A, 'y')*10]
-                            var['gB_gLSP_dz'] = [getsel.distance(b_S, genLSP_S, 'z')*10, getsel.distance(b_A, genLSP_A, 'z')*10]
+                            var['gB_gLSP_dx'] = [getsel.distance(b_S, genLSP_S, 'x'), getsel.distance(b_A, genLSP_A, 'x')]
+                            var['gB_gLSP_dy'] = [getsel.distance(b_S, genLSP_S, 'y'), getsel.distance(b_A, genLSP_A, 'y')]
+                            var['gB_gLSP_dz'] = [getsel.distance(b_S, genLSP_S, 'z'), getsel.distance(b_A, genLSP_A, 'z')]
                             var['gB_gLSP_2D'] = [sqrt(var['gB_gLSP_dx'][i]**2 + var['gB_gLSP_dy'][i]**2) for i in range(2)]
                             var['gB_gLSP_3D'] = [sqrt(var['gB_gLSP_dx'][i]**2 + var['gB_gLSP_dy'][i]**2 + var['gB_gLSP_dz'][i]**2) for i in range(2)]
 
