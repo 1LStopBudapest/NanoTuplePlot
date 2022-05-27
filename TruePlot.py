@@ -42,9 +42,9 @@ histos['gStop_dz'] = HistInfo(hname = 'gStop_dz', sample = sample, binning=[40,-
 histos['gVtx_dx'] = HistInfo(hname = 'gVtx_dx', sample = sample, binning=[40,0.8,1.0], histclass = ROOT.TH1F).make_hist()
 histos['gVtx_dy'] = HistInfo(hname = 'gVtx_dy', sample = sample, binning=[40,1.6,1.8], histclass = ROOT.TH1F).make_hist()
 histos['gVtx_dz'] = HistInfo(hname = 'gVtx_dz', sample = sample, binning=[40,-20,20], histclass = ROOT.TH1F).make_hist()
-histos['gB_dx'] = HistInfo(hname = 'gB_dx', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist() #Prompt: [40,0.8,1]
-histos['gB_dy'] = HistInfo(hname = 'gB_dy', sample = sample, binning=[40,0,200], histclass = ROOT.TH1F).make_hist() #Prompt: [40,1.6,1.8]
-histos['gB_dz'] = HistInfo(hname = 'gB_dz', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
+histos['gB_dx'] = HistInfo(hname = 'gB_dx', sample = sample, binning=[40,-200,200], histclass = ROOT.TH1F).make_hist() #Prompt: [40,0.8,1]
+histos['gB_dy'] = HistInfo(hname = 'gB_dy', sample = sample, binning=[40,-200,200], histclass = ROOT.TH1F).make_hist() #Prompt: [40,1.6,1.8]
+histos['gB_dz'] = HistInfo(hname = 'gB_dz', sample = sample, binning=[40,-400,400], histclass = ROOT.TH1F).make_hist()
 #distance
 histos['gStop_gVtx_dx'] = HistInfo(hname = 'gStop_gVtx_dx', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
 histos['gStop_gVtx_dy'] = HistInfo(hname = 'gStop_gVtx_dy', sample = sample, binning=[40,0,1], histclass = ROOT.TH1F).make_hist()
