@@ -83,7 +83,7 @@ class TrueFill():
                 var['gStop_gAStop_dx'] = getsel.distance(genAntiStop, genStop, 'x')*10000
                 var['gStop_gAStop_dy'] = getsel.distance(genAntiStop, genStop, 'y')*10000
                 var['gStop_gAStop_dz'] = getsel.distance(genAntiStop, genStop, 'z')*10000
-                var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10 #*10000 <--> Prompt
+                var['PV_gVtx_dx'] = getsel.distance(genVtx, pv, 'x')*10
                 var['PV_gVtx_dy'] = getsel.distance(genVtx, pv, 'y')*10
                 var['PV_gVtx_dz'] = getsel.distance(genVtx, pv, 'z')*10
                 var['gStop_gVtx_2D'] = sqrt(var['gStop_gVtx_dx']**2 + var['gStop_gVtx_dy']**2)
@@ -101,7 +101,7 @@ class TrueFill():
                     var['gLSP_gStop_dz'] = [getsel.distance(genLSP_S, genStop, 'z'), getsel.distance(genLSP_A, genAntiStop, 'z')]
                     var['gLSP_gStop_2D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
                     var['gLSP_gStop_3D'] = [sqrt(var['gLSP_gStop_dx'][i]**2 + var['gLSP_gStop_dy'][i]**2 + var['gLSP_gStop_dz'][i]**2) for i in range(len(var['gLSP_gStop_dx']))]
-                    var['PV_gLSP_dx'] = [d for d in getsel.listDist([genLSP_S,genLSP_A], [pv], 'x')] #d*10000 <--> Prompt
+                    var['PV_gLSP_dx'] = [d for d in getsel.listDist([genLSP_S,genLSP_A], [pv], 'x')] #d*10 <--> Prompt
                     var['PV_gLSP_dy'] = [d for d in getsel.listDist([genLSP_S,genLSP_A], [pv], 'y')]
                     var['PV_gLSP_dz'] = [d for d in getsel.listDist([genLSP_S,genLSP_A], [pv], 'z')]
                     var['PV_gLSP_2D'] = [sqrt(var['PV_gLSP_dx'][i]**2 + var['PV_gLSP_dy'][i]**2) for i in range(len(var['PV_gLSP_dx']))]
@@ -112,12 +112,12 @@ class TrueFill():
                     var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
                     var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
                     if len(sv) > 0:
-                        var['SV_gLSP_dx'] = [getsel.smallestDist(genLSP_S, sv, 'x'), getsel.smallestDist(genLSP_A, sv, 'x')] #d*10 <--> Prompt
+                        var['SV_gLSP_dx'] = [getsel.smallestDist(genLSP_S, sv, 'x'), getsel.smallestDist(genLSP_A, sv, 'x')]
                         var['SV_gLSP_dy'] = [getsel.smallestDist(genLSP_S, sv, 'y'), getsel.smallestDist(genLSP_A, sv, 'y')]
                         var['SV_gLSP_dz'] = [getsel.smallestDist(genLSP_S, sv, 'z'), getsel.smallestDist(genLSP_A, sv, 'z')]
                         var['SV_gLSP_2D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
                         var['SV_gLSP_3D'] = [sqrt(var['SV_gLSP_dx'][i]**2 + var['SV_gLSP_dy'][i]**2 + var['SV_gLSP_dz'][i]**2) for i in range(len(var['SV_gLSP_dx']))]
-                        var['SV_gVtx_dx'] = [d for d in getsel.listDist(sv, [genVtx], 'x')] #d*10 <--> Prompt
+                        var['SV_gVtx_dx'] = [d for d in getsel.listDist(sv, [genVtx], 'x')]
                         var['SV_gVtx_dy'] = [d for d in getsel.listDist(sv, [genVtx], 'y')]
                         var['SV_gVtx_dz'] = [d for d in getsel.listDist(sv, [genVtx], 'z')]
                         var['SV_gVtx_2D'] = [sqrt(var['SV_gVtx_dx'][i]**2 + var['SV_gVtx_dy'][i]**2) for i in range(len(var['SV_gVtx_dx']))]
@@ -131,7 +131,7 @@ class TrueFill():
                         var['SV_PV_2D'] = [sqrt(var['SV_PV_dx'][i]**2 + var['SV_PV_dy'][i]**2) for i in range(len(var['SV_PV_dx']))]
                         var['SV_PV_3D'] = [sqrt(var['SV_PV_dx'][i]**2 + var['SV_PV_dy'][i]**2 + var['SV_PV_dz'][i]**2) for i in range(len(var['SV_PV_dx']))]
                         if len(b_S) > 0 and len(b_A) > 0:
-                            var['SV_gB_dx'] = [getsel.smallestDist(b_S, sv, 'x'), getsel.smallestDist(b_A, sv, 'x')] #d*10 <--> Prompt
+                            var['SV_gB_dx'] = [getsel.smallestDist(b_S, sv, 'x'), getsel.smallestDist(b_A, sv, 'x')]
                             var['SV_gB_dy'] = [getsel.smallestDist(b_S, sv, 'y'), getsel.smallestDist(b_A, sv, 'y')]
                             var['SV_gB_dz'] = [getsel.smallestDist(b_S, sv, 'z'), getsel.smallestDist(b_A, sv, 'z')]
                             var['SV_gB_2D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2) for i in range(len(var['SV_gB_dx']))]
