@@ -131,9 +131,9 @@ class TrueFill():
                         var['SV_PV_2D'] = [sqrt(var['SV_PV_dx'][i]**2 + var['SV_PV_dy'][i]**2) for i in range(len(var['SV_PV_dx']))]
                         var['SV_PV_3D'] = [sqrt(var['SV_PV_dx'][i]**2 + var['SV_PV_dy'][i]**2 + var['SV_PV_dz'][i]**2) for i in range(len(var['SV_PV_dx']))]
                         if len(b_S) > 0 and len(b_A) > 0:
-                            var['SV_gB_dx'] = [getsel.smallestDist(b_S, sv, 'x')*10, getsel.smallestDist(b_A, sv, 'x')*10] #d*10 <--> Prompt
-                            var['SV_gB_dy'] = [getsel.smallestDist(b_S, sv, 'y')*10, getsel.smallestDist(b_A, sv, 'y')*10]
-                            var['SV_gB_dz'] = [getsel.smallestDist(b_S, sv, 'z')*10, getsel.smallestDist(b_A, sv, 'z')*10]
+                            var['SV_gB_dx'] = [getsel.smallestDist(b_S, sv, 'x'), getsel.smallestDist(b_A, sv, 'x')] #d*10 <--> Prompt
+                            var['SV_gB_dy'] = [getsel.smallestDist(b_S, sv, 'y'), getsel.smallestDist(b_A, sv, 'y')]
+                            var['SV_gB_dz'] = [getsel.smallestDist(b_S, sv, 'z'), getsel.smallestDist(b_A, sv, 'z')]
                             var['SV_gB_2D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2) for i in range(len(var['SV_gB_dx']))]
                             var['SV_gB_3D'] = [sqrt(var['SV_gB_dx'][i]**2 + var['SV_gB_dy'][i]**2 + var['SV_gB_dz'][i]**2) for i in range(len(var['SV_gB_dx']))]
                             var['gB_dx'] = [d['x'] for d in [b_S,b_A]] #d*10 <--> Prompt
