@@ -137,7 +137,7 @@ else:
             
             ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-	        n_entries = ch.GetEntries()
+            n_entries = ch.GetEntries()
             nevtcut = n_entries -1 if nEvents == - 1 else nEvents - 1
             print 'Running over total events: ', nevtcut+1
             for ientry in range(n_entries):
