@@ -37,7 +37,10 @@ class TrueFill():
                    'gB_gLSP_dx', 'gB_gLSP_dy', 'gB_gLSP_dz', 'gB_gLSP_2D', 'gB_gLSP_3D',
                    'SV_dx', 'SV_dy', 'SV_dz',
                    'PV_dx', 'PV_dy', 'PV_dz',
-                   'SV_PV_dx', 'SV_PV_dy', 'SV_PV_dz', 'SV_PV_2D', 'SV_PV_3D']
+                   'SV_PV_dx', 'SV_PV_dy', 'SV_PV_dz', 'SV_PV_2D', 'SV_PV_3D',
+                   'dec_dx', 'dec_dy', 'dec_dz', 'dec_2D', 'dec_3D',
+                   'PV_gStop_dx', 'PV_gStop_dy', 'PV_gStop_dz', 'PV_gStop_2D', 'PV_gStop_3D',
+                   'SV_gStop_dx', 'SV_gStop_dy', 'SV_gStop_dz', 'SV_gStop_2D', 'SV_gStop_3D']
 
         self.vardic = {key: None for key in keylist}
 
@@ -67,6 +70,7 @@ class TrueFill():
             sv = getivf.getSV()
             b_S = getsel.getB_S()
             b_A = getsel.getB_A()
+            stop106 = getsel.get106()
 
             #if getivf.IVFSelection() and getivf.HadronicSelection(): #after IVF cut
             if 1 > 0: #before IVF cut
@@ -95,6 +99,17 @@ class TrueFill():
                 var['PV_dx'] = pv['x']
                 var['PV_dy'] = pv['y']
                 var['PV_dz'] = pv['z']
+                if len(stop106) > 0:
+                    var['dec_dx'] = getsel.distance(stop106, genStop, 'x')
+                    var['dec_dy'] = getsel.distance(stop106, genStop, 'y')
+                    var['dec_dz'] = getsel.distance(stop106, genStop, 'z')
+                    var['dec_2D'] = sqrt(var['dec_dx']**2 + var['dec_dy']**2)
+                    var['dec_3D'] = sqrt(var['dec_dx']**2 + var['dec_dy']**2 + var['dec_dz']**2)
+                var['PV_gStop_dx'] = getsel.distance(pv, genStop, 'x')*10
+                var['PV_gStop_dy'] = getsel.distance(pv, genStop, 'y')*10
+                var['PV_gStop_dz'] = getsel.distance(pv, genStop, 'z')*10
+                var['PV_gStop_2D'] = sqrt(var['PV_gStop_dx']**2 + var['PV_gStop_dy']**2)
+                var['PV_gStop_3D'] = sqrt(var['PV_gStop_dx']**2 + var['PV_gStop_dy']**2 + var['PV_gStop_dz']**2)
                 if len(genLSP_S) > 0 and len(genLSP_A) > 0:
                     var['gLSP_gStop_dx'] = [getsel.distance(genLSP_S, genStop, 'x'), getsel.distance(genLSP_A, genAntiStop, 'x')]
                     var['gLSP_gStop_dy'] = [getsel.distance(genLSP_S, genStop, 'y'), getsel.distance(genLSP_A, genAntiStop, 'y')]
@@ -130,6 +145,11 @@ class TrueFill():
                         var['SV_PV_dz'] = getsel.listDist([pv], sv, 'z')
                         var['SV_PV_2D'] = [sqrt(var['SV_PV_dx'][i]**2 + var['SV_PV_dy'][i]**2) for i in range(len(var['SV_PV_dx']))]
                         var['SV_PV_3D'] = [sqrt(var['SV_PV_dx'][i]**2 + var['SV_PV_dy'][i]**2 + var['SV_PV_dz'][i]**2) for i in range(len(var['SV_PV_dx']))]
+                        var['SV_gStop_dx'] = getsel.listDist(sv, [genStop], 'x')
+                        var['SV_gStop_dy'] = getsel.listDist(sv, [genStop], 'y')
+                        var['SV_gStop_dz'] = getsel.listDist(sv, [genStop], 'z')
+                        var['SV_gStop_2D'] = [sqrt(var['SV_gStop_dx'][i]**2 + var['SV_gStop_dy'][i]**2) for i in range(len(var['SV_gStop_dx']))]
+                        var['SV_gStop_3D'] = [sqrt(var['SV_gStop_dx'][i]**2 + var['SV_gStop_dy'][i]**2 + var['SV_gStop_dz'][i]**2) for i in range(len(var['SV_gStop_dx']))]
                         if len(b_S) > 0 and len(b_A) > 0:
                             var['SV_gB_dx'] = [getsel.smallestDist(b_S, sv, 'x'), getsel.smallestDist(b_A, sv, 'x')]
                             var['SV_gB_dy'] = [getsel.smallestDist(b_S, sv, 'y'), getsel.smallestDist(b_A, sv, 'y')]
