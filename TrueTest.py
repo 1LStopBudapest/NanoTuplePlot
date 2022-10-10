@@ -43,6 +43,7 @@ histos['SV_gLSP_3D'] = HistInfo(hname = 'SV_gLSP_3D', sample = sample, binning=[
 histos['pt_stop'] = HistInfo(hname = 'pt_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 histos['pt_LSP_stop'] = HistInfo(hname = 'pt_LSP_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,400) #400_380: 40,0,20
+effi_4cm = ROOT.TEfficiency("eff_4", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,4)
 effi1 = ROOT.TEfficiency("eff1", "Efficiency; p_{T}(stop) [GeV]", 40,0,1000)
 effi2 = ROOT.TEfficiency("eff2", "Efficiency; |p_{T}(stop)-p_{T}(LSP)| [GeV]", 40,0,1000)
 
@@ -80,8 +81,8 @@ for ientry in range(n_entries):
         var['gVtx_gLSP_dx'] = [getsel.distance(genLSP_S, genVtx, 'x'), getsel.distance(genLSP_A, genVtx, 'x')] #d*10000 <--> Prompt
         var['gVtx_gLSP_dy'] = [getsel.distance(genLSP_S, genVtx, 'y'), getsel.distance(genLSP_A, genVtx, 'y')]
         var['gVtx_gLSP_dz'] = [getsel.distance(genLSP_S, genVtx, 'z'), getsel.distance(genLSP_A, genVtx, 'z')]
-        var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
-        var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(len(var['gVtx_gLSP_dx']))]
+        var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(2)]
+        var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(2)]
         if len(sv) > 1:
             var['SV_gLSP_3D'] = getsel.smallestUniqueDist3D([genLSP_S, genLSP_A], sv)
         elif len(sv) == 1:
@@ -96,6 +97,8 @@ for ientry in range(n_entries):
                 boo2 = True
             effi.Fill(boo1, var['gVtx_gLSP_3D'][0])
             effi.Fill(boo2, var['gVtx_gLSP_3D'][1])
+            effi_4cm.Fill(boo1, var['gVtx_gLSP_3D'][0])
+            effi_4cm.Fill(boo2, var['gVtx_gLSP_3D'][1])
 
             if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4:
                 effi1.Fill(boo1 or boo2, var['pt_stop'])
@@ -152,5 +155,6 @@ def plotEfficiency(eff, name):
     c.Close()
 
 plotEfficiency(effi, "efficiency")
+plotEfficiency(effi_4cm, "efficiency_4cm")
 plotEfficiency(effi1, "efficiency_stop")
 plotEfficiency(effi2, "efficiency_LSP_stop")
