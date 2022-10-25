@@ -30,7 +30,7 @@ options = get_parser().parse_args()
 sample  = options.sample
 year = options.year
 
-Rootfilesdirpath = os.path.join(plotDir, "1DFiles/effi")
+Rootfilesdirpath = os.path.join(plotDir, "1DFiles/TDK/effi")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
@@ -140,7 +140,9 @@ Plot1D(histos['pt_stop'], outputDir, islogy=True)
 Plot1D(histos['pt_LSP_stop'], outputDir, islogy=True)
 Plot1D(histos['SV_gLSP_3D'], outputDir, islogy=True)
 
-outputdirpath = os.path.join(outputDir, "1DPlots/efficiency/", sample)
+outputdirpath = os.path.join(outputDir, "1DPlots/TDK/efficiency/", sample)
+if not os.path.exists(outputdirpath):
+    os.makedirs(outputdirpath)
 def plotEfficiency(eff, name):
     leg = ROOT.TLegend(0.5, 0.85, 0.9, 0.9)
     leg.AddEntry(eff, sample ,"l")
