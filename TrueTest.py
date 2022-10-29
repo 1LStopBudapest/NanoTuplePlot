@@ -37,12 +37,16 @@ if not os.path.exists(Rootfilesdirpath):
 print 'running over: ', sample
 hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 histos = {}
-histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist() #400_380: [40,0,40] 
 histos['gVtx_gLSP_3D_if'] = HistInfo(hname = 'gVtx_gLSP_3D_if', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_3D'] = HistInfo(hname = 'SV_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['pt_stop'] = HistInfo(hname = 'pt_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 histos['pt_LSP_stop'] = HistInfo(hname = 'pt_LSP_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
-effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,400) #400_380: 40,0,20
+if (sample == 'Sig_Displaced_400_380'):
+    histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
+    effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,20)
+else:
+    histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
+    effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,400)
 effi_4cm = ROOT.TEfficiency("eff_4", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,4)
 effi1 = ROOT.TEfficiency("eff1", "Efficiency; p_{T}(stop) [GeV]", 40,0,1000)
 effi2 = ROOT.TEfficiency("eff2", "Efficiency; |p_{T}(stop)-p_{T}(LSP)| [GeV]", 40,0,1000)
@@ -83,6 +87,7 @@ for ientry in range(n_entries):
         var['gVtx_gLSP_dz'] = [getsel.distance(genLSP_S, genVtx, 'z'), getsel.distance(genLSP_A, genVtx, 'z')]
         var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(2)]
         var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(2)]
+        if len(sv) >= 1:
         if len(sv) > 1:
             var['SV_gLSP_3D'] = getsel.smallestUniqueDist3D([genLSP_S, genLSP_A], sv)
         elif len(sv) == 1:
