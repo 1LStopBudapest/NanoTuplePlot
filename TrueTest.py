@@ -88,26 +88,26 @@ for ientry in range(n_entries):
         var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(2)]
         var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(2)]
         if len(sv) >= 1:
-        if len(sv) > 1:
-            var['SV_gLSP_3D'] = getsel.smallestUniqueDist3D([genLSP_S, genLSP_A], sv)
-        elif len(sv) == 1:
-            var['SV_gLSP_3D'] = getsel.only1SV(genLSP_S, genLSP_A, sv)
+            if len(sv) > 1:
+                var['SV_gLSP_3D'] = getsel.smallestUniqueDist3D([genLSP_S, genLSP_A], sv)
+            elif len(sv) == 1:
+                var['SV_gLSP_3D'] = getsel.only1SV(genLSP_S, genLSP_A, sv)
 
-            var['gVtx_gLSP_3D_if'] = []
-            if var['SV_gLSP_3D'][0] < 0.1: #1 mm
-                var['gVtx_gLSP_3D_if'].append(var['gVtx_gLSP_3D'][0])
-                boo1 = True
-            if var['SV_gLSP_3D'][1] < 0.1:  
-                var['gVtx_gLSP_3D_if'].append(var['gVtx_gLSP_3D'][1])
-                boo2 = True
-            effi.Fill(boo1, var['gVtx_gLSP_3D'][0])
-            effi.Fill(boo2, var['gVtx_gLSP_3D'][1])
-            effi_4cm.Fill(boo1, var['gVtx_gLSP_3D'][0])
-            effi_4cm.Fill(boo2, var['gVtx_gLSP_3D'][1])
+                var['gVtx_gLSP_3D_if'] = []
+                if var['SV_gLSP_3D'][0] < 0.1: #1 mm
+                    var['gVtx_gLSP_3D_if'].append(var['gVtx_gLSP_3D'][0])
+                    boo1 = True
+                if var['SV_gLSP_3D'][1] < 0.1:  
+                    var['gVtx_gLSP_3D_if'].append(var['gVtx_gLSP_3D'][1])
+                    boo2 = True
+                effi.Fill(boo1, var['gVtx_gLSP_3D'][0])
+                effi.Fill(boo2, var['gVtx_gLSP_3D'][1])
+                effi_4cm.Fill(boo1, var['gVtx_gLSP_3D'][0])
+                effi_4cm.Fill(boo2, var['gVtx_gLSP_3D'][1])
 
-            if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4:
-                effi1.Fill(boo1 or boo2, var['pt_stop'])
-                effi2.Fill(boo1 or boo2, var['pt_LSP_stop'])
+                if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4:
+                    effi1.Fill(boo1 or boo2, var['pt_stop'])
+                    effi2.Fill(boo1 or boo2, var['pt_LSP_stop'])
 
     for key in histos:
         if key in var.keys():
