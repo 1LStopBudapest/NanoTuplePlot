@@ -62,10 +62,10 @@ s = Siglists[0] #now only one signal point in one canvas
 for cut in Cutlists:
     hbk=[]
     for bk in BKlists:
-        f=ROOT.TFile.Open(plotDir+'RegionFiles/'+cut+'/RegionPlot_SR_'+bk+'.root')
+        f=ROOT.TFile.Open(plotDir+'RegionFiles/'+cut+'_0530/RegionPlot_SR_'+bk+'.root')
         ROOT.TH1.AddDirectory(0)
         hbk.append(f.Get('h_reg_'+bk))
-    fs=ROOT.TFile.Open(plotDir+'RegionFiles/'+cut+'/RegionPlot_SR_'+s+'.root')
+    fs=ROOT.TFile.Open(plotDir+'RegionFiles/'+cut+'_0530/RegionPlot_SR_'+s+'.root')
     ROOT.TH1.AddDirectory(0)
     hsigx =fs.Get('h_reg_'+s)
 
@@ -74,7 +74,7 @@ for cut in Cutlists:
         htot.Add(h)
     del hbk
     hsb = hsigx.Clone('hSB')
-    hsb.Divide(htot)
+    #hsb.Divide(htot)
     hspb = hsigx.Clone('hSpB')
     hspb.Add(htot)
     for b in range(hspb.GetNbinsX()):
@@ -82,7 +82,7 @@ for cut in Cutlists:
     hsspb = hsigx.Clone('hSSpB')
     hsspb.Divide(hspb)
     hsb_cut[cut] = hsb
-    hsspb_cut[cut] = hsspb
+    hsspb_cut[cut] = htot
 
 
 ROOT.gStyle.SetErrorX(0)
@@ -97,7 +97,8 @@ for i, cut in enumerate(hsb_cut):
     hsb_cut[cut].SetLineWidth(2)
     if i==0:
         hsb_cut[cut].SetTitle(s)
-        hsb_cut[cut].GetYaxis().SetTitle('#frac{S}{B}')
+        #hsb_cut[cut].GetYaxis().SetRangeUser(0,10)
+        hsb_cut[cut].GetYaxis().SetTitle('Signal')
         hsb_cut[cut].GetYaxis().SetTitleSize(0.035)
         hsb_cut[cut].GetYaxis().SetTitleOffset(1.2)
         hsb_cut[cut].GetYaxis().SetLabelSize(0.03)
@@ -108,15 +109,16 @@ for i, cut in enumerate(hsb_cut):
 leg1.Draw('same')
 c.cd(2)
 leg2 = ROOT.TLegend(0.7, 0.8, 0.9, 0.9)
+ROOT.gPad.SetLogy()
 for i, cut in enumerate(hsspb_cut):
     leg2.AddEntry(hsspb_cut[cut], cut ,"l")
     hsspb_cut[cut].SetLineColor(i+1)
     hsspb_cut[cut].SetLineWidth(2)
     if i==0:
         hsspb_cut[cut].SetTitle(s)
-        hsspb_cut[cut].GetYaxis().SetTitle('#frac{S}{#sqrt{S+B}}')
+        hsspb_cut[cut].GetYaxis().SetTitle('Background')
         hsspb_cut[cut].GetYaxis().SetTitleSize(0.035)
-        hsspb_cut[cut].GetYaxis().SetTitleOffset(1.2)
+        hsspb_cut[cut].GetYaxis().SetTitleOffset(1.5)
         hsspb_cut[cut].GetYaxis().SetLabelSize(0.03)
         hsspb_cut[cut].Draw('hist')
         hsspb_cut[cut].LabelsOption('v')  
