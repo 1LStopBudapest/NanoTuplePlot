@@ -5,7 +5,7 @@ import types
 sys.path.append('../')
 from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
-from Sample.FileList__UL2016PreVFP import samples as samples_2016Pre
+from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 
 samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'QCD', 'MET_Data']
