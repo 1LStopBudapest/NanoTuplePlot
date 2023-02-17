@@ -8,7 +8,7 @@ from Sample.Dir import plotDir
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 
-samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'QCD', 'MET_Data']
+samplesRun = ['WJetsToLNu']#, 'TTSingleLep_pow', 'QCD', 'MET_Data']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4

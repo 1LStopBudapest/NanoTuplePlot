@@ -50,7 +50,7 @@ else:
     DataLumi = SampleChain.luminosity_2018
 
 if region == 'SR':
-    bins = 72 #prev. ver had 44
+    bins = 108 #prev. ver had 44
     binLabel = SRBinLabelList
 elif region == 'CR':
     bins = 16 #prev. ver had 12
@@ -97,6 +97,9 @@ if 'T2tt' in samples:
                 if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
             if getsel.SR2():
                 idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+            if getsel.SR2extension():
+                idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 54
                 if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
         if region == 'CR':
             if not getsel.ControlRegion(): continue
@@ -159,6 +162,9 @@ else:
                     if getsel.SR2():
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                         if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    if getsel.SR2extension():
+                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 54
+                        if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if region == 'CR':
                     if not getsel.ControlRegion(): continue
                     if getsel.CR1():
@@ -219,6 +225,9 @@ else:
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if getsel.SR2():
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                    if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                if getsel.SR2extension():
+                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 54
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
             if region == 'CR':
                 if not getsel.ControlRegion(): continue
