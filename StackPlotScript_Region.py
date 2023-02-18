@@ -43,7 +43,7 @@ fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
 
-Rootfilesdirpath = os.path.join(plotDir,"RegionFiles")
+Rootfilesdirpath = os.path.join(plotDir,"RegionFiles/extension")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
