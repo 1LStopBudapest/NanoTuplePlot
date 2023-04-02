@@ -18,7 +18,7 @@ from Sample.Dir import plotDir
 
 
 def get_parser():
-    ''' Argument parser.                                                                                                                                                                                                                     
+    ''' Argument parser.
     '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
@@ -72,7 +72,7 @@ if isinstance(samplelist[samples][0], types.ListType):
         histos = {}
         for sr in SRpTList:
             histos[sr] = HistInfo(hname = sr, sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-        
+
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     n_entries = ch.GetEntries()
@@ -99,7 +99,7 @@ if isinstance(samplelist[samples][0], types.ListType):
                     Fill1D(histos[SRpTList[idx]], pT, lumiscale * MCcorr)
             if getsel.SR2():
                 idx = findSR2BinIndexPT(getsel.calCT(2), getsel.getLepMT()) + 8
-                if not idx == -1: 
+                if not idx == -1:
                     pT = getsel.getSortedLepVar()[0]['pt']
                     Fill1D(histos[SRpTList[idx]], pT, lumiscale * MCcorr)
     hfile.Write()
@@ -114,7 +114,7 @@ else:
     histos = {}
     for sr in SRpTList:
         histos[sr] = HistInfo(hname = sr, sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-        
+
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     n_entries = ch.GetEntries()
@@ -141,7 +141,7 @@ else:
                     for x in pT: Fill1D(histos[SRpTList[idx]], x['pt'], lumiscale * MCcorr) #Fill1D(histos[SRpTList[idx]], pT, lumiscale * MCcorr)
             if getsel.SR2():
                 idx = findSR2BinIndexPT(getsel.calCT(2), getsel.getLepMT()) + 8
-                if not idx == -1: 
+                if not idx == -1:
                     pT = getsel.getSortedLepVar()
                     for x in pT: Fill1D(histos[SRpTList[idx]], x['pt'], lumiscale * MCcorr) #Fill1D(histos[SRpTList[idx]], pT, lumiscale * MCcorr)
     hfile.Write()
