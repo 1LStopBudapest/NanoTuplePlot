@@ -99,7 +99,7 @@ if 'T2tt' in samples:
                 idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                 if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
             if getsel.SR2extension():
-                idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 54
+                idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                 if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
         if region == 'CR':
             if not getsel.ControlRegion(): continue
@@ -163,7 +163,7 @@ else:
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                         if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                     if getsel.SR2extension():
-                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 54
+                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                         if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if region == 'CR':
                     if not getsel.ControlRegion(): continue
@@ -227,7 +227,7 @@ else:
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if getsel.SR2extension():
-                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 54
+                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
             if region == 'CR':
                 if not getsel.ControlRegion(): continue
