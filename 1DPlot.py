@@ -9,8 +9,7 @@ from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
 from Helper.HistInfo import HistInfo
 from Helper.PlotHelper import *
-from Sample.FileList_2016 import samples as samples_2016
-
+from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 
 def get_parser():
     ''' Argument parser.
@@ -18,7 +17,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',           action='store',                     type=str,            default='T2tt_1076_1016',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=str,            default='2016',                                             help="Which year?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -33,17 +32,20 @@ year = options.year
 
 DataLumi=1.0
 
-if year=='2016':
-    samplelist = samples_2016 
-    DataLumi = SampleChain.luminosity_2016
+
+if year=='2016PreVFP':
+        samplelist = samples_2016Pre
+        DataLumi = SampleChain.luminosity_2016PreVFP
+elif year=='2016PostVFP':
+        samplelist = samples_2016Post
+        DataLumi = SampleChain.luminosity_2016PostVFP
 elif year=='2017':
-    samplelist = samples_2017
-    DataLumi = SampleChain.luminosity_2017
+        samplelist = samples_2017
+        DataLumi = SampleChain.luminosity_2017
 else:
-    samplelist = samples_2018
-    DataLumi = SampleChain.luminosity_2018
-
-
+        samplelist = samples_2018
+        DataLumi = SampleChain.luminosity_2018
+            
 
 histext = ''
 
