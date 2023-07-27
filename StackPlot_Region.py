@@ -18,7 +18,7 @@ def get_parser():
     nargs='+',                              # one or more parameters to this switch
     type=str,                               # /parameters/ are ints
     dest='alist',                           # store in 'list'.
-    default=['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'T2tt_500_420', 'T2tt_500_490'],     # last sample should be data as to be consistent with StackHists funtion.
+    default=['TTV', 'QCD', 'VV', 'DYJetsToLL', 'TTbar', 'ZJetsToNuNu', 'WJetsToLNu', 'ST', 'Sig_Displaced_300_290', 'Sig_Displaced_350_335', 'Sig_Displaced_400_380'],      # last sample should be data as to be consistent with StackHists funtion.
     )
     argParser.add_argument('--cut',            action='store',                    type=str,            default='jet30',          help="Which selection?" )
     
