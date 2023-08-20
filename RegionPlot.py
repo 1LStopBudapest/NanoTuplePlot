@@ -11,6 +11,7 @@ from Helper.GenFilterEff import GenFilterEff
 from Sample.SampleChain import SampleChain
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
+from Sample.FileList_UL2016 import samples as samples_2016
 
 def get_parser():
     ''' Argument parser.                                                                                                                                                                                                                     
@@ -42,6 +43,9 @@ if year=='2016PreVFP':
 elif year=='2016PostVFP':
     samplelist = samples_2016Post
     DataLumi = SampleChain.luminosity_2016PostVFP
+elif year=='2016':
+    samplelist = samples_2016
+    DataLumi = SampleChain.luminosity_2016
 elif year=='2017':
     samplelist = samples_2017
     DataLumi = SampleChain.luminosity_2017
