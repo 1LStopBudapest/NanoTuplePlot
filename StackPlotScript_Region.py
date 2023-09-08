@@ -66,15 +66,15 @@ for sL in samplesRun:
             bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s_*.root\n'%(sFL, sFL))
             bashline.append('mv RegionPlot_SR_%s.root %s\n'%(sFL, Rootfilesdirpath))
     else:
-    if 'Data' in sL:
-        sLi = sL.replace('Data','')+'Run'
-        bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s*.root\n'%(sL, sLi))
-    elif isinstance(samplelist[sL][0], types.ListType):
-        sLi = 'hadd RegionPlot_SR_'+sL+'.root'+str("".join(' RegionPlot_SR_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
-        bashline.append('%s\n'%sLi)
-    else:
-        bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s_*.root\n'%(sL, sL))
-    bashline.append('mv RegionPlot_SR_%s.root %s\n'%(sL, Rootfilesdirpath))
+        if 'Data' in sL:
+            sLi = sL.replace('Data','')+'Run'
+            bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s*.root\n'%(sL, sLi))
+        elif isinstance(samplelist[sL][0], types.ListType):
+            sLi = 'hadd RegionPlot_SR_'+sL+'.root'+str("".join(' RegionPlot_SR_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
+            bashline.append('%s\n'%sLi)
+        else:
+            bashline.append('hadd RegionPlot_SR_%s.root RegionPlot_SR_%s_*.root\n'%(sL, sL))
+        bashline.append('mv RegionPlot_SR_%s.root %s\n'%(sL, Rootfilesdirpath))
 
 l = str(" ".join(s for s in samplesRun)) #l = str(" ".join(s for s in sigFileList))
 bashline.append('python StackPlot_Region.py -l %s'%l)
