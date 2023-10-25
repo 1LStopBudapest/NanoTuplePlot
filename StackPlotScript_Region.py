@@ -9,7 +9,7 @@ from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 from Sample.FileList_UL2016 import samples as samples_2016
 
-samplesRun = ['WJetsToLNu', 'TTbar']
+samplesRun = ['TTV', 'QCD', 'VV', 'DYJetsToLL', 'TTbar', 'ZJetsToNuNu', 'WJetsToLNu', 'ST', 'MET_Data'] #['T2tt_prompt']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4
