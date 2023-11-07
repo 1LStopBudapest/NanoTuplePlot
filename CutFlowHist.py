@@ -12,15 +12,21 @@ from Helper.TreeVarSel import TreeVarSel
 from Helper.VarCalc import *
 from Helper.GenFilterEff import GenFilterEff
 from Helper.MCWeight import MCWeight
-from Sample.FileList_2016 import samples as samples_2016
+from Sample.FileList_UL2016 import samples as samples_2016
+from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
+from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
+from Sample.FileList_UL2017 import samples as samples_2017
+from Sample.FileList_UL2018 import samples as samples_2018
+
+from collections import OrderedDict
 
 def get_parser():
     ''' Argument parser.
     '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',           action='store',                     type=str,            default='MET_Run2016B',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=str,            default='2016',                                             help="Which year?" )
+    argParser.add_argument('--sample',           action='store',                     type=str,            default='TTbar',                                help="Which sample?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -41,6 +47,12 @@ isData = True if ('Run' in samples or 'Data' in samples) else False
 if year=='2016':
     samplelist = samples_2016 
     DataLumi = SampleChain.luminosity_2016
+elif year=='2016PreVFP':
+    samplelist = samples_2016Pre
+    DataLumi = SampleChain.luminosity_2016PreVFP
+elif year=='2016PostVFP':
+    samplelist = samples_2016Post
+    DataLumi = SampleChain.luminosity_2016PostVFP
 elif year=='2017':
     samplelist = samples_2017
     DataLumi = SampleChain.luminosity_2017
@@ -49,8 +61,9 @@ else:
     DataLumi = SampleChain.luminosity_2018
 
 histext = ''
-cutflow = ['nocut', 'met', 'ht', 'isr', 'dphi', 'xtrajetveto', 'tauveto', 'lepton', 'xtralepton', 'lepPt30', '0b', 'CT1300', 'lepEta15', 'CT1400', 'lepChrg', 'mt60' ]
-
+#cutflow = ['nocut', 'met200', 'ht300', 'isr', 'tauveto', 'lepton', 'xtralepton', 'xtrajetveto', 'dphi', 'met300', 'lepPt50', '0b', 'CT1300', 'lepEta15', 'CT1400', 'lepChrg', 'mt60' ]
+cutflow = ['nocut', 'met200', 'ht300', 'isr', 'tauveto', 'lepton', 'xtralepton', 'xtrajetveto', 'dphi', 'SR']
+ncuts = len(cutflow)
 
 if 'T2tt' in samples:
     histext = samples
@@ -63,11 +76,9 @@ if 'T2tt' in samples:
     print 'Gen filter eff: ',gfltreff
     hfile = ROOT.TFile( 'CFHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
-    for c in cutflow:
-        histos['MET_'+c] = HistInfo(hname = 'MET_'+c, sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
-        histos['LepPt_'+c] = HistInfo(hname = 'LepPt_'+c, sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
-    histos['hEvt'] = HistInfo(hname = 'hEvt', sample = histext, binning=[3,-1,2], histclass = ROOT.TH1F).make_hist()
-
+    histos['hcutflowRaw'] = HistInfo(hname = 'hcutflowRaw', sample = histext, binning=[ncuts,0,ncuts], histclass = ROOT.TH1F).make_hist()
+    histos['hcutflow'] = HistInfo(hname = 'hcutflow', sample = histext, binning=[ncuts,0,ncuts], histclass = ROOT.TH1F).make_hist()
+    
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     n_entries = ch.GetEntries()
@@ -86,37 +97,33 @@ if 'T2tt' in samples:
             MCcorr = 1.0
         else:
             MCcorr = MCWeight(ch, year, sample).getTotalWeight()
-        Fill1D(histos['hEvt'], 1, 1)
-        Fill1D(histos['MET_nocut'], ch.MET_pt, lumiscale  * MCcorr * gfltreff)
-        if getsel.METcut():
-            Fill1D(histos['MET_met'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut():
-            Fill1D(histos['MET_ht'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut():
-            Fill1D(histos['MET_isr'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut():
-            Fill1D(histos['MET_dphi'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto():
-            Fill1D(histos['MET_xtrajetveto'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto():
-            Fill1D(histos['MET_tauveto'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut():
-            Fill1D(histos['MET_lepton'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto():
-            Fill1D(histos['MET_xtralepton'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] < 30:
-            Fill1D(histos['MET_lepPt30'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] < 30 and getsel.cntBtagjet()==0:
-            Fill1D(histos['MET_0b'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] < 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300:
-            Fill1D(histos['MET_CT1300'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] < 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5:
-            Fill1D(histos['MET_lepEta15'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] < 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400:
-            Fill1D(histos['MET_CT1400'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
-        if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] < 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400 and getsel.getLepMT() < 60:
-            Fill1D(histos['MET_mt60'], ch.MET_pt, lumiscale * MCcorr * gfltreff)
+
+        cuts = OrderedDict()
+        conjcuts = OrderedDict()
+        cuts['nocut'] = True
+        conjcuts['nocut'] = True
+        cuts['met200'] = getsel.METcut()
+        conjcuts['met200'] = cuts['nocut'] * cuts['met200']
+        cuts['ht300'] = getsel.HTcut()
+        conjcuts['ht300'] = cuts['nocut'] *cuts['met200'] * cuts['ht300']
+        cuts['isr'] = getsel.ISRcut()
+        conjcuts['isr'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr']
+        cuts['tauveto'] = getsel.tauVeto()
+        conjcuts['tauveto'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto']
+        cuts['lepton'] = getsel.lepcut()
+        conjcuts['lepton'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton']
+        cuts['xtralepton'] = getsel.XtralepVeto()
+        conjcuts['xtralepton'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] 
+        cuts['xtrajetveto'] = getsel.XtraJetVeto()
+        conjcuts['xtrajetveto'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto']
+        cuts['dphi'] = getsel.dphicut()
+        conjcuts['dphi'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto'] * cuts['dphi']
+        cuts['SR'] = getsel.SearchRegion()
+        conjcuts['SR'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto'] * cuts['dphi'] * cuts['SR']
             
+        for k in conjcuts:
+            histos['hcutflowRaw'].Fill(k, conjcuts[k] * 1.0)
+            histos['hcutflow'].Fill(k, conjcuts[k] * lumiscale * MCcorr * gfltref)
 
     hfile.Write()
 
@@ -128,9 +135,8 @@ else:
             print 'running over: ', sample
             hfile = ROOT.TFile( 'CFHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
             histos = {}
-            for c in cutflow:
-                histos['MET_'+c] = HistInfo(hname = 'MET_'+c, sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
-                histos['LepPt_'+c] = HistInfo(hname = 'LepPt_'+c, sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+            histos['hcutflowRaw'] = HistInfo(hname = 'hcutflowRaw', sample = histext, binning=[ncuts,0,ncuts], histclass = ROOT.TH1F).make_hist()
+            histos['hcutflow'] = HistInfo(hname = 'hcutflow', sample = histext, binning=[ncuts,0,ncuts], histclass = ROOT.TH1F).make_hist()
             ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
             n_entries = ch.GetEntries()
@@ -149,47 +155,36 @@ else:
                     MCcorr = 1.0
                 else:
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
-                Fill1D(histos['MET_nocut'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_nocut'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut():
-                    Fill1D(histos['MET_met'], ch.MET_pt, lumiscale * MCcorr)
-                    if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_met'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut():
-                    Fill1D(histos['MET_ht'], ch.MET_pt, lumiscale * MCcorr)
-                    if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_ht'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut():
-                    Fill1D(histos['MET_isr'], ch.MET_pt, lumiscale * MCcorr)
-                    if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_isr'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut():
-                    Fill1D(histos['MET_dphi'], ch.MET_pt, lumiscale * MCcorr)
-                    if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_dphi'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto():
-                    Fill1D(histos['MET_xtrajetveto'], ch.MET_pt, lumiscale * MCcorr)
-                    if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_xtrajetveto'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and getsel.tauVeto():
-                    Fill1D(histos['MET_tauveto'], ch.MET_pt, lumiscale * MCcorr)
-                    if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_tauveto'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and getsel.tauVeto() and getsel.lepcut():
-                    Fill1D(histos['MET_lepton'], ch.MET_pt, lumiscale * MCcorr)
-                    Fill1D(histos['LepPt_lepton'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto():
-                    Fill1D(histos['MET_xtralepton'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30:
-                    Fill1D(histos['MET_lepPt30'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0:
-                    Fill1D(histos['MET_0b'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300:
-                    Fill1D(histos['MET_CT1300'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5:
-                    Fill1D(histos['MET_lepEta15'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400:
-                    Fill1D(histos['MET_CT1400'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400 and getsel.getSortedLepVar()[0]['charg']==-1:
-                    Fill1D(histos['MET_lepChrg'], ch.MET_pt, lumiscale * MCcorr)
-                if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400 and getsel.getSortedLepVar()[0]['charg']==-1 and getsel.getLepMT() < 60:
-                    Fill1D(histos['MET_mt60'], ch.MET_pt, lumiscale * MCcorr)
+
+                cuts = OrderedDict()
+                conjcuts = OrderedDict()
+                cuts['nocut'] = True
+                conjcuts['nocut'] = True
+                cuts['met200'] = getsel.METcut()
+                conjcuts['met200'] = cuts['nocut'] * cuts['met200']
+                cuts['ht300'] = getsel.HTcut()
+                conjcuts['ht300'] = cuts['nocut'] *cuts['met200'] * cuts['ht300']
+                cuts['isr'] = getsel.ISRcut()
+                conjcuts['isr'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr']
+                cuts['tauveto'] = getsel.tauVeto()
+                conjcuts['tauveto'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto']
+                cuts['lepton'] = getsel.lepcut()
+                conjcuts['lepton'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton']
+                cuts['xtralepton'] = getsel.XtralepVeto()
+                conjcuts['xtralepton'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] 
+                cuts['xtrajetveto'] = getsel.XtraJetVeto()
+                conjcuts['xtrajetveto'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto']
+                cuts['dphi'] = getsel.dphicut()
+                conjcuts['dphi'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto'] * cuts['dphi']
+                cuts['SR'] = getsel.SearchRegion()
+                conjcuts['SR'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto'] * cuts['dphi'] * cuts['SR']
             
-        hfile.Write()
+                for k in conjcuts:
+                    histos['hcutflowRaw'].Fill(k, conjcuts[k] * 1.0)
+                    histos['hcutflow'].Fill(k, conjcuts[k] * lumiscale * MCcorr)
+                #if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400 and getsel.getSortedLepVar()[0]['charg']==-1 and getsel.getLepMT() < 60:
+                    #Fill1D(histos['MET_mt60'], ch.MET_pt, lumiscale * MCcorr)
+            hfile.Write()
     else:
         histext = samples
         for l in list(samplelist.values()):
@@ -198,9 +193,9 @@ else:
         print 'running over: ', sample
         hfile = ROOT.TFile( 'CFHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
-        for c in cutflow:
-            histos['MET_'+c] = HistInfo(hname = 'MET_'+c, sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
-            histos['LepPt_'+c] = HistInfo(hname = 'LepPt_'+c, sample = histext, binning=[40,0,200], histclass = ROOT.TH1F).make_hist()
+        histos['hcutflowRaw'] = HistInfo(hname = 'hcutflowRaw', sample = histext, binning=[ncuts,0,ncuts], histclass = ROOT.TH1F).make_hist()
+        histos['hcutflow'] = HistInfo(hname = 'hcutflow', sample = histext, binning=[ncuts,0,ncuts], histclass = ROOT.TH1F).make_hist()
+
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         n_entries = ch.GetEntries()
@@ -220,46 +215,32 @@ else:
             else:
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
 
-            Fill1D(histos['MET_nocut'], ch.MET_pt, lumiscale * MCcorr)
-            if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_nocut'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut():
-                Fill1D(histos['MET_met'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_met'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut():
-                Fill1D(histos['MET_ht'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_ht'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut():
-                Fill1D(histos['MET_isr'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_isr'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut():
-                Fill1D(histos['MET_dphi'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_dphi'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto():
-                Fill1D(histos['MET_xtrajetveto'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_xtrajetveto'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and getsel.tauVeto():
-                Fill1D(histos['MET_tauveto'], ch.MET_pt, lumiscale * MCcorr)
-                if len(getsel.getSortedLepVar()): Fill1D(histos['LepPt_tauveto'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and getsel.tauVeto() and getsel.lepcut():
-                Fill1D(histos['MET_lepton'], ch.MET_pt, lumiscale * MCcorr)
-                Fill1D(histos['LepPt_lepton'], getsel.getSortedLepVar()[0]['pt'], lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto():
-                Fill1D(histos['MET_xtralepton'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30:
-                Fill1D(histos['MET_lepPt30'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0:
-                Fill1D(histos['MET_0b'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300:
-                Fill1D(histos['MET_CT1300'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5:
-                Fill1D(histos['MET_lepEta15'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400:
-                Fill1D(histos['MET_CT1400'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400 and getsel.getSortedLepVar()[0]['charg']==-1:
-                Fill1D(histos['MET_lepChrg'], ch.MET_pt, lumiscale * MCcorr)
-            if getsel.METcut() and getsel.HTcut() and getsel.ISRcut() and getsel.dphicut() and getsel.XtraJetVeto() and  getsel.tauVeto() and getsel.lepcut() and  getsel.XtralepVeto() and getsel.getSortedLepVar()[0]['pt'] > 30 and getsel.cntBtagjet()==0 and getsel.calCT(1) > 300 and abs(getsel.getSortedLepVar()[0]['eta'])<1.5 and getsel.calCT(1) < 400 and getsel.getSortedLepVar()[0]['charg']==-1 and getsel.getLepMT() < 60:
-                Fill1D(histos['MET_mt60'], ch.MET_pt, lumiscale * MCcorr)
-
+            cuts = OrderedDict()
+            conjcuts = OrderedDict()
+            cuts['nocut'] = True
+            conjcuts['nocut'] = True
+            cuts['met200'] = getsel.METcut()
+            conjcuts['met200'] = cuts['nocut'] * cuts['met200']
+            cuts['ht300'] = getsel.HTcut()
+            conjcuts['ht300'] = cuts['nocut'] *cuts['met200'] * cuts['ht300']
+            cuts['isr'] = getsel.ISRcut()
+            conjcuts['isr'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr']
+            cuts['tauveto'] = getsel.tauVeto()
+            conjcuts['tauveto'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto']
+            cuts['lepton'] = getsel.lepcut()
+            conjcuts['lepton'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton']
+            cuts['xtralepton'] = getsel.XtralepVeto()
+            conjcuts['xtralepton'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] 
+            cuts['xtrajetveto'] = getsel.XtraJetVeto()
+            conjcuts['xtrajetveto'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto']
+            cuts['dphi'] = getsel.dphicut()
+            conjcuts['dphi'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto'] * cuts['dphi']
+            cuts['SR'] = getsel.SearchRegion()
+            conjcuts['SR'] = cuts['nocut'] *cuts['met200'] *cuts['ht300'] * cuts['isr'] * cuts['tauveto'] * cuts['lepton'] * cuts['xtralepton'] * cuts['xtrajetveto'] * cuts['dphi'] * cuts['SR']
+            
+            for k in conjcuts:
+                histos['hcutflowRaw'].Fill(k, conjcuts[k] * 1.0)
+                histos['hcutflow'].Fill(k, conjcuts[k] * lumiscale * MCcorr)
 
         hfile.Write()
 
