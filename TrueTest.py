@@ -18,7 +18,7 @@ def get_parser():
     ''' Argument parser.'''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',           action='store',                     type=str,            default='Sig_Displaced_350_335',                          help="Which sample?" )
+    argParser.add_argument('--sample',           action='store',                     type=str,            default='Sig_Prompt_500_420_full',                             help="Which sample?" )
     argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                    help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
@@ -30,7 +30,7 @@ options = get_parser().parse_args()
 sample  = options.sample
 year = options.year
 
-Rootfilesdirpath = os.path.join(plotDir, "1DFiles/TDK/effi")
+Rootfilesdirpath = os.path.join(plotDir, "1DFiles/efficiency")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
@@ -38,16 +38,11 @@ print 'running over: ', sample
 hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 histos = {}
 histos['gVtx_gLSP_3D_if'] = HistInfo(hname = 'gVtx_gLSP_3D_if', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
 histos['SV_gLSP_3D'] = HistInfo(hname = 'SV_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['pt_stop'] = HistInfo(hname = 'pt_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 histos['pt_LSP_stop'] = HistInfo(hname = 'pt_LSP_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
-if (sample == 'Sig_Displaced_400_380'):
-    histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
-    effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,20)
-else:
-    histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
-    effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,400)
-effi_4cm = ROOT.TEfficiency("eff_4", "Efficiency; d_{xyz}(genVtx,genLSP) [cm]", 40,0,4)
+effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [#mum]", 40,0,40) #mum
 effi1 = ROOT.TEfficiency("eff1", "Efficiency; p_{T}(stop) [GeV]", 40,0,1000)
 effi2 = ROOT.TEfficiency("eff2", "Efficiency; |p_{T}(stop)-p_{T}(LSP)| [GeV]", 40,0,1000)
 
@@ -82,9 +77,9 @@ for ientry in range(n_entries):
     var['pt_stop'] = getsel.getStopPt()
     var['pt_LSP_stop'] = getsel.getLSPStopPt()
     if len(genLSP_S) > 0 and len(genLSP_A) > 0:
-        var['gVtx_gLSP_dx'] = [getsel.distance(genLSP_S, genVtx, 'x'), getsel.distance(genLSP_A, genVtx, 'x')] #d*10000 <--> Prompt
-        var['gVtx_gLSP_dy'] = [getsel.distance(genLSP_S, genVtx, 'y'), getsel.distance(genLSP_A, genVtx, 'y')]
-        var['gVtx_gLSP_dz'] = [getsel.distance(genLSP_S, genVtx, 'z'), getsel.distance(genLSP_A, genVtx, 'z')]
+        var['gVtx_gLSP_dx'] = [getsel.distance(genLSP_S, genVtx, 'x')*10000, getsel.distance(genLSP_A, genVtx, 'x')*10000] #d*10000 <--> Prompt #mum
+        var['gVtx_gLSP_dy'] = [getsel.distance(genLSP_S, genVtx, 'y')*10000, getsel.distance(genLSP_A, genVtx, 'y')*10000]
+        var['gVtx_gLSP_dz'] = [getsel.distance(genLSP_S, genVtx, 'z')*10000, getsel.distance(genLSP_A, genVtx, 'z')*10000]
         var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(2)]
         var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(2)]
         if len(sv) >= 1:
@@ -102,13 +97,11 @@ for ientry in range(n_entries):
                     boo2 = True
                 effi.Fill(boo1, var['gVtx_gLSP_3D'][0])
                 effi.Fill(boo2, var['gVtx_gLSP_3D'][1])
-                effi_4cm.Fill(boo1, var['gVtx_gLSP_3D'][0])
-                effi_4cm.Fill(boo2, var['gVtx_gLSP_3D'][1])
 
-                if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4:
+                if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4: #4 mum
                     effi1.Fill(boo1 or boo2, var['pt_stop'])
                     effi2.Fill(boo1 or boo2, var['pt_LSP_stop'])
-
+                
     for key in histos:
         if key in var.keys():
             if var[key] is not None:
@@ -145,7 +138,6 @@ Plot1D(histos['pt_stop'], outputDir, islogy=True)
 Plot1D(histos['pt_LSP_stop'], outputDir, islogy=True)
 Plot1D(histos['SV_gLSP_3D'], outputDir, islogy=True)
 
-outputdirpath = os.path.join(outputDir, "1DPlots/TDK/efficiency/", sample)
 if not os.path.exists(outputdirpath):
     os.makedirs(outputdirpath)
 def plotEfficiency(eff, name):
@@ -157,11 +149,14 @@ def plotEfficiency(eff, name):
     c.cd()
     eff.Draw()
     ROOT.gPad.Update()
+    #graph = eff.GetPaintedGraph()
+    #graph.SetMinimum(0.0)
+    #graph.SetMaximum(0.3)
+    #ROOT.gPad.Update()
     leg.Draw("SAMES")
     c.SaveAs(outputdirpath+"/"+name+".png")
     c.Close()
 
 plotEfficiency(effi, "efficiency")
-plotEfficiency(effi_4cm, "efficiency_4cm")
 plotEfficiency(effi1, "efficiency_stop")
 plotEfficiency(effi2, "efficiency_LSP_stop")
