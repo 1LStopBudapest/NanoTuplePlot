@@ -35,8 +35,8 @@ plots = ['MET', 'Leppt', 'LepMT', 'HT', 'CT1', 'CT2', 'ISRJetPt',
          'nSV', 'Ntracks', 'SVdxy', 'SVdxySig', 'SVmass', 'SVdlenSig', 'SVpAngle', 'SVpT', 'SVdR']
 
 for sl in samplelists:
-    if os.path.exists(plotDir+'1DFiles/IVF/1DHist_'+sl+'.root'): #if os.path.exists(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'1DFiles/IVF/1DHist_'+sl+'.root')) #files.append(ROOT.TFile.Open(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'))
+    if os.path.exists(plotDir+'StackFiles/IVF/StackHist_'+sl+'.root'): #if os.path.exists(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'):
+        files.append(ROOT.TFile.Open(plotDir+'StackFiles/IVF/StackHist_'+sl+'.root')) #files.append(ROOT.TFile.Open(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'))
     else:
         doplots = False
         print 'Root files for',sl,'sample does not exist. Please run python IVFHistMaker.py --sample',sl
