@@ -15,7 +15,7 @@ def get_parser():
     nargs='+',              # one or more parameters to this switch
     type=str,               # /parameters/ are ints
     dest='alist',           # store in 'list'.
-    default=['TTToSemiLeptonic', 'TTTo2L2Nu', 'UL17V9_Full99mm']
+    default=['VV', 'DYJetsToLL', 'ST', 'QCD', 'WJetsToLNu', 'TTbar', 'TTV', 'ZJetsToNuNu', 'MET_Data']
     )
     argParser.add_argument('--cut',      type=str,      default='before')
     argParser.add_argument('--date',     type=str,      default='1117')

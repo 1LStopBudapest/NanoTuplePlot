@@ -51,7 +51,7 @@ class FillHistos_IVF():
             getivf = IVFhelper(tr, self.isData, self.year)
             getsel = TreeVarSel(tr, self.isData, self.year)
             if getsel.PreSelection() and getsel.cntBtagjet(pt=20)==0:
-                if getivf.IVFSelection() and getivf.HadronicSelection(): # # ==> before cut
+                #if getivf.IVFSelection() and getivf.HadronicSelection(): # # ==> before cut
                     var['nSV'] = tr.nSV                                  # \t ==> after cut
                     var['MET'] = tr.MET_pt
                     var['HT'] = getsel.calHT()
