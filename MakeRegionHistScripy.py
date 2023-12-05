@@ -36,7 +36,7 @@ elif year=='2017':
 else:
     samplelist = samples_2018
 
-Rootfilesdirpath = os.path.join(plotDir,"RegionFiles/new")
+Rootfilesdirpath = os.path.join(plotDir,"RegionHistFiles")
 if not os.path.exists(Rootfilesdirpath):
         os.makedirs(Rootfilesdirpath)
 
