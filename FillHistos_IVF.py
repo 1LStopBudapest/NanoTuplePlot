@@ -40,7 +40,12 @@ class FillHistos_IVF():
             if ientry > nevtcut: break
             if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
             tr.GetEntry(ientry)
-            lumiscale = 1.0
+            if self.isData:
+                lumiscale = 1.0
+            elif self.isSignal:
+                lumiscale = 1.0
+            else:
+                lumiscale = (self.DataLumi/1000.0) * tr.weight
 
             if self.isData or self.isSignal or self.NoCorr:
                 MCcorr = 1.0
@@ -50,12 +55,12 @@ class FillHistos_IVF():
             var = {key: None for key in vardic}
             getivf = IVFhelper(tr, self.isData, self.year)
             getsel = TreeVarSel(tr, self.isData, self.year)
-            if getsel.PreSelection() and getsel.cntBtagjet(pt=20)==0:
+            if getsel.passFilters() and getsel.PreSelection() and getsel.cntBtagjet(pt=20)==0:
                 if getivf.IVFSelection() and getivf.HadronicSelection(): # # ==> before cut
                     var['nSV'] = tr.nSV                                  # \t ==> after cut
                     var['MET'] = tr.MET_pt
                     var['HT'] = getsel.calHT()
-                    var['Leppt'] = [x['pt'] for x in getsel.getLepVar(getsel.selectMuIdx(), getsel.selectEleIdx())]
+                    var['Leppt'] = [x['pt'] for x in getsel.getLepVar(getsel.selectMuIdx())]
                     var['LepMT'] = getsel.getLepMT()
                     var['CT1'] = getsel.calCT(1)
                     var['CT2'] = getsel.calCT(2)

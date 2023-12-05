@@ -15,7 +15,7 @@ def get_parser():
     nargs='+',              # one or more parameters to this switch
     type=str,               # /parameters/ are ints
     dest='alist',           # store in 'list'.
-    default=['TTToSemiLeptonic', 'TTTo2L2Nu', 'UL17V9_Full99mm']
+    default=['VV', 'DYJetsToLL', 'ST', 'QCD', 'WJetsToLNu', 'TTbar', 'TTV', 'ZJetsToNuNu', 'MET_Data']
     )
     argParser.add_argument('--cut',      type=str,      default='before')
     argParser.add_argument('--date',     type=str,      default='1117')
@@ -35,8 +35,8 @@ plots = ['MET', 'Leppt', 'LepMT', 'HT', 'CT1', 'CT2', 'ISRJetPt',
          'nSV', 'Ntracks', 'SVdxy', 'SVdxySig', 'SVmass', 'SVdlenSig', 'SVpAngle', 'SVpT', 'SVdR']
 
 for sl in samplelists:
-    if os.path.exists(plotDir+'1DFiles/IVF/1DHist_'+sl+'.root'): #if os.path.exists(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'1DFiles/IVF/1DHist_'+sl+'.root')) #files.append(ROOT.TFile.Open(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'))
+    if os.path.exists(plotDir+'StackFiles/IVF/StackHist_'+sl+'.root'): #if os.path.exists(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'):
+        files.append(ROOT.TFile.Open(plotDir+'StackFiles/IVF/StackHist_'+sl+'.root')) #files.append(ROOT.TFile.Open(plotDir+'1DFiles/IVF/1DHist_'+sl+'_'+cut+'_'+date+'.root'))
     else:
         doplots = False
         print 'Root files for',sl,'sample does not exist. Please run python IVFHistMaker.py --sample',sl
