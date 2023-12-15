@@ -31,22 +31,21 @@ options = get_parser().parse_args()
 sample  = options.sample
 year = options.year
 
-Rootfilesdirpath = os.path.join(plotDir, "1DFiles/efficiency_1130")
+Rootfilesdirpath = os.path.join(plotDir, "1DFiles/efficiency_1215")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
 print 'running over: ', sample
 hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 histos = {}
-
-#histos['gVtx_gLSP_3D_if'] = HistInfo(hname = 'gVtx_gLSP_3D_if', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
-#histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
-#histos['SV_gLSP_3D'] = HistInfo(hname = 'SV_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_3D_if'] = HistInfo(hname = 'gVtx_gLSP_3D_if', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
+histos['gVtx_gLSP_3D'] = HistInfo(hname = 'gVtx_gLSP_3D', sample = sample, binning=[40,0,40], histclass = ROOT.TH1F).make_hist()
+histos['SV_gLSP_3D'] = HistInfo(hname = 'SV_gLSP_3D', sample = sample, binning=[40,0,400], histclass = ROOT.TH1F).make_hist()
 histos['pt_stop'] = HistInfo(hname = 'pt_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 histos['pt_b'] = HistInfo(hname = 'pt_b', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 #histos['pt_LSP_stop'] = HistInfo(hname = 'pt_LSP_stop', sample = sample, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
 
-#effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [#mum]", 40,0,40) #mum
+effi = ROOT.TEfficiency("eff", "Efficiency; d_{xyz}(genVtx,genLSP) [#mum]", 40,0,40) #mum
 effi1 = ROOT.TEfficiency("eff1", "Efficiency; p_{T}(stop) [GeV]", 40,0,1000)
 effi2 = ROOT.TEfficiency("eff2", "Efficiency; p_{T}(b) [GeV] [GeV]", 40,0,1000)
 
@@ -72,33 +71,32 @@ for ientry in range(n_entries):
     var = {key: None for key in vardic}
     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
 
-    #genVtx = getselT.getGenVtx()
-    #genLSP_S = getselT.getLSP_S()
-    #genLSP_A = getselT.getLSP_A()
-    #sv = getivf.getSV()
+    genVtx = getselT.getGenVtx()
+    genLSP_S = getselT.getLSP_S()
+    genLSP_A = getselT.getLSP_A()
+    sv = getivf.getSV()
 
     boo = False
-    #boo2 = False
-    if getsel.PreSelection() and getsel.cntBtagjet(pt=0)==0:
+    boo1 = False
+    boo2 = False
+    if getsel.PreSelection() and getsel.passFilters() and getsel.cntBtagjet(pt=0)==0:
         var['pt_stop'] = getselT.getStopPt()
         var['pt_b'] = getselT.getBPt()
+        #var['pt_LSP_stop'] = getselT.getLSPStopPt()
         if getivf.IVFSelection() and getivf.HadronicSelection(): #nevezo
             boo = True
         effi1.Fill(boo, var['pt_stop'])
-        effi2.Fill(boo, var['pt_b'])
-    '''
-        var['pt_stop'] = getselT.getStopPt()
-        var['pt_LSP_stop'] = getselT.getLSPStopPt()
-    if len(genLSP_S) > 0 and len(genLSP_A) > 0:
+        effi2.Fill(boo, var['pt_b'])        
+        if len(genLSP_S) > 0 and len(genLSP_A) > 0:
             var['gVtx_gLSP_dx'] = [getselT.distance(genLSP_S, genVtx, 'x')*10000, getselT.distance(genLSP_A, genVtx, 'x')*10000] #d*10000 <--> Prompt #mum
             var['gVtx_gLSP_dy'] = [getselT.distance(genLSP_S, genVtx, 'y')*10000, getselT.distance(genLSP_A, genVtx, 'y')*10000]
             var['gVtx_gLSP_dz'] = [getselT.distance(genLSP_S, genVtx, 'z')*10000, getselT.distance(genLSP_A, genVtx, 'z')*10000]
-        var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(2)]
-        var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(2)]
-        if len(sv) >= 1:
-            if len(sv) > 1:
+            var['gVtx_gLSP_2D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2) for i in range(2)]
+            var['gVtx_gLSP_3D'] = [sqrt(var['gVtx_gLSP_dx'][i]**2 + var['gVtx_gLSP_dy'][i]**2 + var['gVtx_gLSP_dz'][i]**2) for i in range(2)]
+            if len(sv) >= 1:
+                if len(sv) > 1:
                     var['SV_gLSP_3D'] = getselT.smallestUniqueDist3D([genLSP_S, genLSP_A], sv)
-            elif len(sv) == 1:
+                elif len(sv) == 1:
                     var['SV_gLSP_3D'] = getselT.only1SV(genLSP_S, genLSP_A, sv)
 
                 var['gVtx_gLSP_3D_if'] = []
@@ -111,10 +109,10 @@ for ientry in range(n_entries):
                 effi.Fill(boo1, var['gVtx_gLSP_3D'][0])
                 effi.Fill(boo2, var['gVtx_gLSP_3D'][1])
 
-                if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4: #4 mum
-                    effi1.Fill(boo1 or boo2, var['pt_stop'])
-                    effi2.Fill(boo1 or boo2, var['pt_LSP_stop'])
-    '''
+                #if var['gVtx_gLSP_3D'][0] < 4 and var['gVtx_gLSP_3D'][1] < 4: #4 mum
+                #    effi1.Fill(boo1 or boo2, var['pt_stop'])
+                #    effi2.Fill(boo1 or boo2, var['pt_LSP_stop'])
+
 
 #if (ROOT.TEfficiency.CheckConsistency(histos['gVtx_gLSP_3D_if'], histos['gVtx_gLSP_3D'])):
 #    effi = ROOT.TEfficiency(histos['gVtx_gLSP_3D_if'], histos['gVtx_gLSP_3D'])
@@ -133,9 +131,9 @@ os.system('./FileHandle.sh')
 os.system('rm *.root FileHandle.sh')
 
 outputDir = plotDir
-outputdirpath = os.path.join(plotDir, "1DPlots/efficiency_1130")
-#for key in histos:
-#    Plot1D(histos[key], outputDir, islogy=True)
+outputdirpath = os.path.join(plotDir, "1DPlots/efficiency_1215")
+for key in histos:
+    Plot1D(histos[key], outputDir, islogy=True)
 
 #Plot1D(histos['pt_stop'], outputDir, islogy=True)
 #Plot1D(histos['pt_b'], outputDir, islogy=True)
@@ -159,6 +157,6 @@ def plotEfficiency(eff, name):
     c.SaveAs(outputdirpath+"/"+name+".png")
     c.Close()
 
-#plotEfficiency(effi, "efficiency")
+plotEfficiency(effi, "efficiency")
 plotEfficiency(effi1, "efficiency_stop")
 plotEfficiency(effi2, "efficiency_b")
