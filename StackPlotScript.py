@@ -5,22 +5,36 @@ import types
 sys.path.append('../')
 from Sample.SampleChain import SampleChain
 from Sample.Dir import plotDir
-from Sample.FileList_2016 import samples as samples_2016
+from Sample.FileList_UL2016 import samples as samples_2016
+from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
+from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
+from Sample.FileList_UL2017 import samples as samples_2017
+from Sample.FileList_UL2018 import samples as samples_2018
+
 
 samplesRun = ['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'MET_Data']
 fileperjobMC = 2 
 fileperjobData = 1
 TotJobs = 4
-year = '2016'
+year = '2016PostVFP'
 
 txtline = []
 
-if year=='2016':
+if year=='2016PreVFP':
+    samplelist = samples_2016Pre
+    DataLumi = SampleChain.luminosity_2016PreVFP
+elif year=='2016PostVFP':
+    samplelist = samples_2016Post
+    DataLumi = SampleChain.luminosity_2016PostVFP
+elif year=='2016':
     samplelist = samples_2016
+    DataLumi = SampleChain.luminosity_2016
 elif year=='2017':
     samplelist = samples_2017
+    DataLumi = SampleChain.luminosity_2017
 else:
     samplelist = samples_2018
+    DataLumi = SampleChain.luminosity_2018
 
 for sL in samplesRun:
     if isinstance(samplelist[sL][0], types.ListType):
@@ -39,7 +53,7 @@ for sL in samplesRun:
 fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
-'''
+
 Rootfilesdirpath = os.path.join(plotDir,"StackFiles/final")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
@@ -66,5 +80,5 @@ fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallelStackHist.sh')
 os.system('./parallelStackHist.sh')
-os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
-'''
+#os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
+
