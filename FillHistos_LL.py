@@ -8,8 +8,7 @@ sys.path.append('../')
 from Helper.VarCalc import *
 from Helper.MCWeight import MCWeight
 from Helper.GenFilterEff import GenFilterEff
-from Helper.TreeVarSel import TreeVarSel
-
+from Helper.TreeVarSel_LL import TreeVarSel
 
 class FillHistos():
 
@@ -72,20 +71,27 @@ class FillHistos():
                 var['CT1'] = getsel.calCT(1)
                 var['CT2'] = getsel.calCT(2)
                 var['LeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
+                var['Lepdxy'] = [abs(x['dxy']) for x in getsel.getSortedLepVar()]
+                var['LepdxySig'] = [abs(x['dxy']/x['dxyErr']) for x in getsel.getSortedLepVar()]
+                var['Lepdz'] = [abs(x['dz']) for x in getsel.getSortedLepVar()]
                 var['Njet'] = getsel.calNj()
                 var['Nbjet'] = getsel.cntBtagjet()
                 '''
                 var['Muonpt'] = [x for x in getsel.getMuVar()['pt']]
+                var['Muondxy'] = [x for x in getsel.getMuVar()['dxy']]
+                var['Muondz'] = [x for x in getsel.getMuVar()['dz']]
                 var['Elept'] = [x for x in getsel.getEleVar()['pt']]
+                var['Eledxy'] = [x for x in getsel.getEleVar()['dxy']]
+                var['Eledz'] = [x for x in getsel.getEleVar()['dz']]
                 '''
             '''
             if not self.isData:
-                var['GenMuonpt'] = [x['pt'] for x in getsel.genMuon()]
-                var['GenElept'] = [x['pt'] for x in getsel.genEle()]
-                var['GenBpt'] = [x['pt'] for x in getsel.genB()]
+                var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
+                var['GenElept'] = [x['pt'] for x in getvar.genEle()]
+                var['GenBpt'] = [x['pt'] for x in getvar.genB()]
             if self.isSignal or self.isSignalPoint:
-                var['GenStoppt'] = [x['pt'] for x in getsel.genStop()]
-                var['GenLSPpt'] = [x['pt'] for x in getsel.genLSP()]
+                var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
+                var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]
             '''
                     
             for key in self.histos:
