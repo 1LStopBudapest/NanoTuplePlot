@@ -6,6 +6,8 @@ from Sample.SampleList import *
 from Sample.Dir import plotDir
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
+from Sample.FileList_UL2017 import samples as samples_2017
+from Sample.FileList_UL2018 import samples as samples_2018
 from Sample.SampleChain import SampleChain
 
 def get_parser():
@@ -13,7 +15,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample?" )
-    argParser.add_argument('--region',             action='store',                    type=str,            default='SR',                                             help="Which region?" )
+    argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
     return argParser
 
 options = get_parser().parse_args()
