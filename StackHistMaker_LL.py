@@ -2,7 +2,7 @@ import os, sys
 import ROOT
 import types
 
-from FillHistos import FillHistos
+from FillHistos_LL import FillHistos
 
 sys.path.append('../')
 from Sample.SampleChain import SampleChain
@@ -21,7 +21,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',           action='store',                     type=str,            default='TTSingleLep_pow',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=str,            default='2017',                                             help="Which year?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -54,7 +54,7 @@ else:
     DataLumi = SampleChain.luminosity_2018
 
 histext = ''
-vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet']
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet', 'MupT', 'Mudxy', 'Mudz', 'epT', 'edxy', 'edz']
 
 if isinstance(samplelist[samples][0], types.ListType):
     histext = samples
@@ -69,12 +69,18 @@ if isinstance(samplelist[samples][0], types.ListType):
         histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[50,0,500], histclass = ROOT.TH1F).make_hist()
         histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
-        histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.02,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
         histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['Mudxy'] = HistInfo(hname = 'Mudxy', sample = histext, binning=[0,0.02,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['Mudz'] = HistInfo(hname = 'Mudz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['edxy'] = HistInfo(hname = 'edxy', sample = histext, binning=[0,0.02,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['edz'] = HistInfo(hname = 'edz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
                     
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -84,6 +90,7 @@ else:
     histext = samples
     for l in list(samplelist.values()):
         if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
+ 
     sample = samples
     print 'running over: ', sample
     hfile = ROOT.TFile( 'StackHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
@@ -94,12 +101,18 @@ else:
     histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[50,0,500], histclass = ROOT.TH1F).make_hist()
     histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
-    histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
     histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['Mudxy'] = HistInfo(hname = 'Mudxy', sample = histext, binning=[0,0.02,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['Mudz'] = HistInfo(hname = 'Mudz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['edxy'] = HistInfo(hname = 'edxy', sample = histext, binning=[0,0.02,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['edz'] = HistInfo(hname = 'edz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
                 
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()

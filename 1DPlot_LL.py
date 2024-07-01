@@ -2,7 +2,7 @@ import os, sys
 import ROOT
 import types
 
-from FillHistos import FillHistos
+from FillHistos_LL import FillHistos
 
 sys.path.append('../')
 from Sample.SampleChain import SampleChain
@@ -14,13 +14,12 @@ from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2017 import samples as samples_2017
 from Sample.FileList_UL2018 import samples as samples_2018
 
-
 def get_parser():
     ''' Argument parser.
     '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',           action='store',                     type=str,            default='TTSingleLep_pow',                                help="Which sample?" )
+    argParser.add_argument('--sample',           action='store',                     type=str,            default='MET_Data',                                help="Which sample?" )
     argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
@@ -50,8 +49,7 @@ else:
         samplelist = samples_2018
         DataLumi = SampleChain.luminosity_2018
             
-#vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Njet', 'Nbjet']
-vList = ['LeppT']
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet']
 histext = ''
 
 sdir = '1DFiles/'+year
@@ -71,9 +69,12 @@ if 'T2tt' in samples:
     histos['LepMT'] = HistInfo(hname = 'LepMT', sample = histext, binning=[50,0,500], histclass = ROOT.TH1F).make_hist()
     histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
+    histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
+    histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
-    histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
    
     ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -93,9 +94,13 @@ else:
             histos['LepMT'] = HistInfo(hname = 'LepMT', sample = histext, binning=[50,0,500], histclass = ROOT.TH1F).make_hist()
             histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
             histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
+            histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+            histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+            histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
+            histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
             histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
             histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
-            histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+
             ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
             FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
@@ -115,20 +120,20 @@ else:
         histos['LepMT'] = HistInfo(hname = 'LepMT', sample = histext, binning=[50,0,500], histclass = ROOT.TH1F).make_hist()
         histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
+        histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
+        histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
-        histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        
         ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
         hfile.Write()
-
-#outputDir = os.getcwd()
-outputDir = Rootfilesdirpath
-for key in histos:
-    Plot1D(histos[key], outputDir, islogy=True)
-    
 '''
+#outputDir = os.getcwd()
+
 bashline = []    
 
 if 'Data' in samples:
@@ -151,5 +156,7 @@ os.system('chmod 744 FileHandle.sh')
 os.system('./FileHandle.sh')
 os.system('rm *.root FileHandle.sh')
 '''
-
+outputDir = Rootfilesdirpath
+for key in histos:
+    Plot1D(histos[key], outputDir, islogy=True)
 
