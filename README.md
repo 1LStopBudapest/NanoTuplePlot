@@ -23,9 +23,10 @@ Now plotting script
 ```
 cd ../NanoTuplePlot
 
+```
+
 There are two kind of scripts: for prompt analysis and for displaced or long-lived analysis. Displaced scripts have suffix '_LL'.
 
-```
 Run 1DPlot.py for plotting physics objects or variables. Script produces 1D histograms of those variables.
 
 For example,
