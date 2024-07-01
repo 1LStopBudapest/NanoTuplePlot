@@ -18,7 +18,8 @@ def get_parser():
     nargs='+',       # one or more parameters to this switch
     type=str,        # /parameters/ are ints
     dest='alist',     # store in 'list'.
-    default=['WJetsToLNu', 'MET_Data'],      #last sample should be data as to be consistent with StackHists funtion.
+    default=['WJetsToLNu', 'TTbar', 'ST', 'DYJetsToLL', 'ZJetsToNuNu', 'QCD', 'TTV', 'VV', 'Sig_Prompt_500_470_full', 'Sig_Prompt_500_450_full', 'Sig_Prompt_500_420_fu\
+    ll', 'MET_Data'],      #last sample should be data as to be consistent with StackHistsExt funtion.
     )
     return argParser
 
@@ -33,16 +34,14 @@ doplots = True
 for sl in samplelists:
     if os.path.exists('StackHist_'+sl+'.root'):
         files.append(ROOT.TFile.Open('StackHist_'+sl+'.root'))
-    elif os.path.exists(plotDir+'StackFiles/final/StackHist_'+sl+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'StackFiles/final/StackHist_'+sl+'.root'))
+    elif os.path.exists(plotDir+'StackFiles/Prompt/StackHist_'+sl+'.root'):
+        files.append(ROOT.TFile.Open(plotDir+'StackFiles/Prompt/StackHist_'+sl+'.root'))
     else:
         doplots = False        
         print 'Root files for',sl,'sample soes not exist. Please run python StackHistMaker.py --sample',sl
 
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'Leppt', 'Njet', 'Nbjet'] #same as in StackHistMaker.py
 if doplots :
-    StackHists(files, samplelists, 'MET', plotDir, 'final')
-    StackHists(files, samplelists, 'Leppt', plotDir, 'final')
-    StackHists(files, samplelists, 'LepMT', plotDir, 'final')
-    StackHists(files, samplelists, 'HT', plotDir, 'final')
-    StackHists(files, samplelists, 'CT1', plotDir, 'final')
-    StackHists(files, samplelists, 'ISRJetPt', plotDir, 'final')
+        for v in vList:
+            StackHistsExt(files, samplelists, v, plotDir, 'Prompt')
+        

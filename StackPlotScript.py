@@ -12,7 +12,7 @@ from Sample.FileList_UL2017 import samples as samples_2017
 from Sample.FileList_UL2018 import samples as samples_2018
 
 
-samplesRun = ['ZJetsToNuNu', 'WJetsToLNu', 'DYJetsToLL', 'QCD', 'TTV', 'TTSingleLep_pow', 'TTLep_pow', 'ST', 'VV', 'MET_Data']
+samplesRun = ['WJetsToLNu', 'TTbar', 'ST', 'DYJetsToLL', 'ZJetsToNuNu', 'QCD', 'TTV', 'VV', 'Sig_Prompt_500_470_full', 'Sig_Prompt_500_450_full', 'Sig_Prompt_500_420_full', 'MET_Data']
 fileperjobMC = 2 
 fileperjobData = 1
 TotJobs = 4
@@ -80,5 +80,5 @@ fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallelStackHist.sh')
 os.system('./parallelStackHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
+os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
 

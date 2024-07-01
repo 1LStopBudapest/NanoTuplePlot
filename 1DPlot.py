@@ -50,8 +50,8 @@ else:
         samplelist = samples_2018
         DataLumi = SampleChain.luminosity_2018
             
-#vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Njet', 'Nbjet']
-vList = ['LeppT']
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Njet', 'Nbjet']
+
 histext = ''
 
 sdir = '1DFiles/'+year
@@ -59,6 +59,7 @@ Rootfilesdirpath = os.path.join(plotDir, sdir)
 if not os.path.exists(Rootfilesdirpath): 
     os.makedirs(Rootfilesdirpath)
 
+    
 if 'T2tt' in samples:
     sample = samples
     histext = samples
@@ -123,12 +124,14 @@ else:
         FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
         hfile.Write()
 
+'''
 #outputDir = os.getcwd()
 outputDir = Rootfilesdirpath
 for key in histos:
     Plot1D(histos[key], outputDir, islogy=True)
     
 '''
+
 bashline = []    
 
 if 'Data' in samples:
@@ -150,6 +153,8 @@ fsh.close()
 os.system('chmod 744 FileHandle.sh')
 os.system('./FileHandle.sh')
 os.system('rm *.root FileHandle.sh')
-'''
 
-
+fname = '1DHist_'+samples+'.root'
+outputDir = Rootfilesdirpath
+for var in vList:
+    Plot1DExt(var, histext, fname, outputDir, islogy=True)
