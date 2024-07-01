@@ -71,7 +71,8 @@ class FillHistos():
                 var['LepMT'] = getsel.getLepMT()
                 var['CT1'] = getsel.calCT(1)
                 var['CT2'] = getsel.calCT(2)
-                var['LeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
+                #var['LeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
+                var['LeppT'] = getsel.getSortedLepVar()[0]['pt']#only the leading lepton
                 var['Njet'] = getsel.calNj()
                 var['Nbjet'] = getsel.cntBtagjet()
                 '''

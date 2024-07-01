@@ -63,7 +63,7 @@ class FillHistos():
                 
             var = {key: None for key in vardic}#reseting the var dictionary for each event
             getsel = TreeVarSel(tr, self.isData, self.year)
-            if getsel.passFilters() and getsel.PreSelection():
+            if getsel.passFilters() and getsel.PreSelection() and getsel.Dxy3():
                 var['MET'] = tr.MET_pt
                 var['ISRJetPt'] = getsel.getISRPt()
                 var['HT'] = getsel.calHT()
@@ -76,23 +76,22 @@ class FillHistos():
                 var['Lepdz'] = [abs(x['dz']) for x in getsel.getSortedLepVar()]
                 var['Njet'] = getsel.calNj()
                 var['Nbjet'] = getsel.cntBtagjet()
+                var['MupT'] = [x['pt'] for x in getsel.getMuVar(getsel.selectMuIdx())]
+                var['Mudxy'] = [abs(x['dxy']) for x in getsel.getMuVar(getsel.selectMuIdx())]
+                var['Mudz'] = [abs(x['dz']) for x in getsel.getMuVar(getsel.selectMuIdx())]
+                var['epT'] = [x['pt'] for x in getsel.getEleVar()]
+                var['edxy'] = [abs(x['dxy']) for x in getsel.getEleVar()]
+                var['edz'] = [abs(x['dz']) for x in getsel.getEleVar()]
+                
                 '''
-                var['Muonpt'] = [x for x in getsel.getMuVar()['pt']]
-                var['Muondxy'] = [x for x in getsel.getMuVar()['dxy']]
-                var['Muondz'] = [x for x in getsel.getMuVar()['dz']]
-                var['Elept'] = [x for x in getsel.getEleVar()['pt']]
-                var['Eledxy'] = [x for x in getsel.getEleVar()['dxy']]
-                var['Eledz'] = [x for x in getsel.getEleVar()['dz']]
+                if not self.isData:
+                    var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
+                    var['GenElept'] = [x['pt'] for x in getvar.genEle()]
+                    var['GenBpt'] = [x['pt'] for x in getvar.genB()]
+                if self.isSignal or self.isSignalPoint:
+                    var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
+                    var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]
                 '''
-            '''
-            if not self.isData:
-                var['GenMuonpt'] = [x['pt'] for x in getvar.genMuon()]
-                var['GenElept'] = [x['pt'] for x in getvar.genEle()]
-                var['GenBpt'] = [x['pt'] for x in getvar.genB()]
-            if self.isSignal or self.isSignalPoint:
-                var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
-                var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]
-            '''
                     
             for key in self.histos:
                 if key in var.keys():
