@@ -12,7 +12,7 @@ git clone git@github.com:1LStopBudapest/Helper.git
 ```
 
 Go to the Sample directory. 
-Add user and change path name for plotDir under Dir.py file. userpath is the intial path for the directory where input samples are located (rest of the path is mentioned in FileList_*.py files). No need to change userpath unless one need to use private input sample (In that case, pathname in FileList_*.py file should also be changed).
+Add user and change path name for plotDir under Dir.py file. userpath is the intial path for the directory where input samples are located (rest of the path is mentioned in FileList_.py files). No need to change userpath unless one need to use private input sample (In that case, pathname in FileList_.py file should also be changed).
 
 ```
 cd Sample
@@ -70,6 +70,7 @@ This will run over all the signal points. For SM and data, use --sample Other
 The deafault region is SR+CR (search and control regions), to make histogram with other region, use --region option
 
 
+The following one might not work as RatioPlot.py needs to be modified to run over latest samples.
 
 One can run RatioPlot.py to make Ratio plots between two samples for a given variable. This is for shape comparison so for now, histograms are unit normalised. More option can be added later.
 
