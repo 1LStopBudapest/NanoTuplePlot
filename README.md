@@ -9,11 +9,15 @@ git clone git@github.com:1LStopBudapest/NanoTuplePlot.git
 git clone git@github.com:1LStopBudapest/Sample.git
 git clone git@github.com:1LStopBudapest/Helper.git
 
+```
+
+Go to the Sample directory. 
+Add user and change path name for plotDir under Dir.py file. userpath is the intial path for the directory where input samples are located (rest of the path is mentioned in FileList_*.py files). No need to change userpath unless one need to use private input sample (In that case, pathname in FileList_*.py file should also be changed).
+
+```
 cd Sample
 
 ```
-Add user and change path name under (if needed) Dir.py file 
-
 Sample information are listed in FileList_*.py files (2017 sample info missing, will be added soon)
 (check Sample readme)
 
@@ -32,7 +36,7 @@ Run 1DPlot.py for plotting physics objects or variables. Script produces 1D hist
 For example,
 
 ```
-python 1DPlot.py --sample TTSingleLep_pow --startfile 0 --nfiles 10
+python 1DPlot.py --sample TTSingleLep_pow --startfile 0 --nfiles 10 --nevents 10000
 
 ```
 
