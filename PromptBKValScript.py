@@ -16,15 +16,19 @@ def get_parser():
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample?" )
     argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
+    argParser.add_argument('--val',             action='store',                    type=str,            default='Val1',                                             help="Which region?" )
     return argParser
 
 options = get_parser().parse_args()
     
 reg = options.region
 sample = options.sample
+val = options.val
 
 SigScan =  True if 'Signal' in sample else False
+script = 'PromptBKVal1' if val=='Val1' else 'PromptBKVal2'
 year = '2018'
+nevts = 50000
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
@@ -38,7 +42,7 @@ elif year=='2017':
 else:
     samplelist = samples_2018
 
-Rootfilesdirpath = os.path.join(plotDir,"RegionHistFiles")
+Rootfilesdirpath = os.path.join(plotDir,"PromptValFiles")
 if not os.path.exists(Rootfilesdirpath):
         os.makedirs(Rootfilesdirpath)
 
@@ -49,7 +53,7 @@ if SigScan:
     txtline = []
     for sig in signals:
         sname = 'T2tt_'+sig
-        txtline.append("python RegionPlot.py --sample %s --region %s --year %s\n"%(sname, reg, year))
+        txtline.append("python %s.py --sample %s --region %s --year %s --nevents %d\n"%(script, sname, reg, year, nevts))
     fout = open("parallelJobsubmit.txt", "w")
     fout.write(''.join(txtline))
     fout.close()
@@ -58,8 +62,8 @@ if SigScan:
     bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
     for sig in signals:
         sname = 'T2tt_'+sig
-        bashline.append('mv RegionPlot_%s_%s*.root RegionPlot_%s_%s.root\n'%(reg, sname, reg, sname))
-    bashline.append('mv RegionPlot_%s*.root %s\n'%(reg, Rootfilesdirpath))
+        bashline.append('mv %s_%s_%s*.root RegionPlot_%s_%s.root\n'%(script, reg, sname, reg, sname))
+    bashline.append('mv %s_%s*.root %s\n'%(script, reg, Rootfilesdirpath))
 
 else:
     print 'Running over all the bkgs as well as data (MET)'
@@ -73,12 +77,12 @@ else:
                 fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
                 tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
                 for i in range(0, tfiles, fileperjob):
-                    txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i --region %s --year %s\n"%(sample, i, fileperjob, reg, year))
+                    txtline.append("python %s.py --sample %s --startfile %i --nfiles %i --region %s --year %s --nevents %d\n"%(script, sample, i, fileperjob, reg, year,  nevts))
         else:
             tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
             fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
             for i in range(0, tfiles, fileperjob):
-                txtline.append("python RegionPlot.py --sample %s --startfile %i --nfiles %i --region %s --year %s\n"%(sL, i, fileperjob, reg, year))
+                txtline.append("python %s.py --sample %s --startfile %i --nfiles %i --region %s --year %s --nevents %d\n"%(script, sL, i, fileperjob, reg, year, nevts))
     fout = open("parallelJobsubmit.txt", "w")
     fout.write(''.join(txtline))
     fout.close()
@@ -87,17 +91,17 @@ else:
     for sL in samplesRun:
         if 'Data' in sL:
             sLi = sL.replace('Data','')+'Run'
-            bashline.append('hadd RegionPlot_%s_%s.root RegionPlot_%s_%s*.root\n'%(reg, sL, reg, sLi))
+            bashline.append('hadd %s_%s_%s.root %s_%s_%s*.root\n'%(script, reg, sL, script, reg, sLi))
         elif isinstance(samplelist[sL][0], types.ListType):
-            sLi = 'hadd RegionPlot_'+reg+'_'+sL+'.root'+str("".join(' RegionPlot_'+reg+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
+            sLi = 'hadd '+script+'_'+reg+'_'+sL+'.root '+str("".join(script+'_'+reg+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root ' for s in samplelist[sL]))
             bashline.append('%s\n'%sLi)
         else:
-            bashline.append('hadd RegionPlot_%s_%s.root RegionPlot_%s_%s_*.root\n'%(reg, sL, reg, sL))
-        bashline.append('mv RegionPlot_%s_%s.root %s\n'%(reg, sL, Rootfilesdirpath))
+            bashline.append('hadd %s_%s_%s.root %s_%s_%s_*.root\n'%(script, reg, sL, script, reg, sL))
+        bashline.append('mv %s_%s_%s.root %s\n'%(script, reg, sL, Rootfilesdirpath))
                 
-fsh = open("parallelRegionHist.sh", "w")
+fsh = open("PromptBKValHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
-os.system('chmod 744 parallelRegionHist.sh')
-os.system('./parallelRegionHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallelRegionHist.sh')
+os.system('chmod 744 PromptBKValHist.sh')
+os.system('./PromptBKValHist.sh')
+#os.system('rm *.root parallelJobsubmit.txt PromptBKValHist.sh')
