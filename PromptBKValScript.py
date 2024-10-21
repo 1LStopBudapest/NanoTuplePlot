@@ -14,9 +14,9 @@ def get_parser():
     ''' Argument parser.                                                                                                                                                    '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample?" )
+    argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample?" )
     argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
-    argParser.add_argument('--val',             action='store',                    type=str,            default='Val1',                                             help="Which region?" )
+    argParser.add_argument('--val',             action='store',                    type=str,            default='Val2',                                             help="Which region?" )
     return argParser
 
 options = get_parser().parse_args()
@@ -28,7 +28,7 @@ val = options.val
 SigScan =  True if 'Signal' in sample else False
 script = 'PromptBKVal1' if val=='Val1' else 'PromptBKVal2'
 year = '2018'
-nevts = 50000
+nevts = -1
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
@@ -62,7 +62,7 @@ if SigScan:
     bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
     for sig in signals:
         sname = 'T2tt_'+sig
-        bashline.append('mv %s_%s_%s*.root RegionPlot_%s_%s.root\n'%(script, reg, sname, reg, sname))
+        bashline.append('mv %s_%s_%s*.root %s_%s_%s.root\n'%(script, reg, sname, script, reg, sname))
     bashline.append('mv %s_%s*.root %s\n'%(script, reg, Rootfilesdirpath))
 
 else:

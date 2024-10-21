@@ -50,7 +50,8 @@ else:
         samplelist = samples_2018
         DataLumi = SampleChain.luminosity_2018
             
-vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Njet', 'Nbjet']
+#vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'Njet', 'Nbjet', 'LeppT']
+vList = ['LeppT', 'MupT', 'epT']
 
 histext = ''
 
@@ -66,6 +67,7 @@ if 'T2tt' in samples:
     print 'running over: ', sample
     hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
+    '''
     histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,500], histclass = ROOT.TH1F).make_hist()
     histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
@@ -74,8 +76,10 @@ if 'T2tt' in samples:
     histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
+    '''
     histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-   
+    histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
@@ -88,6 +92,7 @@ else:
             print 'running over: ', sample
             hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
             histos = {}
+            '''
             histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,500], histclass = ROOT.TH1F).make_hist()
             histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
             histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
@@ -96,7 +101,10 @@ else:
             histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
             histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
             histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
+            '''
             histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+            histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+            histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
             ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
             FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
@@ -110,6 +118,7 @@ else:
         print 'running over: ', sample
         hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
+        '''
         histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,500], histclass = ROOT.TH1F).make_hist()
         histos['ISRJetPt'] = HistInfo(hname = 'ISRJetPt', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['HT'] = HistInfo(hname = 'HT', sample = histext, binning=[40,0,1000], histclass = ROOT.TH1F).make_hist()
@@ -118,7 +127,10 @@ else:
         histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
+        '''
         histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         ch = SampleChain(sample, options.startfile, options.nfiles, options.year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
@@ -131,7 +143,7 @@ for key in histos:
     Plot1D(histos[key], outputDir, islogy=True)
     
 '''
-
+'''
 bashline = []    
 
 if 'Data' in samples:
@@ -158,3 +170,4 @@ fname = '1DHist_'+samples+'.root'
 outputDir = Rootfilesdirpath
 for var in vList:
     Plot1DExt(var, histext, fname, outputDir, islogy=True)
+'''
