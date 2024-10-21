@@ -65,17 +65,35 @@ class FillHistos():
             var = {key: None for key in vardic}#reseting the var dictionary for each event
             getsel = TreeVarSel(tr, self.isData, self.year)
             if getsel.passFilters() and getsel.PreSelection():
+                '''
                 var['MET'] = tr.MET_pt
                 var['ISRJetPt'] = getsel.getISRPt()
                 var['HT'] = getsel.calHT()
                 var['LepMT'] = getsel.getLepMT()
                 var['CT1'] = getsel.calCT(1)
                 var['CT2'] = getsel.calCT(2)
-                #var['LeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
-                var['LeppT'] = getsel.getSortedLepVar()[0]['pt']#only the leading lepton
                 var['Njet'] = getsel.calNj()
                 var['Nbjet'] = getsel.cntBtagjet()
                 '''
+                tp = getsel.getSortedLepVar()[0]['type']
+                idx = getsel.getSortedLepVar()[0]['idx']
+                promptFlag = True if self.isData else False
+                if not self.isData:
+                    if tp == 'mu':
+                        flag=ord(tr.Muon_genPartFlav[idx])
+                    elif tp == 'Electron':
+                        flag=ord(tr.Electron_genPartFlav[idx])
+                    else:
+                        flag=ord(tr.LowPtElectron_genPartFlav[idx])
+                    promptFlag = flag in [ 1 , 15 ]
+                if promptFlag:
+                    var['LeppT'] = getsel.getSortedLepVar()[0]['pt']#only the leading lepton
+                    if tp == 'mu':
+                        var['MupT'] = getsel.getSortedLepVar()[0]['pt']
+                    else:
+                        var['epT'] = getsel.getSortedLepVar()[0]['pt']
+                    '''
+                var['LeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
                 var['Muonpt'] = [x for x in getsel.getMuVar()['pt']]
                 var['Elept'] = [x for x in getsel.getEleVar()['pt']]
                 '''

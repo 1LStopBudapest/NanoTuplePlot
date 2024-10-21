@@ -52,7 +52,7 @@ else:
     DataLumi = SampleChain.luminosity_2018
 
 if region == 'SR+CR':
-    bins = 24 + 24
+    bins = 72 + 16
     binLabel = SRBinLabelListVal2+CRBinLabelListVal2
 else:
     bins = 1
@@ -68,7 +68,7 @@ if 'T2tt' in samples:
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
     print 'Gen filter eff: ',gfltreff
-    hfile = ROOT.TFile( 'PromptBKVal1_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    hfile = ROOT.TFile( 'PromptBKVal2_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     for b in range(bins): histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -89,24 +89,18 @@ if 'T2tt' in samples:
         if region == 'SR+CR':
             if getsel.Val2SearchRegion():
                 if getsel.Val2SR1():
-                    idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                    idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                     if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.Val2SR2():
-                    idx = findSR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 8
-                    if not idx <= 7: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if getsel.Val2SR3():
-                    idx = findSR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 16
-                    if not idx <= 15: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                    if not idx <= 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
             if getsel.Val2ControlRegion():
                 if getsel.Val2CR1():
-                    idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 24 # after 24 SR bins or after bin index 23 
-                    if not idx <= 23: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.Val2CR2():
-                    idx = findCR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) +  24 + 8
-                    if not idx <= 31: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 72 SR bins or after bin index 71 
+                    if not idx <= 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if getsel.Val2CR3():
-                    idx = findCR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 32 + 8
-                    if not idx <= 39: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
+                    if not idx <= 79: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
     histos['h_reg'].Scale(gfltreff)
     hfile.Write()
 else:
@@ -140,24 +134,18 @@ else:
                 if region == 'SR+CR':
                     if getsel.Val2SearchRegion():
                         if getsel.Val2SR1():
-                            idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                            idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                             if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                        if getsel.Val2SR2():
-                            idx = findSR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 8
-                            if not idx <= 7: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                         if getsel.Val2SR3():
-                            idx = findSR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 16
-                            if not idx <= 15: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                            idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                            if not idx <= 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                     if getsel.Val2ControlRegion():
                         if getsel.Val2CR1():
-                            idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 24 # after 24 SR bins or after bin index 23 
-                            if not idx <= 23: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                        if getsel.Val2CR2():
-                            idx = findCR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) +  24 + 8
-                            if not idx <= 31: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                            idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 24 SR bins or after bin index 23 
+                            if not idx <= 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                         if getsel.Val2CR3():
-                            idx = findCR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 32 + 8
-                            if not idx <= 39: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                            idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
+                            if not idx <= 79: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
             hfile.Write()
     else:
         histext = samples
@@ -190,23 +178,17 @@ else:
             if region == 'SR+CR':
                 if getsel.Val2SearchRegion():
                     if getsel.Val2SR1():
-                        idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                        idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                         if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.Val2SR2():
-                        idx = findSR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 8
-                        if not idx <= 7: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                     if getsel.Val2SR3():
-                        idx = findSR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 16
-                        if not idx <= 15: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                        if not idx <= 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if getsel.Val2ControlRegion():
                     if getsel.Val2CR1():
-                        idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 24 # after 24 SR bins or after bin index 23
-                        if not idx <= 23: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.Val2CR2():
-                        idx = findCR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) +  24 + 8
-                        if not idx <= 31: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 72 SR bins or after bin index 71
+                        if not idx <= 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                     if getsel.Val2CR3():
-                        idx = findCR2BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 32 + 8
-                        if not idx <= 39: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
+                        if not idx <= 79: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
  
         hfile.Write()
