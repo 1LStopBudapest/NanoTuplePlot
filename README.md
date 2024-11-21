@@ -73,3 +73,11 @@ One can run RatioPlot.py to make Ratio plots between two samples for a given var
 python RatioPlot.py --sample1 Stop_500_480_tau10mm_fast --sample2 Stop_500_480_tau10mm_fast
 
 ```
+
+Make Histograms for the datacard
+
+```
+python CountDCHistScript.py
+
+```
+The above command makes the root file containing the rate histograms as well as several systematics. Please check CountDCHistScript.py and modify the sample or region or year if needed.

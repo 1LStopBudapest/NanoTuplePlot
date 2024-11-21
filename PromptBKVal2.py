@@ -179,13 +179,30 @@ else:
                 if getsel.Val2SearchRegion():
                     if getsel.Val2SR1():
                         idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                        if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.Val2SR3():
-                        idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                        if not idx <= 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        if not idx == -1:
+                            histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                            if not isData:
+                                histos['h_PU'].Fill(idx, lumiscale * reweightPU)
+                                histos['h_PUUp'].Fill(idx, lumiscale * reweightPUUp)
+                                histos['h_PUDown'].Fill(idx, lumiscale * reweightPUDown)
+                                histos['h_WPt'].Fill(idx, lumiscale * reweightwPt)
+                                histos['h_WPtUp'].Fill(idx, lumiscale * reweightwPtUp)
+                                histos['h_WPtDown'].Fill(idx, lumiscale * reweightwPtDown)
+                                histos['h_LeptonSF'].Fill(idx, lumiscale * reweightLeptonSF)
+                                histos['h_LeptonSFUp'].Fill(idx, lumiscale * reweightLeptonSFUp)
+                                histos['h_LeptonSFDown'].Fill(idx, lumiscale * reweightLeptonSFDown)
+                                histos['h_BTagSF'].Fill(idx, lumiscale * reweightBTag_SF)
+                                histos['h_BTagSFbUp'].Fill(idx, lumiscale * reweightBTagSF_b_Up)
+                                histos['h_BTagSFbDown'].Fill(idx, lumiscale * reweightBTagSF_b_Down)
+                                histos['h_BTagSFlUp'].Fill(idx, lumiscale * reweightBTagSF_l_Up)
+                                histos['h_BTagSFlDown'].Fill(idx, lumiscale * reweightBTagSF_l_Down)
+                                
+                        if getsel.Val2SR3():
+                            idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                            if not idx <= 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                 if getsel.Val2ControlRegion():
                     if getsel.Val2CR1():
-                        idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 72 SR bins or after bin index 71
+                        idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 #after 72 SR bins or after bin index 71
                         if not idx <= 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
                     if getsel.Val2CR3():
                         idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
