@@ -79,10 +79,18 @@ python RatioPlot.py --sample1 Stop_500_480_tau10mm_fast --sample2 Stop_500_480_t
 
 ```
 
-Make Histograms for the datacard
+Make Histograms for the datacard(DC). We use cut&count DC, so the following scripts produce the root file containing the hostograms which will be used as input to make the cut&count DC
 
 ```
 python CountDCHistScript.py
 
 ```
 The above command makes the root file containing the rate histograms as well as several systematics. Please check CountDCHistScript.py and modify the sample or region or year if needed.
+
+
+For the JEC & JER systematics, we need to run a seeparate script as follows
+```
+python CountDCHistJECScript.py
+
+```
+The above command makes the root file containing the rate histograms(the nominal one) as well as JEC & JER up/down systematics
