@@ -8,7 +8,7 @@ from Sample.Dir import plotDir
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 
-samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'QCD', 'MET_Data']
+samplesRun = ['WJetsToLNu', 'TTbar']
 fileperjobMC = 1 
 fileperjobData = 1
 TotJobs = 4
@@ -43,7 +43,7 @@ fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
 
-Rootfilesdirpath = os.path.join(plotDir,"RegionFiles")
+Rootfilesdirpath = os.path.join(plotDir,"RegionFiles/extension")
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
