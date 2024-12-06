@@ -19,10 +19,10 @@ def get_parser():
     nargs='+',                              # one or more parameters to this switch
     type=str,                               # /parameters/ are ints
     dest='alist',                           # store in 'list'.
-    default=['VV', 'TTV', 'ZJetsToNuNu', 'QCD', 'DYJetsToLL', 'ST', 'TTbar', 'WJetsToLNu', 'MET_Data'],     # last sample should be data as to be consistent with StackHists funtion.
+        default=['VV', 'TTV', 'ZJetsToNuNu', 'QCD', 'DYJetsToLL', 'ST', 'TTbar', 'WJetsToLNu'],     # last sample should be data (when data is included) as to be consistent with StackHists funtion.
     )
-    argParser.add_argument('--reg',            action='store',                    type=str,            default='SR+CR',          help="Which selection?" )
-    argParser.add_argument('--cut',            action='store',                    type=str,            default='CR',          help="Which selection?" )
+    argParser.add_argument('--reg',            action='store',                    type=str,            default='SR',          help="Which selection?" )
+    argParser.add_argument('--cut',            action='store',                    type=str,            default='SR',          help="Which selection?" )
     return argParser
 
 options = get_parser().parse_args()

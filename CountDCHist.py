@@ -254,7 +254,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
                 if getsel.SR2():
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                    if not idx == 35:
+                    if not idx <= 35:
                         histos['h_rate'].Fill(idx, lumiscale * MCcorr)
                         histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                         histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -457,7 +457,7 @@ else:
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
                     if getsel.SR3():
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                        if not idx == 71:
+                        if not idx <= 71:
                             histos['h_rate'].Fill(idx, lumiscale * MCcorr)
                             if not isData:
                                 histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
@@ -808,7 +808,7 @@ else:
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
                 if getsel.CR3():
                     idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
-                    if not idx == 15:
+                    if not idx <= 15:
                         histos['h_rate'].Fill(idx, lumiscale * MCcorr)
                         if not isData:
                             histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
@@ -925,7 +925,7 @@ else:
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
                     if getsel.CR3():
                         idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
-                        if not idx == 123:
+                        if not idx <= 123:
                             histos['h_rate'].Fill(idx, lumiscale * MCcorr)
                             if not isData:
                                 histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)

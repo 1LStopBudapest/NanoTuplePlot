@@ -14,7 +14,7 @@ def get_parser():
     ''' Argument parser.                                                                                                                                                    '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample?" )
+    argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample, Signal or Other?" )
     argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
     argParser.add_argument('--val',             action='store',                    type=str,            default='Val2',                                             help="Which region?" )
     return argParser
