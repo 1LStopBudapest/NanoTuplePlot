@@ -144,7 +144,7 @@ if 'T2tt' in samples:
                             h.Fill(idx, lumiscale * MCcorr)
                     if getsel.SR2(tp):
                         idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                        if not idx == 35:
+                        if not idx <= 35:
                             h.Fill(idx, lumiscale * MCcorr)
                     if getsel.SR3(tp):
                         idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
@@ -250,7 +250,7 @@ else:
                                     h.Fill(idx, lumiscale * MCcorr)
                             if getsel.SR2(tp):
                                 idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                                if not idx == 35:
+                                if not idx <= 35:
                                     h.Fill(idx, lumiscale * MCcorr)
                             if getsel.SR3(tp):
                                 idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
@@ -315,7 +315,6 @@ else:
                     else: h = histos['h_rate']
                     
                     if not getsel.PreSelection(tp): continue
-                    #print tp, '  ', 'presel'
                     if region == 'SR':
                         if not getsel.SearchRegion(tp): continue
                         if getsel.SR1(tp):
@@ -352,7 +351,7 @@ else:
                                     h.Fill(idx, lumiscale * MCcorr)
                             if getsel.SR2(tp):
                                 idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                                if not idx == 35:
+                                if not idx <= 35:
                                     h.Fill(idx, lumiscale * MCcorr)
                             if getsel.SR3(tp):
                                 idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
