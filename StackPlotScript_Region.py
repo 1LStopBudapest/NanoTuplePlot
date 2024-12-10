@@ -10,7 +10,8 @@ from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 from Sample.FileList_UL2017 import samples as samples_2017
 from Sample.FileList_UL2018 import samples as samples_2018
 
-samplesRun = ['WJetsToLNu', 'TTbar', 'ST', 'DYJetsToLL', 'ZJetsToNuNu', 'QCD', 'TTV', 'VV']
+samplesRun = ['VV', 'TTV', 'ZJetsToNuNu', 'QCD', 'DYJetsToLL', 'ST', 'TTbar', 'WJetsToLNu']
+
 fileperjobMC = 2 
 fileperjobData = 1
 TotJobs = 4
@@ -64,12 +65,12 @@ for sL in samplesRun:
         bashline.append('hadd RegionPlot_%s_%s.root RegionPlot_%s_%s_*.root\n'%(reg, sL, reg, sL))
     bashline.append('mv RegionPlot_%s_%s.root %s\n'%(reg, sL, Rootfilesdirpath))
 
-#l = str(" ".join(s for s in samplesRun))
-#bashline.append('python StackPlot_Region.py -l %s'%l)
+l = str(" ".join(s for s in samplesRun))
+bashline.append('python StackPlot_Region.py -l %s'%l)
     
 fsh = open("parallelStackHistReg.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallelStackHistReg.sh')
-#os.system('./parallelStackHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallelStackHistReg.sh')
+os.system('./parallelStackHistReg.sh')
+os.system('rm *.root parallelJobsubmit.txt parallelStackHistReg.sh')
