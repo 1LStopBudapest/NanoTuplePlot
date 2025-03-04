@@ -13,7 +13,7 @@ from Sample.FileList_UL2018 import samples as samples_2018
 from Helper.PlotHelper import *
 
 #samplesRun = ['WJetsToLNu', 'TTSingleLep_pow', 'MET_Data',]
-samplesRun = ['WJetsToLNu', 'TTbar', 'ST', 'DYJetsToLL', 'TTV']
+samplesRun = ['TTV', 'VV', 'QCD', 'ZJetsToNuNu', 'ST', 'TTbar', 'WJetsToLNu', 'Sig_Prompt_500_420_full', 'Sig_Prompt_500_450_full', 'Sig_Prompt_500_470_full']
 fileperjobMC = 4
 fileperjobData = fileperjobMC
 TotJobs = 4
@@ -40,13 +40,13 @@ for sL in samplesRun:
             sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
             fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
             tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
-            for i in range(0, tfiles, fileperjobMC):
-                txtline.append("python 1DPlot.py --sample %s --year %s --startfile %i --nfiles %i --nevents %d\n"%(sample, year, i, fileperjobMC, nevts))
+            for i in range(0, tfiles, fileperjob):
+                txtline.append("python 1DPlot.py --sample %s --year %s --startfile %i --nfiles %i --nevents %d\n"%(sample, year, i, fileperjob, nevts))
     else:
         tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
         fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
-        for i in range(0, tfiles, fileperjobMC):
-            txtline.append("python 1DPlot.py --sample %s --year %s --startfile %i --nfiles %i --nevents %d\n"%(sL, year, i, fileperjobMC, nevts))
+        for i in range(0, tfiles, fileperjob):
+            txtline.append("python 1DPlot.py --sample %s --year %s --startfile %i --nfiles %i --nevents %d\n"%(sL, year, i, fileperjob, nevts))
                 
 fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
@@ -75,12 +75,13 @@ fsh = open("parallel1DHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallel1DHist.sh')
-os.system('./parallel1DHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallel1DHist.sh')
+#os.system('./parallel1DHist.sh')
+os.system('rm *.root parallelJobsubmit.txt parallel1DHist.sh')
+
 
 #Plotting section
 doplots = True
-vList = ['LeppT', 'MupT', 'epT'] #should be same as in 1DPlot.py
+vList = ['LeppT'] #should be same as in 1DPlot.py
 files = []
 for sl in samplesRun:
     if os.path.exists(Rootfilesdirpath+'/1DHist_'+sl+'.root'):
@@ -91,9 +92,12 @@ for sl in samplesRun:
 
 if doplots :
     for v in vList:
-        #comparison plot
-        CompareHistExt(files, samplesRun, v, 'Shape', Rootfilesdirpath)
         #1D plot
         #for sl in samplesRun:
             #Plot1DExt(v, sl, '1DHist_'+sl+'.root', Rootfilesdirpath, islogy=True)
+        #stackplot
+        StackHistsNoDataExt(files, samplesRun, v, Rootfilesdirpath, 'Preselection')
+        #comparison plot
+       # CompareHistExt(files, samplesRun, v, 'Shape', Rootfilesdirpath)
+        
 
