@@ -68,7 +68,7 @@ if 'T2tt' in samples:
     ml = int(sample.split('_')[2])
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
-    print 'Gen filter eff: ',gfltreff
+    #print 'Gen filter eff: ',gfltreff
     hfile = ROOT.TFile( 'PromptBKVal2_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -137,7 +137,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
                 if getsel.Val2SR3():
                     idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                     if not idx <= 35:
@@ -156,7 +156,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
             if getsel.Val2ControlRegion():
                 if getsel.Val2CR1():
                     idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 72 SR bins or after bin index 71 
@@ -176,7 +176,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
                 if getsel.Val2CR3():
                     idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
                     if not idx <= 79:
@@ -195,7 +195,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
     histos['h_reg'].Scale(gfltreff)
     histos['h_PU'].Scale(gfltreff)
     histos['h_PUUp'].Scale(gfltreff)

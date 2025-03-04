@@ -75,6 +75,7 @@ class FillHistos():
                 var['Njet'] = getsel.calNj()
                 var['Nbjet'] = getsel.cntBtagjet()
                 '''
+                '''
                 tp = getsel.getSortedLepVar()[0]['type']
                 idx = getsel.getSortedLepVar()[0]['idx']
                 promptFlag = True if self.isData else False
@@ -86,13 +87,16 @@ class FillHistos():
                     else:
                         flag=ord(tr.LowPtElectron_genPartFlav[idx])
                     promptFlag = flag in [ 1 , 15 ]
-                if promptFlag:
-                    var['LeppT'] = getsel.getSortedLepVar()[0]['pt']#only the leading lepton
-                    if tp == 'mu':
+                '''
+                #if promptFlag:
+                var['LeppT'] = getsel.getSortedLepVar()[0]['pt']#only the leading lepton
+                '''
+                if tp == 'mu':
                         var['MupT'] = getsel.getSortedLepVar()[0]['pt']
                     else:
                         var['epT'] = getsel.getSortedLepVar()[0]['pt']
-                    '''
+                '''   
+                '''
                 var['LeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
                 var['Muonpt'] = [x for x in getsel.getMuVar()['pt']]
                 var['Elept'] = [x for x in getsel.getEleVar()['pt']]

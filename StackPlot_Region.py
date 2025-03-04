@@ -47,7 +47,7 @@ for sl in samplelists:
         print 'Root files for', sl, 'sample does not exist. Please run python RegionPlot.py --sample', sl
 
 if doplots:
-    #StackHistsNoData(files, samplelists, 'h_reg', plotDir, cut)# use this one when data is included
+    #StackHists(files, samplelists, 'h_reg', plotDir, cut)# use this one when data is included
     StackHistsNoData(files, samplelists, 'h_reg', plotDir, cut)
     StackHistsNoData(files, samplelists, 'h_reg_prompt', plotDir, cut)
     StackHistsNoData(files, samplelists, 'h_reg_nonprompt', plotDir, cut)
