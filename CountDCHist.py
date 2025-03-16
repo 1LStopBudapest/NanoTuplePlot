@@ -8,6 +8,8 @@ from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
 from Helper.Binning import *
 from Helper.GenFilterEff import GenFilterEff
+from Helper.XsecUnc import *
+from Helper.TrigEff import *
 from Sample.SampleChain import SampleChain
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
@@ -37,6 +39,8 @@ nEvents = options.nevents
 
 isData = True if ('Run' in samples or 'Data' in samples) else False
 DataLumi=1.0
+
+trigger = 'HLT_PFMET120_PFMHT120_IDTight' #for inclusive MET triggers (logical OR), use 'HLT_MET_Inclusive'
 
 if year=='2016PreVFP':
     samplelist = samples_2016Pre
@@ -73,7 +77,8 @@ if 'T2tt' in samples:
     ml = int(sample.split('_')[2])
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
-    print 'Gen filter eff: ',gfltreff
+    #print 'Gen filter eff: ',gfltreff
+    trigeff = getTrigEff(year)
     hfile = ROOT.TFile( 'CountDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_rate'] = HistInfo(hname = 'h_rate', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -91,6 +96,7 @@ if 'T2tt' in samples:
     histos['h_BTagSFbDown'] = HistInfo(hname = 'h_BTagSFbDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_BTagSFlUp'] = HistInfo(hname = 'h_BTagSFlUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_BTagSFlDown'] = HistInfo(hname = 'h_BTagSFlDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_XsecUp'] = HistInfo(hname = 'h_XsecUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     for b in range(bins):
         histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_PU'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -107,6 +113,7 @@ if 'T2tt' in samples:
         histos['h_BTagSFbDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_BTagSFlUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_BTagSFlDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     n_entries = ch.GetEntries()
@@ -117,7 +124,7 @@ if 'T2tt' in samples:
         if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
         ch.GetEntry(ientry)
         lumiscale = (DataLumi/1000.0) * ch.weight
-        MCcorr = MCWeight(ch, year, sample).getTotalWeight()
+        MCcorr = MCWeight(ch, year, sample).getTotalWeight() * trigeff
         getsel = TreeVarSel(ch, isData, year)
         if not getsel.PreSelection(): continue
         if region == 'SR':
@@ -140,6 +147,7 @@ if 'T2tt' in samples:
                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
             if getsel.SR2():
                 idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                 if not idx <= 35:
@@ -158,6 +166,7 @@ if 'T2tt' in samples:
                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
             if getsel.SR3():
                 idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                 if not idx <= 71:
@@ -176,6 +185,7 @@ if 'T2tt' in samples:
                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
         if region == 'CR':
             if not getsel.ControlRegion(): continue
             if getsel.CR1():
@@ -196,6 +206,7 @@ if 'T2tt' in samples:
                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
             if getsel.CR2():
                 idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
                 if not idx <= 7:
@@ -214,6 +225,7 @@ if 'T2tt' in samples:
                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
             if getsel.CR3():
                 idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
                 if not idx <= 15:
@@ -232,6 +244,7 @@ if 'T2tt' in samples:
                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
         if region == 'SR+CR':
             if getsel.SearchRegion():
                 if getsel.SR1():
@@ -252,6 +265,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
                 if getsel.SR2():
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                     if not idx <= 35:
@@ -270,6 +284,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
                 if getsel.SR3():
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                     if not idx <= 71:
@@ -288,6 +303,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
             if getsel.ControlRegion():
                 if getsel.CR1():
                     idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 # after 108 SR bins or after bin index 107 
@@ -307,6 +323,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
                 if getsel.CR2():
                     idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  108 + 8
                     if not idx <= 115:
@@ -325,6 +342,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
                 if getsel.CR3():
                     idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
                     if not idx <= 123:
@@ -343,6 +361,7 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
     histos['h_rate'].Scale(gfltreff)
     histos['h_PU'].Scale(gfltreff)
     histos['h_PUUp'].Scale(gfltreff)
@@ -357,7 +376,7 @@ if 'T2tt' in samples:
     histos['h_BTagSFbUp'].Scale(gfltreff)
     histos['h_BTagSFbDown'].Scale(gfltreff)
     histos['h_BTagSFlUp'].Scale(gfltreff)
-
+    histos['h_XsecUp'].Scale(gfltreff)
     hfile.Write()
 else:
     if isinstance(samplelist[samples][0], types.ListType):
@@ -382,7 +401,8 @@ else:
             histos['h_BTagSFbDown'] = HistInfo(hname = 'h_BTagSFbDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlUp'] = HistInfo(hname = 'h_BTagSFlUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlDown'] = HistInfo(hname = 'h_BTagSFlDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-	    for b in range(bins):
+            histos['h_XsecUp'] = HistInfo(hname = 'h_XsecUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            for b in range(bins):
                 histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PU'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -398,6 +418,7 @@ else:
                 histos['h_BTagSFbDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
 	    ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 	    n_entries = ch.GetEntries()
@@ -415,6 +436,8 @@ else:
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
                 if not getsel.PreSelection(): continue
+                if not getsel.passFilters(): continue
+                if not getsel.passMETTrig(trigger): continue
                 if region == 'SR':
                     if not getsel.SearchRegion(): continue
                     if getsel.SR1():
@@ -436,6 +459,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.SR2():
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                         if not idx <= 35:
@@ -455,6 +479,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.SR3():
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                         if not idx <= 71:
@@ -474,6 +499,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if region == 'CR':
                     if not getsel.ControlRegion(): continue
                     if getsel.CR1():
@@ -495,6 +521,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.CR2():
                         idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
                         if not idx <= 7:
@@ -514,6 +541,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.CR3():
                         idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
                         if not idx <= 15:
@@ -533,6 +561,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if region == 'SR+CR':
                     if getsel.SearchRegion():
                         if getsel.SR1():
@@ -554,6 +583,7 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                         if getsel.SR2():
                             idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                             if not idx <= 35:
@@ -573,6 +603,7 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                         if getsel.SR3():
                             idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                             if not idx <= 71:
@@ -592,6 +623,7 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.ControlRegion():
                         if getsel.CR1():
                             idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 # after 108 SR bins or after bin index 107 
@@ -612,6 +644,7 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                         if getsel.CR2():
                             idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  108 + 8
                             if not idx <= 115:
@@ -631,6 +664,7 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                         if getsel.CR3():
                             idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
                             if not idx <= 123:
@@ -650,6 +684,7 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
             hfile.Write()
     else:
         histext = samples
@@ -674,6 +709,7 @@ else:
         histos['h_BTagSFbDown'] = HistInfo(hname = 'h_BTagSFbDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlUp'] = HistInfo(hname = 'h_BTagSFlUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlDown'] = HistInfo(hname = 'h_BTagSFlDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_XsecUp'] = HistInfo(hname = 'h_XsecUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         for b in range(bins):
             histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PU'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -690,6 +726,7 @@ else:
             histos['h_BTagSFbDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         n_entries = ch.GetEntries()
@@ -707,6 +744,8 @@ else:
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
             if not getsel.PreSelection(): continue
+            if not getsel.passFilters(): continue
+            if not getsel.passMETTrig(trigger): continue
             if region == 'SR':
                 if not getsel.SearchRegion(): continue
                 if getsel.SR1():
@@ -728,6 +767,7 @@ else:
                             histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                             histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                            histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if getsel.SR2():
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                     if not idx <= 35:
@@ -747,6 +787,7 @@ else:
                             histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                             histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                            histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if getsel.SR3():
                     idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                     if not idx <= 71:
@@ -766,6 +807,7 @@ else:
                             histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                             histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                            histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
             if region == 'CR':
                 if not getsel.ControlRegion(): continue
                 if getsel.CR1():
@@ -787,6 +829,7 @@ else:
                             histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                             histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                            histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if getsel.CR2():
                     idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
                     if not idx <= 7:
@@ -806,6 +849,7 @@ else:
                             histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                             histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                            histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if getsel.CR3():
                     idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
                     if not idx <= 15:
@@ -825,6 +869,7 @@ else:
                             histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                             histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                             histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                            histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
             if region == 'SR+CR':
                 if getsel.SearchRegion():
                     if getsel.SR1():
@@ -846,6 +891,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.SR2():
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                         if not idx <= 35:
@@ -865,6 +911,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.SR3():
                         idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                         if not idx <= 71:
@@ -884,6 +931,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                 if getsel.ControlRegion():
                     if getsel.CR1():
                         idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 # after 108 SR bins or after bin index 107
@@ -904,6 +952,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.CR2():
                         idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  108 + 8
                         if not idx <= 115:
@@ -923,6 +972,7 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                     if getsel.CR3():
                         idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
                         if not idx <= 123:
@@ -942,4 +992,5 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
         hfile.Write()

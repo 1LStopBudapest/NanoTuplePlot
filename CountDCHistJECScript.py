@@ -14,8 +14,8 @@ def get_parser():
     ''' Argument parser.                                                                                                                                                    '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample, Signal or Other?" )
-    argParser.add_argument('--region',             action='store',                    type=str,            default='SR',                                             help="Which region?" )
+    argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample, Signal or Other?" )
+    argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
     argParser.add_argument('--dc',             action='store',                    type=str,            default='count',                                             help="What type of datacard?" )
     return argParser
 
@@ -100,4 +100,4 @@ fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 PromptDCHistJEC.sh')
 os.system('./PromptDCHistJEC.sh')
-#os.system('rm *.root parallelJobsubmit.txt PromptDCHistJEC.sh')
+os.system('rm *.root parallelJobsubmit.txt PromptDCHistJEC.sh')
