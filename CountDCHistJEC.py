@@ -8,6 +8,7 @@ from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
 from Helper.Binning import *
 from Helper.GenFilterEff import GenFilterEff
+from Helper.TrigEff import *
 from Sample.SampleChain import SampleChain
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
@@ -37,6 +38,8 @@ nEvents = options.nevents
 
 isData = True if ('Run' in samples or 'Data' in samples) else False
 DataLumi=1.0
+
+trigger = 'HLT_PFMET120_PFMHT120_IDTight' #for inclusive MET triggers (logical OR), use 'HLT_MET_Inclusive'
 
 if year=='2016PreVFP':
     samplelist = samples_2016Pre
@@ -73,7 +76,8 @@ if 'T2tt' in samples:
     ml = int(sample.split('_')[2])
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
-    print 'Gen filter eff: ',gfltreff
+    #print 'Gen filter eff: ',gfltreff
+    trigeff = getTrigEff(year)
     hfile = ROOT.TFile( 'CountDCHistJEC_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_rate'] = HistInfo(hname = 'h_rate', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -98,7 +102,7 @@ if 'T2tt' in samples:
         if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
         ch.GetEntry(ientry)
         lumiscale = (DataLumi/1000.0) * ch.weight
-        MCcorr = MCWeight(ch, year, sample).getTotalWeight()
+        MCcorr = MCWeight(ch, year, sample).getTotalWeight() * trigeff
         getsel = TreeVarSel(ch, isData, year)
         for tp in ['Nom', 'JECUp', 'JECDown', 'JERUp', 'JERDown']:
             if tp == 'JECUp': h = histos['h_JECUp']
@@ -214,6 +218,8 @@ else:
                     else: h = histos['h_rate']
 
                     if not getsel.PreSelection(tp): continue
+                    if not getsel.passFilters(): continue
+                    if not getsel.passMETTrig(trigger): continue
                     if region == 'SR':
                         if not getsel.SearchRegion(tp): continue
                         if getsel.SR1(tp):
@@ -313,8 +319,9 @@ else:
                     elif tp == 'JERUp': h = histos['h_JERUp']
                     elif tp == 'JERDown': h = histos['h_JERDown']
                     else: h = histos['h_rate']
-                    
                     if not getsel.PreSelection(tp): continue
+                    if not getsel.passFilters(): continue
+                    if not getsel.passMETTrig(trigger): continue
                     if region == 'SR':
                         if not getsel.SearchRegion(tp): continue
                         if getsel.SR1(tp):

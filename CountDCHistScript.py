@@ -14,8 +14,8 @@ def get_parser():
     ''' Argument parser.                                                                                                                                                    '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample, Signal or Other?" )
-    argParser.add_argument('--region',             action='store',                    type=str,            default='SR',                                             help="Which region?" )
+    argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample, Signal or Other?" )
+    argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
     argParser.add_argument('--dc',             action='store',                    type=str,            default='count',                                             help="What type of datacard?" )
     return argParser
 
@@ -28,7 +28,7 @@ dc = options.dc
 SigScan =  True if 'Signal' in sample else False
 script = 'CountDCHist' if dc=='count' else 'ShapeDCHist'
 year = '2018'
-nevts = 100000
+nevts = 10000
 fileperjobMC = 4
 fileperjobData = 2
 TotJobs = 4
@@ -104,4 +104,4 @@ fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 PromptDCHist.sh')
 os.system('./PromptDCHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt PromptDCHist.sh')
+os.system('rm *.root parallelJobsubmit.txt PromptDCHist.sh')
