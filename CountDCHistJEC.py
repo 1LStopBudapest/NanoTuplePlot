@@ -188,13 +188,33 @@ else:
             histos['h_JECDown'] = HistInfo(hname = 'h_JECDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_JERUp'] = HistInfo(hname = 'h_JERUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_JERDown'] = HistInfo(hname = 'h_JERDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_rate_prompt'] = HistInfo(hname = 'h_rate_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECUp_prompt'] = HistInfo(hname = 'h_JECUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECDown_prompt'] = HistInfo(hname = 'h_JECDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERUp_prompt'] = HistInfo(hname = 'h_JERUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERDown_prompt'] = HistInfo(hname = 'h_JERDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_rate_nonprompt'] = HistInfo(hname = 'h_rate_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECUp_nonprompt'] = HistInfo(hname = 'h_JECUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECDown_nonprompt'] = HistInfo(hname = 'h_JECDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERUp_nonprompt'] = HistInfo(hname = 'h_JERUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERDown_nonprompt'] = HistInfo(hname = 'h_JERDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
 	    for b in range(bins):
                 histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JECUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JECDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JERUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JERDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-	    ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
+                histos['h_rate_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_rate_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 	    n_entries = ch.GetEntries()
             nevtcut = n_entries -1 if nEvents == - 1 else nEvents - 1
@@ -211,70 +231,119 @@ else:
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
                 for tp in ['Nom', 'JECUp', 'JECDown', 'JERUp', 'JERDown']:
-                    if tp == 'JECUp': h = histos['h_JECUp']
-                    elif tp == 'JECDown': h = histos['h_JECDown']
-                    elif tp == 'JERUp': h = histos['h_JERUp']
-                    elif tp == 'JERDown': h = histos['h_JERDown']
-                    else: h = histos['h_rate']
-
+                    if tp == 'JECUp':
+                        h1 = histos['h_JECUp']
+                        h2 = histos['h_JECUp_prompt']
+                        h3 = histos['h_JECUp_nonprompt']
+                    elif tp == 'JECDown':
+                        h1 = histos['h_JECDown']
+                        h2 = histos['h_JECDown_prompt']
+                        h3 = histos['h_JECDown_nonprompt']
+                    elif tp == 'JERUp':
+                        h1 = histos['h_JERUp']
+                        h2 = histos['h_JERUp_prompt']
+                        h3 = histos['h_JERUp_nonprompt']
+                    elif tp == 'JERDown':
+                        h1 = histos['h_JERDown']
+                        h2 = histos['h_JERDown_prompt']
+                        h3 = histos['h_JERDown_nonprompt']
+                    else:
+                        h1 = histos['h_rate']
+                        h2 = histos['h_rate_prompt']
+                        h3 = histos['h_rate_nonprompt']
                     if not getsel.PreSelection(tp): continue
                     if not getsel.passFilters(): continue
                     if not getsel.passMETTrig(trigger): continue
+                    idx = getsel.getSortedLepVar()[0]['idx']
+                    tp = getsel.getSortedLepVar()[0]['type']
+                    promptFlag = True if isData else False
+                    if not isData:
+                        if tp == 'mu':
+                            flag=ord(ch.Muon_genPartFlav[idx])
+                        elif tp == 'Electron':
+                            flag=ord(ch.Electron_genPartFlav[idx])
+                        else:
+                            flag=ord(ch.LowPtElectron_genPartFlav[idx])
+                        promptFlag = flag in [ 1 , 15 ]
                     if region == 'SR':
                         if not getsel.SearchRegion(tp): continue
                         if getsel.SR1(tp):
                             idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                             if not idx == -1:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.SR2(tp):
                             idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                             if not idx <= 35:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.SR3(tp):
                             idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                             if not idx <= 71:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                     if region == 'CR':
                         if not getsel.ControlRegion(tp): continue
                         if getsel.CR1(tp):
                             idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
                             if not idx == -1:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.CR2(tp):
                             idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 8
                             if not idx <= 7:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.CR3(tp):
                             idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 16
                             if not idx <= 15:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                     if region == 'SR+CR':
                         if getsel.SearchRegion(tp):
                             if getsel.SR1(tp):
                                 idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                                 if not idx == -1:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.SR2(tp):
                                 idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                                 if not idx <= 35:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.SR3(tp):
                                 idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                                 if not idx <= 71:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.ControlRegion(tp):
                             if getsel.CR1(tp):
                                 idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 #after 108 SRbins or after bin index 107 
                                 if not idx <= 107:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.CR2(tp):
                                 idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) +  108 + 8
                                 if not idx <= 115:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.CR3(tp):
                                 idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 116 + 8
                                 if not idx <= 123:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                 
                                     
             hfile.Write()
@@ -291,12 +360,32 @@ else:
         histos['h_JECDown'] = HistInfo(hname = 'h_JECDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_JERUp'] = HistInfo(hname = 'h_JERUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_JERDown'] = HistInfo(hname = 'h_JERDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_rate_prompt'] = HistInfo(hname = 'h_rate_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECUp_prompt'] = HistInfo(hname = 'h_JECUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECDown_prompt'] = HistInfo(hname = 'h_JECDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERUp_prompt'] = HistInfo(hname = 'h_JERUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERDown_prompt'] = HistInfo(hname = 'h_JERDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_rate_nonprompt'] = HistInfo(hname = 'h_rate_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECUp_nonprompt'] = HistInfo(hname = 'h_JECUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECDown_nonprompt'] = HistInfo(hname = 'h_JECDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERUp_nonprompt'] = HistInfo(hname = 'h_JERUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERDown_nonprompt'] = HistInfo(hname = 'h_JERDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         for b in range(bins):
             histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JECUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JECDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JERUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JERDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_rate_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_rate_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         n_entries = ch.GetEntries()
@@ -314,69 +403,118 @@ else:
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
             for tp in ['Nom', 'JECUp', 'JECDown', 'JERUp', 'JERDown']:
-                    if tp == 'JECUp': h = histos['h_JECUp']
-                    elif tp == 'JECDown': h = histos['h_JECDown']
-                    elif tp == 'JERUp': h = histos['h_JERUp']
-                    elif tp == 'JERDown': h = histos['h_JERDown']
-                    else: h = histos['h_rate']
-                    if not getsel.PreSelection(tp): continue
-                    if not getsel.passFilters(): continue
-                    if not getsel.passMETTrig(trigger): continue
-                    if region == 'SR':
-                        if not getsel.SearchRegion(tp): continue
+                if tp == 'JECUp':
+                    h1 = histos['h_JECUp']
+                    h2 = histos['h_JECUp_prompt']
+                    h3 = histos['h_JECUp_nonprompt']
+                elif tp == 'JECDown':
+                    h1 = histos['h_JECDown']
+                    h2 = histos['h_JECDown_prompt']
+                    h3 = histos['h_JECDown_nonprompt']
+                elif tp == 'JERUp':
+                    h1 = histos['h_JERUp']
+                    h2 = histos['h_JERUp_prompt']
+                    h3 = histos['h_JERUp_nonprompt']
+                elif tp == 'JERDown':
+                    h1 = histos['h_JERDown']
+                    h2 = histos['h_JERDown_prompt']
+                    h3 = histos['h_JERDown_nonprompt']
+                else:
+                    h1 = histos['h_rate']
+                    h2 = histos['h_rate_prompt']
+                    h3 = histos['h_rate_nonprompt']
+                if not getsel.PreSelection(tp): continue
+                if not getsel.passFilters(): continue
+                if not getsel.passMETTrig(trigger): continue
+                idx = getsel.getSortedLepVar()[0]['idx']
+                tp = getsel.getSortedLepVar()[0]['type']
+                promptFlag = True if isData else False
+                if not isData:
+                    if tp == 'mu':
+                        flag=ord(ch.Muon_genPartFlav[idx])
+                    elif tp == 'Electron':
+                        flag=ord(ch.Electron_genPartFlav[idx])
+                    else:
+                        flag=ord(ch.LowPtElectron_genPartFlav[idx])
+                    promptFlag = flag in [ 1 , 15 ]
+                if region == 'SR':
+                    if not getsel.SearchRegion(tp): continue
+                    if getsel.SR1(tp):
+                        idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
+                        if not idx == -1:
+                            h1.Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                            else: h3.Fill(idx, lumiscale * MCcorr)
+                    if getsel.SR2(tp):
+                        idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
+                        if not idx <= 35:
+                            h1.Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                            else: h3.Fill(idx, lumiscale * MCcorr)
+                    if getsel.SR3(tp):
+                        idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
+                        if not idx <= 71:
+                            h1.Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                            else: h3.Fill(idx, lumiscale * MCcorr)
+                if region == 'CR':
+                    if not getsel.ControlRegion(tp): continue
+                    if getsel.CR1(tp):
+                        idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                        if not idx == -1:
+                            h1.Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                            else: h3.Fill(idx, lumiscale * MCcorr)
+                    if getsel.CR2(tp):
+                        idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 8
+                        if not idx <= 7:
+                            h1.Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                            else: h3.Fill(idx, lumiscale * MCcorr)
+                    if getsel.CR3(tp):
+                        idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 16
+                        if not idx <= 15:
+                            h1.Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                            else: h3.Fill(idx, lumiscale * MCcorr)
+                if region == 'SR+CR':
+                    if getsel.SearchRegion(tp):
                         if getsel.SR1(tp):
                             idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                             if not idx == -1:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.SR2(tp):
                             idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                             if not idx <= 35:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.SR3(tp):
                             idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                             if not idx <= 71:
-                                h.Fill(idx, lumiscale * MCcorr)
-                    if region == 'CR':
-                        if not getsel.ControlRegion(tp): continue
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
+                    if getsel.ControlRegion(tp):
                         if getsel.CR1(tp):
-                            idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
-                            if not idx == -1:
-                                h.Fill(idx, lumiscale * MCcorr)
+                            idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 #after 108 SRbins or after bin index 107 
+                            if not idx <= 107:
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.CR2(tp):
-                            idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 8
-                            if not idx <= 7:
-                                h.Fill(idx, lumiscale * MCcorr)
+                            idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) +  108 + 8
+                            if not idx <= 115:
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.CR3(tp):
-                            idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 16
-                            if not idx <= 15:
-                                h.Fill(idx, lumiscale * MCcorr)
-                    if region == 'SR+CR':
-                        if getsel.SearchRegion(tp):
-                            if getsel.SR1(tp):
-                                idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                                if not idx == -1:
-                                    h.Fill(idx, lumiscale * MCcorr)
-                            if getsel.SR2(tp):
-                                idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                                if not idx <= 35:
-                                    h.Fill(idx, lumiscale * MCcorr)
-                            if getsel.SR3(tp):
-                                idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                                if not idx <= 71:
-                                    h.Fill(idx, lumiscale * MCcorr)
-                        if getsel.ControlRegion(tp):
-                            if getsel.CR1(tp):
-                                idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 #after 108 SRbins or after bin index 107 
-                                if not idx <= 107:
-                                    h.Fill(idx, lumiscale * MCcorr)
-                            if getsel.CR2(tp):
-                                idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) +  108 + 8
-                                if not idx <= 115:
-                                    h.Fill(idx, lumiscale * MCcorr)
-                            if getsel.CR3(tp):
-                                idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 116 + 8
-                                if not idx <= 123:
-                                    h.Fill(idx, lumiscale * MCcorr)
-
+                            idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 116 + 8
+                            if not idx <= 123:
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                                 
         hfile.Write()

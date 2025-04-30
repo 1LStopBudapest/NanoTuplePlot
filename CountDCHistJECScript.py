@@ -14,7 +14,7 @@ def get_parser():
     ''' Argument parser.                                                                                                                                                    '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample, Signal or Other?" )
+    argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample, Signal or Other?" )
     argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
     argParser.add_argument('--dc',             action='store',                    type=str,            default='count',                                             help="What type of datacard?" )
     return argParser
@@ -28,7 +28,7 @@ dc = options.dc
 SigScan =  True if 'Signal' in sample else False
 script = 'CountDCHistJEC' if dc=='count' else 'ShapeDCHistJEC'
 year = '2018'
-nevts = 100000
+nevts = -1
 fileperjobMC = 4
 TotJobs = 4
 
