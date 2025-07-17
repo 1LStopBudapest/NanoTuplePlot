@@ -74,7 +74,11 @@ if isinstance(samplelist[samples][0], types.ListType):
         histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-        FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
+
+        #def __init__(self, histos, chain, year, nEvents, sample, vList, DataLumi=1.0, NoMCWeight = True)
+              
+        #FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
+        FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
         hfile.Write()
 else:
     histext = samples
@@ -95,7 +99,8 @@ else:
     histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-    FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
+    #FillHistos(histos, ch, options.year, options.nevents, sample, DataLumi, False).fill()
+    FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
     hfile.Write()
 
 

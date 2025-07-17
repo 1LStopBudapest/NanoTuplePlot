@@ -19,9 +19,7 @@ samplesRun = ['WJetsToLNu', 'TTbar', 'ST', 'DYJetsToLL', 'ZJetsToNuNu', 'QCD', '
 #fileperjobMC = 2 
 fileperjobMC = 1 
 fileperjobData = 1
-#TotJobs = 4
 TotJobs = 1
-
 year = '2018'
 
 txtline = []
@@ -85,11 +83,11 @@ for sL in samplesRun:
             fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
             tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
             for i in range(0, tfiles, fileperjobMC):
-                #txtline.append("python StackHistMaker_LL.py --sample %s --startfile %i --nfiles %i\n"%(sample, i, fileperjobMC))
+                #txtline.append("python StackHistMaker_LL_std.py --sample %s --startfile %i --nfiles %i\n"%(sample, i, fileperjobMC))
                 #Moises
                 processed_samples_i = processed_samples_i+1
                 if processed_samples_i > nsamples: continue
-                txtline.append("python StackHistMaker_LL.py --sample %s --nevents %i --startfile %i --nfiles %i\n"%(sample, nevents, i, fileperjobMC))
+                txtline.append("python StackHistMaker_LL_std.py --sample %s --nevents %i --startfile %i --nfiles %i\n"%(sample, nevents, i, fileperjobMC))
                 ###
             #Moises
             processed_samples_i = 0
@@ -110,16 +108,16 @@ for sL in samplesRun:
         tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
         fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
         for i in range(0, tfiles, fileperjobMC):
-            #txtline.append("python StackHistMaker_LL.py --sample %s --startfile %i --nfiles %i\n"%(sL, i, fileperjobMC))
+            #txtline.append("python StackHistMaker_LL_std.py --sample %s --startfile %i --nfiles %i\n"%(sL, i, fileperjobMC))
             #Moises
             if processed_samples > nsamples: continue
-            txtline.append("python StackHistMaker_LL.py --sample %s --nevents %i --startfile %i --nfiles %i\n"%(sL, nevents, i, fileperjobMC))
+            txtline.append("python StackHistMaker_LL_std.py --sample %s --nevents %i --startfile %i --nfiles %i\n"%(sL, nevents, i, fileperjobMC))
             ###
     #Moises
     processed_samples = 0
     #######
                 
-fout = open("parallelJobsubmit.txt", "w")
+fout = open("parallelJobsubmit_std.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
 
@@ -134,19 +132,19 @@ if not os.path.exists(Rootfilesdirpath):
     #####
 
 bashline = []    
-bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
+bashline.append('parallel --jobs %i < parallelJobsubmit_std.txt\n'%TotJobs)
 
 for sL in samplesRun:
 
     if 'Data' in sL:
         sLi = sL.replace('Data','')+'Run'
-        bashline.append('hadd StackHist_%s.root StackHist_%s*.root\n'%(sL, sLi))
+        bashline.append('hadd StackHist_%s_std.root StackHist_%s*_std.root\n'%(sL, sLi))
 
     elif isinstance(samplelist[sL][0], types.ListType):
 
         #sLi = 'hadd StackHist_'+sL+'.root'+str("".join(' StackHist_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
         #Moises
-        sLi = 'hadd StackHist_' + sL + '.root'
+        sLi = 'hadd StackHist_' + sL + '_std.root'
         file_patterns = []
         for s in samplelist[sL]:
             #Moises
@@ -157,7 +155,7 @@ for sL in samplesRun:
             ####
             # Find the corresponding key for the current sample value
             sample_key = list(samplelist.keys())[list(samplelist.values()).index(s)]
-            file_pattern = ' StackHist_' + sample_key + '*.root'
+            file_pattern = ' StackHist_' + sample_key + '*_std.root'
             file_patterns.append(file_pattern)
         # Join the file patterns into a single string and append to the base string
         sLi += str("".join(file_patterns))
@@ -166,22 +164,22 @@ for sL in samplesRun:
 
         bashline.append('%s\n'%sLi)
     else:
-        bashline.append('hadd StackHist_%s.root StackHist_%s_*.root\n'%(sL, sL))
+        bashline.append('hadd StackHist_%s_std.root StackHist_%s_*_std.root\n'%(sL, sL))
 
     #bashline.append('mv StackHist_%s.root %s\n'%(sL, Rootfilesdirpath))
     #Moises
-    bashline.append('mv StackHist_%s.root %s\n'%(sL, Rootfilesdirpath_added))
+    bashline.append('mv StackHist_%s_std.root %s\n'%(sL, Rootfilesdirpath_added))
     #####
 
-bashline.append('mv StackHist_*.root %s\n'%(Rootfilesdirpath))
+bashline.append('mv StackHist_*_std.root %s\n'%(Rootfilesdirpath))
 
 l = str(" ".join(s for s in samplesRun))
-bashline.append('python  StackPlot_LL.py -l %s'%l)
+bashline.append('python  StackPlot_LL_std.py -l %s'%l)
     
-fsh = open("parallelStackHist.sh", "w")
+fsh = open("parallelStackHist_std.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
-os.system('chmod 744 parallelStackHist.sh')
-os.system('./parallelStackHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
+os.system('chmod 744 parallelStackHist_std.sh')
+os.system('./parallelStackHist_std.sh')
+#os.system('rm *.root parallelJobsubmit.txt parallelStackHist_std.sh')
 

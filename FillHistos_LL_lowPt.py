@@ -9,7 +9,6 @@ from Helper.VarCalc import *
 from Helper.MCWeight import MCWeight
 from Helper.GenFilterEff import GenFilterEff
 from Helper.TreeVarSel_LL import TreeVarSel
-#from Helper.TreeVarSel import TreeVarSel
 
 class FillHistos():
 
@@ -66,7 +65,7 @@ class FillHistos():
                 
             var = {key: None for key in vardic}#reseting the var dictionary for each event
             #its a string: 'Std' for standard PF ele, 'LowpT' for low pT ele and 'comb' for combination of both starting from the object according to the given preference 
-            getsel = TreeVarSel(tr, self.isData, self.year, 'comb')
+            getsel = TreeVarSel(tr, self.isData, self.year, 'LowpT')
             #if getsel.passFilters() and getsel.PreSelection() and getsel.Dxy2():
             #if getsel.passFilters() and getsel.PreSelection():
             if getsel.passFilters() and getsel.PreSelection():

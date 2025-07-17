@@ -60,12 +60,13 @@ Rootfilesdirpath = os.path.join(plotDir, sdir)
 if not os.path.exists(Rootfilesdirpath): 
     os.makedirs(Rootfilesdirpath)
 
+print("plot dir is: "+str(Rootfilesdirpath))
     
 if 'T2tt' in samples:
     sample = samples
     histext = samples
     print 'running over: ', sample
-    hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     '''
     histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,500], histclass = ROOT.TH1F).make_hist()
@@ -90,7 +91,7 @@ else:
         for s in samplelist[samples]:
             sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
             print 'running over: ', sample
-            hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+            hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
             histos = {}
             '''
             histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,500], histclass = ROOT.TH1F).make_hist()
@@ -116,7 +117,7 @@ else:
             if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
         sample = samples
         print 'running over: ', sample
-        hfile = ROOT.TFile('1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
         '''
         histos['MET'] = HistInfo(hname = 'MET', sample = histext, binning=[40,0,500], histclass = ROOT.TH1F).make_hist()
@@ -136,13 +137,13 @@ else:
         FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
         hfile.Write()
 
-'''
+
 #outputDir = os.getcwd()
 outputDir = Rootfilesdirpath
 for key in histos:
-    Plot1D(histos[key], outputDir, islogy=True)
+    Plot1D(histos[key], outputDir, islogy=True, canvasX=800, canvasY=600)
     
-'''
+
 '''
 bashline = []    
 

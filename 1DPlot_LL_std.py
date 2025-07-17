@@ -3,7 +3,7 @@ import ROOT
 import types
 
 #from FillHistos_LL import FillHistos
-from FillHistos_LL_TM import FillHistos
+from FillHistos_LL_TM_std import FillHistos
 
 
 sys.path.append('../')
@@ -60,7 +60,7 @@ vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'Lep
 
 histext = ''
 
-sdir = '1DFiles_LL/'+year
+sdir = '1DFiles_LL/'+year+'_std'
 Rootfilesdirpath = os.path.join(plotDir, sdir)
 if not os.path.exists(Rootfilesdirpath): 
     os.makedirs(Rootfilesdirpath)
@@ -71,7 +71,7 @@ if 'T2tt' in samples:
     sample = samples
     histext = samples
     print 'running over: ', sample
-    hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'_std.root', 'RECREATE')
     histos = {}
 
     """
@@ -105,7 +105,7 @@ else:
         for s in samplelist[samples]:
             sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
             print 'running over: ', sample
-            hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+            hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'_std.root', 'RECREATE')
             histos = {}
 
             
@@ -160,7 +160,7 @@ else:
             if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
         sample = samples
         print 'running over: ', sample
-        hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'_std.root', 'RECREATE')
         histos = {}
 
         
@@ -194,7 +194,7 @@ else:
 
         #histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         #histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,7,9,12,15,20,30,50,60,70,80,90,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[100, 0, 200], histclass = ROOT.TH1F).make_hist()
+        histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[50, 0, 200], histclass = ROOT.TH1F).make_hist()
 
         #histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         #histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35], histclass = ROOT.TH1F, binopt = 'var').make_hist()

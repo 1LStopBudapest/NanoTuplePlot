@@ -9,7 +9,6 @@ from Helper.VarCalc import *
 from Helper.MCWeight import MCWeight
 from Helper.GenFilterEff import GenFilterEff
 from Helper.TreeVarSel_LL import TreeVarSel
-#from Helper.TreeVarSel import TreeVarSel
 
 class FillHistos():
 
@@ -66,16 +65,16 @@ class FillHistos():
                 
             var = {key: None for key in vardic}#reseting the var dictionary for each event
             #its a string: 'Std' for standard PF ele, 'LowpT' for low pT ele and 'comb' for combination of both starting from the object according to the given preference 
-            getsel = TreeVarSel(tr, self.isData, self.year, 'comb')
+            getsel = TreeVarSel(tr, self.isData, self.year, 'Std')
             #if getsel.passFilters() and getsel.PreSelection() and getsel.Dxy2():
-            #if getsel.passFilters() and getsel.PreSelection():
             if getsel.passFilters() and getsel.PreSelection():
+                
                 
                 ####print("lumiscale * MCcorr "+str(lumiscale * MCcorr))
 
                 
                 #DEBUG Moises
-                
+                #print("event number = "+str(ientry))
                 """
                 print("event number = "+str(ientry))
                 print("event pass")
@@ -118,28 +117,67 @@ class FillHistos():
                 print("....................................")
                 """
                 #############
-                var['MET'] = tr.MET_pt
-                var['ISRJetPt'] = getsel.getISRPt()
-                var['HT'] = getsel.calHT()
-                var['LepMT'] = getsel.getLepMT()
-                var['CT1'] = getsel.calCT(1)
-                var['CT2'] = getsel.calCT(2)
                 
-                var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
-                var['LepdxySig'] = abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr'])
-                var['Lepdz'] = abs(getsel.getSortedLepVar()[0]['dz'])
-                var['Njet'] = getsel.calNj()
-                var['Nbjet'] = getsel.cntBtagjet()
 
-                var['LeppT'] = getsel.getSortedLepVar()[0]['pt']
-                if getsel.getSortedLepVar()[0]['type'] == 'mu':
-                    var['MupT'] = getsel.getSortedLepVar()[0]['pt']
-                    var['Mudxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
-                    var['Mudz'] = abs(getsel.getSortedLepVar()[0]['dz'])
-                else:
-                    var['epT'] = getsel.getSortedLepVar()[0]['pt']
-                    var['edxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
-                    var['edz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                #Moises
+                #Truth matched lepton, electron and muon
+                promptFlag = True if self.isData else False
+                tp = getsel.getSortedLepVar()[0]['type']
+                #print(getsel.getSortedLepVar()[0])
+                idx = getsel.getSortedLepVar()[0]['idx']
+                if not self.isData:
+                    if tp == 'mu':
+                        flag=ord(tr.Muon_genPartFlav[idx])
+                    elif tp == 'Electron':
+                        flag=ord(tr.Electron_genPartFlav[idx])
+                    else:
+                        flag=ord(tr.LowPtElectron_genPartFlav[idx])
+                    promptFlag = flag in [ 1 , 15 ]
+                    # print("...........promptFlag.................")
+                    # print(promptFlag)
+                    # print("....................................")
+
+                truth_matched_lepton = promptFlag
+
+                if truth_matched_lepton:
+                    var['MET'] = tr.MET_pt
+                    var['ISRJetPt'] = getsel.getISRPt()
+                    var['HT'] = getsel.calHT()
+                    var['LepMT'] = getsel.getLepMT()
+                    var['CT1'] = getsel.calCT(1)
+                    var['CT2'] = getsel.calCT(2)
+                    
+                    var['Njet'] = getsel.calNj()
+                    var['Nbjet'] = getsel.cntBtagjet()
+
+
+
+                    var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                    var['LepdxySig'] = abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr'])
+                    var['Lepdz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                    var['LeppT'] = getsel.getSortedLepVar()[0]['pt']
+
+                    if getsel.getSortedLepVar()[0]['type'] == 'mu':
+                        var['MupT'] = getsel.getSortedLepVar()[0]['pt']
+                        var['Mudxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                        var['Mudz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                    else:
+                        var['epT'] = getsel.getSortedLepVar()[0]['pt']
+                        var['edxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                        var['edz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+
+                    var['AllLeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
+                    var['AllLepdxy'] = [abs(x['dxy']) for x in getsel.getSortedLepVar()]
+                    var['AllLepdxySig'] = [abs(x['dxy']/x['dxyErr']) for x in getsel.getSortedLepVar()]
+                    var['AllLepdz'] = [abs(x['dz']) for x in getsel.getSortedLepVar()]
+                    var['Nlep'] = len(getsel.getSortedLepVar())
+                    if len(getsel.getSortedLepVar()) > 1:
+                        var['2ndLeppT'] = getsel.getSortedLepVar()[1]['pt'] #if len(getsel.getSortedLepVar()) > 1 else -999
+                        var['2ndLepeta'] = abs(getsel.getSortedLepVar()[1]['eta']) #if len(getsel.getSortedLepVar()) > 1 else -999
+                        var['2ndLepdxy'] = abs(getsel.getSortedLepVar()[1]['dxy']) #if len(getsel.getSortedLepVar()) > 1 else -999
+                        var['2ndLepdz'] = abs(getsel.getSortedLepVar()[1]['dz']) #if len(getsel.getSortedLepVar()) > 1 else -999
+
+
                 '''
                 var['MupT'] = getsel.getMuVar(getsel.selectMuIdx())[0]['pt'] #[x['pt'] for x in getsel.getMuVar(getsel.selectMuIdx())]
                 var['Mudxy'] = abs(getsel.getMuVar(getsel.selectMuIdx())[0]['dxy']) #[abs(x['dxy']) for x in getsel.getMuVar(getsel.selectMuIdx())]
@@ -148,16 +186,7 @@ class FillHistos():
                 var['edxy'] = abs(getsel.getEleVar()[0]['dxy']) #[abs(x['dxy']) for x in getsel.getEleVar()]
                 var['edz'] = abs(getsel.getEleVar()[0]['dz']) #[abs(x['dz']) for x in getsel.getEleVar()]
                 '''
-                var['AllLeppT'] = [x['pt'] for x in getsel.getSortedLepVar()]
-                var['AllLepdxy'] = [abs(x['dxy']) for x in getsel.getSortedLepVar()]
-                var['AllLepdxySig'] = [abs(x['dxy']/x['dxyErr']) for x in getsel.getSortedLepVar()]
-                var['AllLepdz'] = [abs(x['dz']) for x in getsel.getSortedLepVar()]
-                var['Nlep'] = len(getsel.getSortedLepVar())
-                if len(getsel.getSortedLepVar()) > 1:
-                    var['2ndLeppT'] = getsel.getSortedLepVar()[1]['pt'] #if len(getsel.getSortedLepVar()) > 1 else -999
-                    var['2ndLepeta'] = abs(getsel.getSortedLepVar()[1]['eta']) #if len(getsel.getSortedLepVar()) > 1 else -999
-                    var['2ndLepdxy'] = abs(getsel.getSortedLepVar()[1]['dxy']) #if len(getsel.getSortedLepVar()) > 1 else -999
-                    var['2ndLepdz'] = abs(getsel.getSortedLepVar()[1]['dz']) #if len(getsel.getSortedLepVar()) > 1 else -999
+                
                 
                 '''
                 if not self.isData:

@@ -1,0 +1,25 @@
+parallel --jobs 1 < parallelJobsubmit_lowPt.txt
+hadd StackHist_WJetsToLNu_lowPt.root StackHist_WJetsToLNu_HT70to100*_lowPt.root StackHist_WJetsToLNu_HT100to200*_lowPt.root StackHist_WJetsToLNu_HT200to400*_lowPt.root StackHist_WJetsToLNu_HT400to600*_lowPt.root StackHist_WJetsToLNu_HT600to800*_lowPt.root
+mv StackHist_WJetsToLNu_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_TTbar_lowPt.root StackHist_TTSingleLep_pow*_lowPt.root StackHist_TTLep_pow*_lowPt.root
+mv StackHist_TTbar_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_ST_lowPt.root StackHist_T_tch_pow*_lowPt.root StackHist_TBar_tch_pow*_lowPt.root StackHist_T_tWch_ext*_lowPt.root StackHist_TBar_tWch_ext*_lowPt.root
+mv StackHist_ST_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_DYJetsToLL_lowPt.root StackHist_DYJetsToLL_M50_HT70to100*_lowPt.root StackHist_DYJetsToLL_M50_HT100to200*_lowPt.root StackHist_DYJetsToLL_M50_HT200to400*_lowPt.root StackHist_DYJetsToLL_M50_HT400to600*_lowPt.root StackHist_DYJetsToLL_M50_HT600to800*_lowPt.root
+mv StackHist_DYJetsToLL_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_ZJetsToNuNu_lowPt.root StackHist_ZJetsToNuNu_HT100to200*_lowPt.root StackHist_ZJetsToNuNu_HT200to400*_lowPt.root StackHist_ZJetsToNuNu_HT400to600*_lowPt.root StackHist_ZJetsToNuNu_HT600to800*_lowPt.root StackHist_ZJetsToNuNu_HT800to1200*_lowPt.root
+mv StackHist_ZJetsToNuNu_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_QCD_lowPt.root StackHist_QCD_HT300to500*_lowPt.root StackHist_QCD_HT500to700*_lowPt.root StackHist_QCD_HT700to1000*_lowPt.root StackHist_QCD_HT1000to1500*_lowPt.root StackHist_QCD_HT1500to2000*_lowPt.root
+mv StackHist_QCD_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_TTV_lowPt.root StackHist_TTWToLNu*_lowPt.root StackHist_TTWToQQ*_lowPt.root StackHist_TTW_LO*_lowPt.root StackHist_TTZ_LO*_lowPt.root StackHist_TTG*_lowPt.root
+mv StackHist_TTV_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_VV_lowPt.root StackHist_WW*_lowPt.root StackHist_WWTo2L2Nu*_lowPt.root StackHist_WWTo1L1Nu2Q*_lowPt.root StackHist_WZTo1L1Nu2Q*_lowPt.root StackHist_WZTo1L3Nu*_lowPt.root
+mv StackHist_VV_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_Sig_Displaced_300_290_full_lowPt.root StackHist_Sig_Displaced_300_290_full_*_lowPt.root
+mv StackHist_Sig_Displaced_300_290_full_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_Sig_Displaced_350_335_full_lowPt.root StackHist_Sig_Displaced_350_335_full_*_lowPt.root
+mv StackHist_Sig_Displaced_350_335_full_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+hadd StackHist_Sig_Displaced_400_380_full_lowPt.root StackHist_Sig_Displaced_400_380_full_*_lowPt.root
+mv StackHist_Sig_Displaced_400_380_full_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2/total
+mv StackHist_*_lowPt.root /home/mleoncoe/stopAnalysis/test/Plots/StackFiles/Displaced/Dxy2
+python  StackPlot_LL_lowPt.py -l WJetsToLNu TTbar ST DYJetsToLL ZJetsToNuNu QCD TTV VV Sig_Displaced_300_290_full Sig_Displaced_350_335_full Sig_Displaced_400_380_full

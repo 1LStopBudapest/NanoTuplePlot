@@ -31,12 +31,12 @@ files = []
 doplots = True
 
 for sl in samplelists:
-    if os.path.exists('StackHist_'+sl+'.root'):
-        files.append(ROOT.TFile.Open('StackHist_'+sl+'.root'))
+    if os.path.exists('StackHist_'+sl+'_lowPt.root'):
+        files.append(ROOT.TFile.Open('StackHist_'+sl+'_lowPt.root'))
     #elif os.path.exists(plotDir+'StackFiles/Displaced/Dxy2/StackHist_'+sl+'.root'):
     #Moises
-    elif os.path.exists(plotDir+'StackFiles/Displaced/Dxy2/total/StackHist_'+sl+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'StackFiles/Displaced/Dxy2/total/StackHist_'+sl+'.root'))
+    elif os.path.exists(plotDir+'StackFiles/Displaced/Dxy2/total/StackHist_'+sl+'_lowPt.root'):
+        files.append(ROOT.TFile.Open(plotDir+'StackFiles/Displaced/Dxy2/total/StackHist_'+sl+'_lowPt.root'))
     else:
         doplots = False        
         print 'Root files for',sl,'sample soes not exist. Please run python StackHistMaker.py --sample',sl
@@ -48,5 +48,5 @@ if doplots :
     for v in vList:
         #StackHistsExt(files, samplelists, v, plotDir, 'Displaced/Dxy2', canvasX=800, canvasY=600)
         #Moises
-        StackHistsExtNoData(files, samplelists, v, plotDir, 'Displaced/Dxy2', canvasX=800, canvasY=600)
+        StackHistsExtNoData(files, samplelists, v, plotDir, 'Displaced/Dxy2_lowPt', canvasX=800, canvasY=600)
         ########
