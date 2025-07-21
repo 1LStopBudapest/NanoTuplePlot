@@ -35,6 +35,10 @@ class FillHistos():
         elif self.isSignalPoint:
             ms = int(self.sample.split('_')[2])
             ml = int(self.sample.split('_')[3])
+            #print("################################################")
+            #print("MS = " +str(ms))
+            #print("ML = " +str(ml))
+            #print("###################################################")
             self.gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
         else:
             self.gfltreff = 1.0         
