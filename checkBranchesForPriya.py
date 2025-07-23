@@ -1,48 +1,41 @@
 import ROOT
-import sys
+import os
 
+# Specify the input folder path here
+input_folder = "/big_data/LepStop/PostProcessedNtuple/displacedNonProcessedSamples"
 
-sys.path.append('../')
-from Sample.SampleChainSplitting import SampleChainSplitting
+# Create a TChain - specify the tree name (change "tree" to your actual tree name)
+chain = ROOT.TChain("Events")  # Replace "tree" with your tree name if different
 
+# Get list of all .root files in the folder
+root_files = [f for f in os.listdir(input_folder) if f.endswith('.root')]
 
-startfile = 0
-nfiles = 1000000
-samples  = "Sig_NoSplitted_mStop_250to1100_full"
+# Add each file to the chain
+for root_file in root_files:
+    full_path = os.path.join(input_folder, root_file)
+    chain.Add(full_path)
+    print("Added file: {}".format(full_path))
 
-ch = SampleChainSplitting(samples, startfile, nfiles, "1984").getchain()
-# print 'Total events of selected files of the', samples, 'sample: ', ch.GetEntries()
+# Print summary
+print("\nTotal number of files in chain: {}".format(len(root_files)))
+print("Total number of entries in chain: {}".format(chain.GetEntries()))
 
-# File and branch info
-#filename = "/big_data/LepStop/CentralFullNano/00EE1FC4-D27B-ED47-A567-F7B2E4C766B4.root"
-# filename = "/big_data/LepStop/PostProcessedNtuple/displacedNonProcessedSamples/SMS_T2tt_mStop_250to1100_dM_10to30_LL_0.root"
-# tree_name = "Events"
-
-# # Open the ROOT file
-# file = ROOT.TFile.Open(filename)
-# if not file or file.IsZombie():
-#     print("Failed to open file: " + str(filename))
-#     exit(1)
-
-# # Get the TTree
-# tree = file.Get(tree_name)
-# if not tree:
-#     print("TTree '" + str(tree_name) + "' not found in file.")
-#     file.Close()
-#     exit(1)
 
 tree_name = "Events"
-tree = ch
+tree = chain
 
 
 delta_m_stop = 25
 delta_m_x0 = [10,15,20,25,30]
 list_of_valid_masspoints = []
 
+nmasspoints = 0
+
 for mStop in range(250,1100+delta_m_stop,delta_m_stop):
     
     for Dmx0 in delta_m_x0:
         mX0 = mStop-Dmx0
+        nmasspoints = nmasspoints+1
 
         """
         real_name = "GenModel_T2tt_4bd_{0}_{1}_0.300".format(mStop, mX0)
@@ -82,10 +75,13 @@ for mStop in range(250,1100+delta_m_stop,delta_m_stop):
             print("mx0 = "+str(mX0))
             print("Branch '" + str(branch_name) + "' exists in the tree '" + str(tree_name) + "'.")
             print("Branch '" + str(branch_name2) + "' exists in the tree '" + str(tree_name) + "'.")
+        else:
+            print(".....................................")
+            print("...ONE OF THE BRANCHES DOES NOT EXIST IN THE FILES..")
+            print(".....................................")
+        
 
 
 print(list_of_valid_masspoints)
 print(len(list_of_valid_masspoints))
-
-# Clean up
-#file.Close()
+print(nmasspoints)

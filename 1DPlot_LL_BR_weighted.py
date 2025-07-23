@@ -2,8 +2,8 @@ import os, sys
 import ROOT
 import types
 
-#from FillHistos_LL import FillHistos
 from FillHistos_LL import FillHistos
+from FillHistos_LL_BR import FillHistosBR
 
 
 sys.path.append('../')
@@ -30,6 +30,7 @@ def get_parser():
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
+    argParser.add_argument('--br',           action='store',                    type=float,            default=0.8,                                               help="BR of the signal long lived sample. Ignore if bkg." )
     
 
     return argParser
@@ -38,6 +39,7 @@ options = get_parser().parse_args()
 
 samples  = options.sample
 year = options.year
+branching_ratio = options.br
 
 DataLumi=1.0
 
@@ -101,7 +103,7 @@ if 'T2tt' or 'Sig_Splitted' in samples:
    
     ch = SampleChainSplitted(sample, options.startfile, options.nfiles, options.year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
-    FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
+    FillHistosBR(histos, ch, options.year, options.nevents, sample, vList, branching_ratio, DataLumi, False).fill()
     hfile.Write()
 else:
     if isinstance(samplelist[samples][0], types.ListType):
