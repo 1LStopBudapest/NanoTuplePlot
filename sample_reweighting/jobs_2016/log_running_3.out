@@ -1,0 +1,246 @@
+i am in this directory
+/pool/condor/dir_862204
+ will run this source reweightingBRandctau_new.py /eos/cms/store/group/comm_luminosity/mleoncoe/test/merged_stopLL_1000_975_BR_1.0.root /eos/cms/store/group/comm_luminosity/mleoncoe/test2
+input_mstop = 1000
+input_mx0 = 975
+input_BR = 1.0
+output file will be writen in /eos/cms/store/group/comm_luminosity/mleoncoe/test2/merged_stopLL_1000_975_BR_1.0_processed.root
+#####################
+#####################
+Delta m 25.0
+closest key Delta m 25.0
+closest value of width to this Delta m 4.48e-13
+.............................
+.................................
+ejecuta 1
+.................................
+Disabled branch: GenModel_T2tt_4bd_775_765_1.000
+Disabled branch: GenModel_T2tt_4bd_825_815_0.300
+Disabled branch: GenModel_T2tt_4bd_375_365_1.000
+Disabled branch: GenModel_T2tt_4bd_875_865_0.300
+Disabled branch: GenModel_T2tt_4bd_800_790_1.000
+Disabled branch: GenModel_T2tt_4bd_925_915_0.300
+Disabled branch: GenModel_T2tt_4bd_775_750_1.000
+Disabled branch: GenModel_T2tt_4bd_300_285_1.000
+Disabled branch: GenModel_T2tt_4bd_675_665_0.300
+Disabled branch: GenModel_T2tt_4bd_625_605_0.300
+Disabled branch: GenModel_T2tt_4bd_1075_1050_0.300
+Disabled branch: GenModel_T2tt_4bd_450_430_0.300
+Disabled branch: GenModel_T2tt_4bd_425_415_1.000
+Disabled branch: GenModel_T2tt_4bd_300_290_0.300
+Disabled branch: GenModel_T2tt_4bd_1100_1080_1.000
+Disabled branch: GenModel_T2tt_4bd_800_780_0.300
+Disabled branch: GenModel_T2tt_4bd_250_235_1.000
+Disabled branch: GenModel_T2tt_4bd_675_650_1.000
+Disabled branch: GenModel_T2tt_4bd_350_335_1.000
+Disabled branch: GenModel_T2tt_4bd_600_575_1.000
+Disabled branch: GenModel_T2tt_4bd_500_490_1.000
+Disabled branch: GenModel_T2tt_4bd_325_315_0.300
+Disabled branch: GenModel_T2tt_4bd_500_490_0.300
+Disabled branch: GenModel_T2tt_4bd_450_440_0.300
+Disabled branch: GenModel_T2tt_4bd_425_410_0.300
+Disabled branch: GenModel_T2tt_4bd_275_250_1.000
+Disabled branch: GenModel_T2tt_4bd_425_395_0.300
+Disabled branch: GenModel_T2tt_4bd_350_340_1.000
+Disabled branch: GenModel_T2tt_4bd_625_615_1.000
+Disabled branch: GenModel_T2tt_4bd_1025_1015_0.300
+Disabled branch: GenModel_T2tt_4bd_800_780_1.000
+Disabled branch: GenModel_T2tt_4bd_600_575_0.300
+Disabled branch: GenModel_T2tt_4bd_650_630_0.300
+Disabled branch: GenModel_T2tt_4bd_975_955_0.300
+Disabled branch: GenModel_T2tt_4bd_400_390_1.000
+Disabled branch: GenModel_T2tt_4bd_600_585_0.300
+Disabled branch: GenModel_T2tt_4bd_950_935_1.000
+Disabled branch: GenModel_T2tt_4bd_975_965_1.000
+Disabled branch: GenModel_T2tt_4bd_600_570_0.300
+Disabled branch: GenModel_T2tt_4bd_400_380_0.300
+Disabled branch: GenModel_T2tt_4bd_250_240_0.300
+Disabled branch: GenModel_T2tt_4bd_1075_1055_1.000
+Disabled branch: GenModel_T2tt_4bd_525_510_1.000
+Disabled branch: GenModel_T2tt_4bd_725_705_0.300
+Disabled branch: GenModel_T2tt_4bd_475_455_0.300
+Disabled branch: GenModel_T2tt_4bd_650_640_1.000
+Disabled branch: GenModel_T2tt_4bd_275_255_0.300
+Disabled branch: GenModel_T2tt_4bd_875_855_1.000
+Disabled branch: GenModel_T2tt_4bd_600_570_1.000
+Disabled branch: GenModel_T2tt_4bd_1050_1030_0.300
+Disabled branch: GenModel_T2tt_4bd_350_340_0.300
+Disabled branch: GenModel_T2tt_4bd_475_460_1.000
+Disabled branch: GenModel_T2tt_4bd_1100_1090_0.300
+Disabled branch: GenModel_T2tt_4bd_1000_990_1.000
+Disabled branch: GenModel_T2tt_4bd_400_390_0.300
+Disabled branch: GenModel_T2tt_4bd_750_740_0.300
+Disabled branch: GenModel_T2tt_4bd_900_885_0.300
+Disabled branch: GenModel_T2tt_4bd_325_300_0.300
+Disabled branch: GenModel_T2tt_4bd_550_535_1.000
+Disabled branch: GenModel_T2tt_4bd_675_660_1.000
+Disabled branch: GenModel_T2tt_4bd_1100_1070_1.000
+Disabled branch: GenModel_T2tt_4bd_850_840_1.000
+Disabled branch: GenModel_T2tt_4bd_325_295_0.300
+Disabled branch: GenModel_T2tt_4bd_700_670_1.000
+Disabled branch: GenModel_T2tt_4bd_725_695_1.000
+Disabled branch: GenModel_T2tt_4bd_350_330_1.000
+Disabled branch: GenModel_T2tt_4bd_475_450_1.000
+Disabled branch: GenModel_T2tt_4bd_550_520_0.300
+Disabled branch: GenModel_T2tt_4bd_1025_1005_0.300
+Disabled branch: GenModel_T2tt_4bd_525_515_0.300
+Disabled branch: GenModel_T2tt_4bd_750_725_0.300
+Disabled branch: GenModel_T2tt_4bd_725_715_0.300
+Disabled branch: GenModel_T2tt_4bd_275_255_1.000
+Disabled branch: GenModel_T2tt_4bd_575_550_1.000
+Disabled branch: GenModel_T2tt_4bd_825_795_0.300
+Disabled branch: GenModel_T2tt_4bd_275_265_0.300
+Disabled branch: GenModel_T2tt_4bd_675_665_1.000
+Disabled branch: GenModel_T2tt_4bd_1075_1045_1.000
+Disabled branch: GenModel_T2tt_4bd_500_480_0.300
+Disabled branch: GenModel_T2tt_4bd_775_750_0.300
+Disabled branch: GenModel_T2tt_4bd_425_415_0.300
+Disabled branch: GenModel_T2tt_4bd_950_935_0.300
+Disabled branch: GenModel_T2tt_4bd_900_880_1.000
+Disabled branch: GenModel_T2tt_4bd_775_765_0.300
+Disabled branch: GenModel_T2tt_4bd_1100_1075_0.300
+Disabled branch: GenModel_T2tt_4bd_625_610_1.000
+Disabled branch: GenModel_T2tt_4bd_925_900_0.300
+Disabled branch: GenModel_T2tt_4bd_475_465_0.300
+Disabled branch: GenModel_T2tt_4bd_825_815_1.000
+Disabled branch: GenModel_T2tt_4bd_850_835_1.000
+Disabled branch: GenModel_T2tt_4bd_725_710_0.300
+Disabled branch: GenModel_T2tt_4bd_750_720_0.300
+Disabled branch: GenModel_T2tt_4bd_325_305_0.300
+[INFO] Disabled 93 branches starting with 'GenModel_T2tt_4bd_'
+total events = 131928
+event num1000
+event num2000
+event num3000
+event num4000
+event num5000
+event num6000
+event num7000
+event num8000
+event num9000
+event num10000
+event num11000
+event num12000
+event num13000
+event num14000
+event num15000
+event num16000
+event num17000
+event num18000
+event num19000
+event num20000
+event num21000
+event num22000
+event num23000
+event num24000
+event num25000
+event num26000
+event num27000
+event num28000
+event num29000
+event num30000
+event num31000
+event num32000
+event num33000
+event num34000
+event num35000
+event num36000
+event num37000
+event num38000
+event num39000
+event num40000
+event num41000
+event num42000
+event num43000
+event num44000
+event num45000
+event num46000
+event num47000
+event num48000
+event num49000
+event num50000
+event num51000
+event num52000
+event num53000
+event num54000
+event num55000
+event num56000
+event num57000
+event num58000
+event num59000
+event num60000
+event num61000
+event num62000
+event num63000
+event num64000
+event num65000
+event num66000
+event num67000
+event num68000
+event num69000
+event num70000
+event num71000
+event num72000
+event num73000
+event num74000
+event num75000
+event num76000
+event num77000
+event num78000
+event num79000
+event num80000
+event num81000
+event num82000
+event num83000
+event num84000
+event num85000
+event num86000
+event num87000
+event num88000
+event num89000
+event num90000
+event num91000
+event num92000
+event num93000
+event num94000
+event num95000
+event num96000
+event num97000
+event num98000
+event num99000
+event num100000
+event num101000
+event num102000
+event num103000
+event num104000
+event num105000
+event num106000
+event num107000
+event num108000
+event num109000
+event num110000
+event num111000
+event num112000
+event num113000
+event num114000
+event num115000
+event num116000
+event num117000
+event num118000
+event num119000
+event num120000
+event num121000
+event num122000
+event num123000
+event num124000
+event num125000
+event num126000
+event num127000
+event num128000
+event num129000
+event num130000
+event num131000
+finished all events
+events_large_ctau=25
+Summary of run saved to /eos/cms/store/group/comm_luminosity/mleoncoe/test2/merged_stopLL_1000_975_BR_1.0_processed.json
+done

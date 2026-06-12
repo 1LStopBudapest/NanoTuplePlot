@@ -1,0 +1,605 @@
+i am in this directory
+/pool/condor/dir_1482711
+ will run this source reweightingBRandctau_new.py /eos/cms/store/group/comm_luminosity/mleoncoe/test/merged_stopLL_575_565_BR_1.0.root /eos/cms/store/group/comm_luminosity/mleoncoe/test2
+input_mstop = 575
+input_mx0 = 565
+input_BR = 1.0
+output file will be writen in /eos/cms/store/group/comm_luminosity/mleoncoe/test2/merged_stopLL_575_565_BR_1.0_processed.root
+#####################
+#####################
+Delta m 10.0
+closest key Delta m 10.0
+closest value of width to this Delta m 3.25e-17
+.............................
+.................................
+ejecuta 1
+.................................
+Disabled branch: GenModel_T2tt_4bd_625_615_1.000
+Disabled branch: GenModel_T2tt_4bd_850_840_0.300
+Disabled branch: GenModel_T2tt_4bd_750_740_1.000
+Disabled branch: GenModel_T2tt_4bd_250_240_1.000
+Disabled branch: GenModel_T2tt_4bd_400_380_0.300
+Disabled branch: GenModel_T2tt_4bd_525_500_1.000
+Disabled branch: GenModel_T2tt_4bd_575_565_1.000
+Disabled branch: GenModel_T2tt_4bd_925_915_1.000
+Disabled branch: GenModel_T2tt_4bd_250_225_0.300
+Disabled branch: GenModel_T2tt_4bd_1050_1040_0.300
+Disabled branch: GenModel_T2tt_4bd_600_590_0.300
+Disabled branch: GenModel_T2tt_4bd_1050_1035_1.000
+Disabled branch: GenModel_T2tt_4bd_350_330_1.000
+Disabled branch: GenModel_T2tt_4bd_250_240_0.300
+Disabled branch: GenModel_T2tt_4bd_525_515_1.000
+Disabled branch: GenModel_T2tt_4bd_250_220_0.300
+Disabled branch: GenModel_T2tt_4bd_450_435_1.000
+Disabled branch: GenModel_T2tt_4bd_600_590_1.000
+Disabled branch: GenModel_T2tt_4bd_750_720_1.000
+Disabled branch: GenModel_T2tt_4bd_750_740_0.300
+Disabled branch: GenModel_T2tt_4bd_400_370_0.300
+Disabled branch: GenModel_T2tt_4bd_300_290_0.300
+Disabled branch: GenModel_T2tt_4bd_275_260_0.300
+Disabled branch: GenModel_T2tt_4bd_850_820_1.000
+Disabled branch: GenModel_T2tt_4bd_675_665_0.300
+Disabled branch: GenModel_T2tt_4bd_775_765_1.000
+Disabled branch: GenModel_T2tt_4bd_1075_1045_1.000
+Disabled branch: GenModel_T2tt_4bd_275_245_0.300
+Disabled branch: GenModel_T2tt_4bd_675_655_1.000
+Disabled branch: GenModel_T2tt_4bd_425_395_1.000
+Disabled branch: GenModel_T2tt_4bd_1000_985_1.000
+Disabled branch: GenModel_T2tt_4bd_400_390_0.300
+Disabled branch: GenModel_T2tt_4bd_1100_1090_1.000
+Disabled branch: GenModel_T2tt_4bd_675_665_1.000
+Disabled branch: GenModel_T2tt_4bd_825_800_1.000
+Disabled branch: GenModel_T2tt_4bd_1075_1065_1.000
+Disabled branch: GenModel_T2tt_4bd_875_865_0.300
+Disabled branch: GenModel_T2tt_4bd_375_350_0.300
+Disabled branch: GenModel_T2tt_4bd_825_815_1.000
+Disabled branch: GenModel_T2tt_4bd_950_940_1.000
+Disabled branch: GenModel_T2tt_4bd_275_265_0.300
+Disabled branch: GenModel_T2tt_4bd_1050_1040_1.000
+Disabled branch: GenModel_T2tt_4bd_625_605_0.300
+Disabled branch: GenModel_T2tt_4bd_325_295_0.300
+Disabled branch: GenModel_T2tt_4bd_425_415_1.000
+Disabled branch: GenModel_T2tt_4bd_325_310_1.000
+Disabled branch: GenModel_T2tt_4bd_650_630_0.300
+Disabled branch: GenModel_T2tt_4bd_850_840_1.000
+Disabled branch: GenModel_T2tt_4bd_750_725_0.300
+Disabled branch: GenModel_T2tt_4bd_450_425_1.000
+Disabled branch: GenModel_T2tt_4bd_700_690_0.300
+Disabled branch: GenModel_T2tt_4bd_700_690_1.000
+Disabled branch: GenModel_T2tt_4bd_775_750_1.000
+Disabled branch: GenModel_T2tt_4bd_625_615_0.300
+Disabled branch: GenModel_T2tt_4bd_375_365_0.300
+Disabled branch: GenModel_T2tt_4bd_275_265_1.000
+Disabled branch: GenModel_T2tt_4bd_1050_1025_0.300
+Disabled branch: GenModel_T2tt_4bd_1025_1015_1.000
+Disabled branch: GenModel_T2tt_4bd_625_595_1.000
+Disabled branch: GenModel_T2tt_4bd_300_270_1.000
+Disabled branch: GenModel_T2tt_4bd_650_640_0.300
+Disabled branch: GenModel_T2tt_4bd_775_745_1.000
+Disabled branch: GenModel_T2tt_4bd_725_695_0.300
+Disabled branch: GenModel_T2tt_4bd_575_550_0.300
+Disabled branch: GenModel_T2tt_4bd_1025_1005_0.300
+Disabled branch: GenModel_T2tt_4bd_725_705_1.000
+Disabled branch: GenModel_T2tt_4bd_375_365_1.000
+Disabled branch: GenModel_T2tt_4bd_500_480_0.300
+Disabled branch: GenModel_T2tt_4bd_1025_1015_0.300
+Disabled branch: GenModel_T2tt_4bd_800_770_1.000
+Disabled branch: GenModel_T2tt_4bd_1075_1065_0.300
+Disabled branch: GenModel_T2tt_4bd_475_465_0.300
+Disabled branch: GenModel_T2tt_4bd_925_910_0.300
+Disabled branch: GenModel_T2tt_4bd_425_415_0.300
+Disabled branch: GenModel_T2tt_4bd_825_805_0.300
+Disabled branch: GenModel_T2tt_4bd_925_905_0.300
+Disabled branch: GenModel_T2tt_4bd_575_545_1.000
+Disabled branch: GenModel_T2tt_4bd_725_715_0.300
+Disabled branch: GenModel_T2tt_4bd_575_565_0.300
+Disabled branch: GenModel_T2tt_4bd_275_260_1.000
+Disabled branch: GenModel_T2tt_4bd_975_960_1.000
+Disabled branch: GenModel_T2tt_4bd_875_855_1.000
+Disabled branch: GenModel_T2tt_4bd_350_325_0.300
+Disabled branch: GenModel_T2tt_4bd_650_640_1.000
+Disabled branch: GenModel_T2tt_4bd_450_435_0.300
+Disabled branch: GenModel_T2tt_4bd_600_580_1.000
+Disabled branch: GenModel_T2tt_4bd_250_230_0.300
+Disabled branch: GenModel_T2tt_4bd_775_755_0.300
+Disabled branch: GenModel_T2tt_4bd_550_540_0.300
+Disabled branch: GenModel_T2tt_4bd_900_885_0.300
+Disabled branch: GenModel_T2tt_4bd_900_890_0.300
+Disabled branch: GenModel_T2tt_4bd_775_765_0.300
+Disabled branch: GenModel_T2tt_4bd_800_780_1.000
+Disabled branch: GenModel_T2tt_4bd_500_490_1.000
+Disabled branch: GenModel_T2tt_4bd_900_875_1.000
+Disabled branch: GenModel_T2tt_4bd_1075_1055_0.300
+Disabled branch: GenModel_T2tt_4bd_250_230_1.000
+Disabled branch: GenModel_T2tt_4bd_1100_1090_0.300
+Disabled branch: GenModel_T2tt_4bd_525_515_0.300
+Disabled branch: GenModel_T2tt_4bd_325_315_0.300
+Disabled branch: GenModel_T2tt_4bd_500_490_0.300
+Disabled branch: GenModel_T2tt_4bd_1000_990_0.300
+Disabled branch: GenModel_T2tt_4bd_1000_990_1.000
+Disabled branch: GenModel_T2tt_4bd_400_385_0.300
+Disabled branch: GenModel_T2tt_4bd_975_955_0.300
+Disabled branch: GenModel_T2tt_4bd_675_655_0.300
+Disabled branch: GenModel_T2tt_4bd_1025_995_0.300
+Disabled branch: GenModel_T2tt_4bd_825_815_0.300
+Disabled branch: GenModel_T2tt_4bd_600_585_1.000
+[INFO] Disabled 109 branches starting with 'GenModel_T2tt_4bd_'
+total events = 474932
+event num1000
+event num2000
+event num3000
+event num4000
+event num5000
+event num6000
+event num7000
+event num8000
+event num9000
+event num10000
+event num11000
+event num12000
+event num13000
+event num14000
+event num15000
+event num16000
+event num17000
+event num18000
+event num19000
+event num20000
+event num21000
+event num22000
+event num23000
+event num24000
+event num25000
+event num26000
+event num27000
+event num28000
+event num29000
+event num30000
+event num31000
+event num32000
+event num33000
+event num34000
+event num35000
+event num36000
+event num37000
+event num38000
+event num39000
+event num40000
+event num41000
+event num42000
+event num43000
+event num44000
+event num45000
+event num46000
+event num47000
+event num48000
+event num49000
+event num50000
+event num51000
+event num52000
+event num53000
+event num54000
+event num55000
+event num56000
+event num57000
+event num58000
+event num59000
+event num60000
+event num61000
+event num62000
+event num63000
+event num64000
+event num65000
+event num66000
+event num67000
+event num68000
+event num69000
+event num70000
+event num71000
+event num72000
+event num73000
+event num74000
+event num75000
+event num76000
+event num77000
+event num78000
+event num79000
+event num80000
+event num81000
+event num82000
+event num83000
+event num84000
+event num85000
+event num86000
+event num87000
+event num88000
+event num89000
+event num90000
+event num91000
+event num92000
+event num93000
+event num94000
+event num95000
+event num96000
+event num97000
+event num98000
+event num99000
+event num100000
+event num101000
+event num102000
+event num103000
+event num104000
+event num105000
+event num106000
+event num107000
+event num108000
+event num109000
+event num110000
+event num111000
+event num112000
+event num113000
+event num114000
+event num115000
+event num116000
+event num117000
+event num118000
+event num119000
+event num120000
+event num121000
+event num122000
+event num123000
+event num124000
+event num125000
+event num126000
+event num127000
+event num128000
+event num129000
+event num130000
+event num131000
+event num132000
+event num133000
+event num134000
+event num135000
+event num136000
+event num137000
+event num138000
+event num139000
+event num140000
+event num141000
+event num142000
+event num143000
+event num144000
+event num145000
+event num146000
+event num147000
+event num148000
+event num149000
+event num150000
+event num151000
+event num152000
+event num153000
+event num154000
+event num155000
+event num156000
+event num157000
+event num158000
+event num159000
+event num160000
+event num161000
+event num162000
+event num163000
+event num164000
+event num165000
+event num166000
+event num167000
+event num168000
+event num169000
+event num170000
+event num171000
+event num172000
+event num173000
+event num174000
+event num175000
+event num176000
+event num177000
+event num178000
+event num179000
+event num180000
+event num181000
+event num182000
+event num183000
+event num184000
+event num185000
+event num186000
+event num187000
+event num188000
+event num189000
+event num190000
+event num191000
+event num192000
+event num193000
+event num194000
+event num195000
+event num196000
+event num197000
+event num198000
+event num199000
+event num200000
+event num201000
+event num202000
+event num203000
+event num204000
+event num205000
+event num206000
+event num207000
+event num208000
+event num209000
+event num210000
+event num211000
+event num212000
+event num213000
+event num214000
+event num215000
+event num216000
+event num217000
+event num218000
+event num219000
+event num220000
+event num221000
+event num222000
+event num223000
+event num224000
+event num225000
+event num226000
+event num227000
+event num228000
+event num229000
+event num230000
+event num231000
+event num232000
+event num233000
+event num234000
+event num235000
+event num236000
+event num237000
+event num238000
+event num239000
+event num240000
+event num241000
+event num242000
+event num243000
+event num244000
+event num245000
+event num246000
+event num247000
+event num248000
+event num249000
+event num250000
+event num251000
+event num252000
+event num253000
+event num254000
+event num255000
+event num256000
+event num257000
+event num258000
+event num259000
+event num260000
+event num261000
+event num262000
+event num263000
+event num264000
+event num265000
+event num266000
+event num267000
+event num268000
+event num269000
+event num270000
+event num271000
+event num272000
+event num273000
+event num274000
+event num275000
+event num276000
+event num277000
+event num278000
+event num279000
+event num280000
+event num281000
+event num282000
+event num283000
+event num284000
+event num285000
+event num286000
+event num287000
+event num288000
+event num289000
+event num290000
+event num291000
+event num292000
+event num293000
+event num294000
+event num295000
+event num296000
+event num297000
+event num298000
+event num299000
+event num300000
+event num301000
+event num302000
+event num303000
+event num304000
+event num305000
+event num306000
+event num307000
+event num308000
+event num309000
+event num310000
+event num311000
+event num312000
+event num313000
+event num314000
+event num315000
+event num316000
+event num317000
+event num318000
+event num319000
+event num320000
+event num321000
+event num322000
+event num323000
+event num324000
+event num325000
+event num326000
+event num327000
+event num328000
+event num329000
+event num330000
+event num331000
+event num332000
+event num333000
+event num334000
+event num335000
+event num336000
+event num337000
+event num338000
+event num339000
+event num340000
+event num341000
+event num342000
+event num343000
+event num344000
+event num345000
+event num346000
+event num347000
+event num348000
+event num349000
+event num350000
+event num351000
+event num352000
+event num353000
+event num354000
+event num355000
+event num356000
+event num357000
+event num358000
+event num359000
+event num360000
+event num361000
+event num362000
+event num363000
+event num364000
+event num365000
+event num366000
+event num367000
+event num368000
+event num369000
+event num370000
+event num371000
+event num372000
+event num373000
+event num374000
+event num375000
+event num376000
+event num377000
+event num378000
+event num379000
+event num380000
+event num381000
+event num382000
+event num383000
+event num384000
+event num385000
+event num386000
+event num387000
+event num388000
+event num389000
+event num390000
+event num391000
+event num392000
+event num393000
+event num394000
+event num395000
+event num396000
+event num397000
+event num398000
+event num399000
+event num400000
+event num401000
+event num402000
+event num403000
+event num404000
+event num405000
+event num406000
+event num407000
+event num408000
+event num409000
+event num410000
+event num411000
+event num412000
+event num413000
+event num414000
+event num415000
+event num416000
+event num417000
+event num418000
+event num419000
+event num420000
+event num421000
+event num422000
+event num423000
+event num424000
+event num425000
+event num426000
+event num427000
+event num428000
+event num429000
+event num430000
+event num431000
+event num432000
+event num433000
+event num434000
+event num435000
+event num436000
+event num437000
+event num438000
+event num439000
+event num440000
+event num441000
+event num442000
+event num443000
+event num444000
+event num445000
+event num446000
+event num447000
+event num448000
+event num449000
+event num450000
+event num451000
+event num452000
+event num453000
+event num454000
+event num455000
+event num456000
+event num457000
+event num458000
+event num459000
+event num460000
+event num461000
+event num462000
+event num463000
+event num464000
+event num465000
+event num466000
+event num467000
+event num468000
+event num469000
+event num470000
+event num471000
+event num472000
+event num473000
+event num474000
+finished all events
+events_large_ctau=113
+Summary of run saved to /eos/cms/store/group/comm_luminosity/mleoncoe/test2/merged_stopLL_575_565_BR_1.0_processed.json
+done

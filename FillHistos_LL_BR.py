@@ -86,6 +86,7 @@ class FillHistosBR():
 
                 weight_BRctau_list = tr.ReweightBRctau
                 w_BRctau = weight_BRctau_list[self.branching_ratio_index]
+                #w_BRctau = 1
                 # print("weight_BRctau_list = "+str(weight_BRctau_list))
                 # print("w_BRctau = "+str(w_BRctau))
                 
@@ -133,28 +134,30 @@ class FillHistosBR():
                 print("....................................")
                 """
                 #############
-                var['MET'] = tr.MET_pt *w_BRctau
-                var['ISRJetPt'] = getsel.getISRPt() *w_BRctau
-                var['HT'] = getsel.calHT() *w_BRctau
-                var['LepMT'] = getsel.getLepMT() *w_BRctau
-                var['CT1'] = getsel.calCT(1) *w_BRctau
-                var['CT2'] = getsel.calCT(2) *w_BRctau
-                
-                var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy']) *w_BRctau
-                var['LepdxySig'] = ( abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr']) ) *w_BRctau
-                var['Lepdz'] = abs(getsel.getSortedLepVar()[0]['dz']) *w_BRctau
-                var['Njet'] = getsel.calNj() *w_BRctau
-                var['Nbjet'] = getsel.cntBtagjet() *w_BRctau
+                var['stopCtau'] = tr.stopCtau
 
-                var['LeppT'] = getsel.getSortedLepVar()[0]['pt'] *w_BRctau
+                var['MET'] = tr.MET_pt
+                var['ISRJetPt'] = getsel.getISRPt()
+                var['HT'] = getsel.calHT()
+                var['LepMT'] = getsel.getLepMT()
+                var['CT1'] = getsel.calCT(1)
+                var['CT2'] = getsel.calCT(2)
+                
+                var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                var['LepdxySig'] = ( abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr']) )
+                var['Lepdz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                var['Njet'] = getsel.calNj()
+                var['Nbjet'] = getsel.cntBtagjet()
+
+                var['LeppT'] = getsel.getSortedLepVar()[0]['pt']
                 if getsel.getSortedLepVar()[0]['type'] == 'mu':
-                    var['MupT'] = getsel.getSortedLepVar()[0]['pt'] *w_BRctau
-                    var['Mudxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy']) *w_BRctau
-                    var['Mudz'] = abs(getsel.getSortedLepVar()[0]['dz']) *w_BRctau
+                    var['MupT'] = getsel.getSortedLepVar()[0]['pt']
+                    var['Mudxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                    var['Mudz'] = abs(getsel.getSortedLepVar()[0]['dz'])
                 else:
-                    var['epT'] = getsel.getSortedLepVar()[0]['pt'] *w_BRctau
-                    var['edxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy']) *w_BRctau
-                    var['edz'] = abs(getsel.getSortedLepVar()[0]['dz']) *w_BRctau
+                    var['epT'] = getsel.getSortedLepVar()[0]['pt']
+                    var['edxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                    var['edz'] = abs(getsel.getSortedLepVar()[0]['dz'])
                 '''
                 var['MupT'] = getsel.getMuVar(getsel.selectMuIdx())[0]['pt'] #[x['pt'] for x in getsel.getMuVar(getsel.selectMuIdx())]
                 var['Mudxy'] = abs(getsel.getMuVar(getsel.selectMuIdx())[0]['dxy']) #[abs(x['dxy']) for x in getsel.getMuVar(getsel.selectMuIdx())]
@@ -163,16 +166,16 @@ class FillHistosBR():
                 var['edxy'] = abs(getsel.getEleVar()[0]['dxy']) #[abs(x['dxy']) for x in getsel.getEleVar()]
                 var['edz'] = abs(getsel.getEleVar()[0]['dz']) #[abs(x['dz']) for x in getsel.getEleVar()]
                 '''
-                var['AllLeppT'] = [x['pt']*w_BRctau for x in getsel.getSortedLepVar()] 
-                var['AllLepdxy'] = [abs(x['dxy'])*w_BRctau for x in getsel.getSortedLepVar()] 
-                var['AllLepdxySig'] = [abs(x['dxy']/x['dxyErr'])*w_BRctau for x in getsel.getSortedLepVar()] 
-                var['AllLepdz'] = [abs(x['dz'])*w_BRctau for x in getsel.getSortedLepVar()] 
-                var['Nlep'] = len(getsel.getSortedLepVar()) *w_BRctau
+                var['AllLeppT'] = [x['pt'] for x in getsel.getSortedLepVar()] 
+                var['AllLepdxy'] = [abs(x['dxy']) for x in getsel.getSortedLepVar()] 
+                var['AllLepdxySig'] = [abs(x['dxy']/x['dxyErr']) for x in getsel.getSortedLepVar()] 
+                var['AllLepdz'] = [abs(x['dz']) for x in getsel.getSortedLepVar()] 
+                var['Nlep'] = len(getsel.getSortedLepVar())
                 if len(getsel.getSortedLepVar()) > 1:
-                    var['2ndLeppT'] = getsel.getSortedLepVar()[1]['pt'] *w_BRctau #if len(getsel.getSortedLepVar()) > 1 else -999
-                    var['2ndLepeta'] = abs(getsel.getSortedLepVar()[1]['eta']) *w_BRctau #if len(getsel.getSortedLepVar()) > 1 else -999
-                    var['2ndLepdxy'] = abs(getsel.getSortedLepVar()[1]['dxy']) *w_BRctau #if len(getsel.getSortedLepVar()) > 1 else -999
-                    var['2ndLepdz'] = abs(getsel.getSortedLepVar()[1]['dz']) *w_BRctau #if len(getsel.getSortedLepVar()) > 1 else -999
+                    var['2ndLeppT'] = getsel.getSortedLepVar()[1]['pt'] #if len(getsel.getSortedLepVar()) > 1 else -999
+                    var['2ndLepeta'] = abs(getsel.getSortedLepVar()[1]['eta']) #if len(getsel.getSortedLepVar()) > 1 else -999
+                    var['2ndLepdxy'] = abs(getsel.getSortedLepVar()[1]['dxy']) #if len(getsel.getSortedLepVar()) > 1 else -999
+                    var['2ndLepdz'] = abs(getsel.getSortedLepVar()[1]['dz']) #if len(getsel.getSortedLepVar()) > 1 else -999
                 
                 '''
                 if not self.isData:
@@ -198,9 +201,9 @@ class FillHistosBR():
                 if key in var.keys():
                     if var[key] is not None:
                         if isinstance(var[key], types.ListType):
-                            for x in var[key]: Fill1D(self.histos[key], x, lumiscale * MCcorr)
+                            for x in var[key]: Fill1D(self.histos[key], x, lumiscale * MCcorr*w_BRctau)
                         else:
-                            Fill1D(self.histos[key], var[key], lumiscale * MCcorr)
+                            Fill1D(self.histos[key], var[key], lumiscale * MCcorr*w_BRctau)
                     #else:
                         #print("var[key] is "+str(var[key]))
                 else:

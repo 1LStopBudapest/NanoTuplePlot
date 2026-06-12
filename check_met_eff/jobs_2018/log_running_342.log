@@ -1,0 +1,95 @@
+000 (9018140.342.000) 01/06 10:56:33 Job submitted from host: <188.185.6.50:9618?addrs=188.185.6.50-9618+[2001-1458-d00-62--100-2b1]-9618&alias=bigbird25.cern.ch&noUDP&sock=schedd_1627_90ad>
+...
+040 (9018140.342.000) 01/06 11:00:15 Started transferring input files
+	Transferring to host: <188.185.215.47:9618?addrs=188.185.215.47-9618+[2001-1458-303-1e--100-2b]-9618&alias=b9p31p6172.cern.ch&noUDP&sock=slot1_37_4403_0fcc_114930>
+...
+040 (9018140.342.000) 01/06 11:00:15 Finished transferring input files
+...
+001 (9018140.342.000) 01/06 11:00:16 Job executing on host: <188.185.215.47:9618?addrs=188.185.215.47-9618+[2001-1458-303-1e--100-2b]-9618&alias=b9p31p6172.cern.ch&noUDP&sock=startd_3735_7a51>
+	SlotName: slot1_37@b9p31p6172.cern.ch
+	CondorScratchDir = "/pool/condor/dir_3716604"
+	Cpus = 1
+	Disk = 3819
+	GPUs = 0
+	Memory = 3000
+...
+006 (9018140.342.000) 01/06 11:00:30 Image size of job updated: 93332
+	92  -  MemoryUsage of job (MB)
+	93332  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:05:31 Image size of job updated: 206228
+	202  -  MemoryUsage of job (MB)
+	206228  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:10:32 Image size of job updated: 213204
+	209  -  MemoryUsage of job (MB)
+	213204  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:15:32 Image size of job updated: 213644
+	209  -  MemoryUsage of job (MB)
+	213644  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:20:33 Image size of job updated: 213792
+	209  -  MemoryUsage of job (MB)
+	213792  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:25:33 Image size of job updated: 213808
+	209  -  MemoryUsage of job (MB)
+	213808  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:30:35 Image size of job updated: 213852
+	209  -  MemoryUsage of job (MB)
+	213852  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:35:35 Image size of job updated: 213856
+	209  -  MemoryUsage of job (MB)
+	213856  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:40:35 Image size of job updated: 213860
+	209  -  MemoryUsage of job (MB)
+	213860  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:45:36 Image size of job updated: 213864
+	209  -  MemoryUsage of job (MB)
+	213864  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:50:36 Image size of job updated: 213868
+	209  -  MemoryUsage of job (MB)
+	213868  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 11:55:37 Image size of job updated: 213912
+	209  -  MemoryUsage of job (MB)
+	213912  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 12:00:38 Image size of job updated: 213936
+	209  -  MemoryUsage of job (MB)
+	213936  -  ResidentSetSize of job (KB)
+...
+006 (9018140.342.000) 01/06 12:10:39 Image size of job updated: 213976
+	209  -  MemoryUsage of job (MB)
+	213976  -  ResidentSetSize of job (KB)
+...
+040 (9018140.342.000) 01/06 12:13:37 Started transferring output files
+...
+040 (9018140.342.000) 01/06 12:13:38 Finished transferring output files
+...
+005 (9018140.342.000) 01/06 12:13:38 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 01:10:28, Sys 0 00:00:11  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 01:10:28, Sys 0 00:00:11  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	38576  -  Run Bytes Sent By Job
+	21436  -  Run Bytes Received By Job
+	38576  -  Total Bytes Sent By Job
+	21436  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :     0.98        1         1 
+	   Disk (KB)            :    86          22      3819 
+	   GPUs                 :                           0 
+	   Memory (MB)          :   209        3000      3000 
+	   TimeExecute (s)      :  4401                       
+	   TimeSlotBusy (s)     :  4404                       
+
+	Job terminated of its own accord at 2026-01-06T11:13:37Z with exit-code 0.
+...

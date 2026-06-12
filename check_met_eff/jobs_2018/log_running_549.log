@@ -1,0 +1,163 @@
+000 (9018140.549.000) 01/06 10:56:47 Job submitted from host: <188.185.6.50:9618?addrs=188.185.6.50-9618+[2001-1458-d00-62--100-2b1]-9618&alias=bigbird25.cern.ch&noUDP&sock=schedd_1627_90ad>
+...
+040 (9018140.549.000) 01/06 11:01:26 Started transferring input files
+	Transferring to host: <128.142.161.144:9618?addrs=128.142.161.144-9618+[2001-1458-301-b9--100-d]-9618&alias=b9g03p4884.cern.ch&noUDP&sock=slot1_30_172134_b991_37389>
+...
+040 (9018140.549.000) 01/06 11:01:26 Finished transferring input files
+...
+001 (9018140.549.000) 01/06 11:01:27 Job executing on host: <128.142.161.144:9618?addrs=128.142.161.144-9618+[2001-1458-301-b9--100-d]-9618&alias=b9g03p4884.cern.ch&noUDP&sock=startd_170228_d3d8>
+	SlotName: slot1_30@b9g03p4884.cern.ch
+	CondorScratchDir = "/pool/condor/dir_2763373"
+	Cpus = 1
+	Disk = 4094
+	GPUs = 0
+	Memory = 3000
+...
+006 (9018140.549.000) 01/06 11:01:40 Image size of job updated: 109800
+	108  -  MemoryUsage of job (MB)
+	109800  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:06:40 Image size of job updated: 208268
+	204  -  MemoryUsage of job (MB)
+	208268  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:11:41 Image size of job updated: 215836
+	211  -  MemoryUsage of job (MB)
+	215836  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:16:41 Image size of job updated: 215944
+	211  -  MemoryUsage of job (MB)
+	215944  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:21:41 Image size of job updated: 215980
+	211  -  MemoryUsage of job (MB)
+	215980  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:26:42 Image size of job updated: 216164
+	212  -  MemoryUsage of job (MB)
+	216164  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:31:42 Image size of job updated: 216192
+	212  -  MemoryUsage of job (MB)
+	216192  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:36:43 Image size of job updated: 216208
+	212  -  MemoryUsage of job (MB)
+	216208  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:41:44 Image size of job updated: 216228
+	212  -  MemoryUsage of job (MB)
+	216228  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:46:44 Image size of job updated: 216236
+	212  -  MemoryUsage of job (MB)
+	216236  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:51:45 Image size of job updated: 216240
+	212  -  MemoryUsage of job (MB)
+	216240  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 11:56:45 Image size of job updated: 216256
+	212  -  MemoryUsage of job (MB)
+	216256  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:01:46 Image size of job updated: 216260
+	212  -  MemoryUsage of job (MB)
+	216260  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:06:47 Image size of job updated: 216276
+	212  -  MemoryUsage of job (MB)
+	216276  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:11:47 Image size of job updated: 216280
+	212  -  MemoryUsage of job (MB)
+	216280  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:21:49 Image size of job updated: 216284
+	212  -  MemoryUsage of job (MB)
+	216284  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:26:49 Image size of job updated: 216292
+	212  -  MemoryUsage of job (MB)
+	216292  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:31:50 Image size of job updated: 216340
+	212  -  MemoryUsage of job (MB)
+	216340  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:41:50 Image size of job updated: 216344
+	212  -  MemoryUsage of job (MB)
+	216344  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 12:51:51 Image size of job updated: 216368
+	212  -  MemoryUsage of job (MB)
+	216368  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:01:52 Image size of job updated: 216372
+	212  -  MemoryUsage of job (MB)
+	216372  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:11:53 Image size of job updated: 216376
+	212  -  MemoryUsage of job (MB)
+	216376  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:26:55 Image size of job updated: 216448
+	212  -  MemoryUsage of job (MB)
+	216448  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:31:56 Image size of job updated: 216472
+	212  -  MemoryUsage of job (MB)
+	216472  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:36:57 Image size of job updated: 216476
+	212  -  MemoryUsage of job (MB)
+	216476  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:46:57 Image size of job updated: 216484
+	212  -  MemoryUsage of job (MB)
+	216484  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 13:56:58 Image size of job updated: 216492
+	212  -  MemoryUsage of job (MB)
+	216492  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 14:01:59 Image size of job updated: 216536
+	212  -  MemoryUsage of job (MB)
+	216536  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 14:17:01 Image size of job updated: 216540
+	212  -  MemoryUsage of job (MB)
+	216540  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 14:22:01 Image size of job updated: 216548
+	212  -  MemoryUsage of job (MB)
+	216548  -  ResidentSetSize of job (KB)
+...
+006 (9018140.549.000) 01/06 14:27:01 Image size of job updated: 216604
+	212  -  MemoryUsage of job (MB)
+	216604  -  ResidentSetSize of job (KB)
+...
+040 (9018140.549.000) 01/06 14:27:44 Started transferring output files
+...
+040 (9018140.549.000) 01/06 14:27:45 Finished transferring output files
+...
+005 (9018140.549.000) 01/06 14:27:45 Job terminated.
+	(1) Normal termination (return value 0)
+		Usr 0 03:23:00, Sys 0 00:00:08  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 03:23:00, Sys 0 00:00:08  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	45603  -  Run Bytes Sent By Job
+	21436  -  Run Bytes Received By Job
+	45603  -  Total Bytes Sent By Job
+	21436  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :     0.99        1         1 
+	   Disk (KB)            :    92          22      4094 
+	   GPUs                 :                           0 
+	   Memory (MB)          :   212        3000      3000 
+	   TimeExecute (s)      : 12377                       
+	   TimeSlotBusy (s)     : 12379                       
+
+	Job terminated of its own accord at 2026-01-06T13:27:44Z with exit-code 0.
+...
