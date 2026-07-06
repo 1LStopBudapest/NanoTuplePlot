@@ -5,9 +5,57 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+from stops_13TeV import xsecNNLL 
+import json
+
+#############################################
+#Define funcions
+
+#Get stop cross-section depending on the stop mass
+def get_xsec(mst = 200.):
+  # xsec returned in fb
+  masses = np.array(sorted(xsecNNLL.keys()))
+  # Extract cross sections (first value of each tuple)
+  xsecs_pb = np.array([xsecNNLL[m][0] for m in masses])
+  # Convert to femtobarns (1 pb = 1000 fb)
+  xsecs_fb = xsecs_pb * 1000.0
+  if mst < masses[0]: return -1.
+  if mst > masses[-1]: return -1.
+  xsec = np.interp(mst, masses, xsecs_fb)   
+  return xsec
+
+#Get filter efficiency
+def getEff(csvFile,mStop, mNeu):
+    df = pd.read_csv(csvFile, usecols= ["m","dm","filterEff"])
+    dM = mStop - mNeu
+    # Get unique m values
+    unique_m = df['m'].unique()
+    # Find the closest m to mStop
+    closest_m = unique_m[np.argmin(np.abs(unique_m - mStop))]
+    # Filter to rows with that m
+    sub_df = df[df['m'] == closest_m].copy()  # copy to avoid SettingWithCopyWarning if needed
+    # Compute dm differences
+    sub_df['dm_diff'] = np.abs(sub_df['dm'] - dM)
+    # Get filterEff from the row with minimal dm_diff
+    filterEff = sub_df.loc[sub_df['dm_diff'].idxmin(), 'filterEff']
+    return filterEff
+
+def expected_nevents(lumi,sigma,BR,met_eff):
+   expected = lumi*(sigma/1000)*met_eff*(2*BR-BR*BR)
+   #expected = lumi*(sigma/1000)*met_eff
+   return expected
+
+#####################################################
+
+luminosity_2018_pb  = 58905.0
+#luminosity_2018_pb  = 19520.0#ACTUALLY 2016 PreVPF
 
 # Read the CSV file (no headers)
-df = pd.read_csv('info_test_new_comb_tight7_combined.csv', header=None)
+df = pd.read_csv('info_test_new_comb_tight7_noSel_combined.csv', header=None)
+
+file_data = "/mnt/newDisk/stop_samples_long_lived/2018/summed_2018_reworked.json"
+with open(file_data, "r") as f:
+    data_nevents = json.load(f)
 
 # Assuming: 
 # Column 0 = x (mStop)
@@ -19,15 +67,23 @@ df = pd.read_csv('info_test_new_comb_tight7_combined.csv', header=None)
 # Example: If column 2 is the parameter to filter, and column 3 is z
 BR_column = 2  # Change this to the correct column index
 z_column = df.columns[-1]  # Last column is z
+processed_events_column = df.columns[3]
 
 # Filter for specific parameter value (e.g., 1.0 or whatever value you want)
-BR_target = 0.5  # CHANGE THIS to your desired filter value
+BR_target = 0.2  # CHANGE THIS to your desired filter value
 filtered_df = df[df[BR_column] == BR_target]
 
 x_values = filtered_df[0].values  # mStop
 y_values = filtered_df[1].values  # mX0
 
 z_values = filtered_df[z_column].values  # z values
+
+print("................")
+print(processed_events_column)
+print(z_column)
+print(".............iiii..........")
+processed_events_values = filtered_df[processed_events_column].values  
+
 
 # Calculate the new variable: x - y (which is delta mass)
 delta_m_values = x_values - y_values
@@ -36,32 +92,6 @@ print("Number of points after filtering: {}".format(len(x_values)))
 print("Unique X (mStop) values in data: {}".format(np.sort(np.unique(x_values))))
 print("Unique delta M (x-y) values in data: {}".format(np.sort(np.unique(delta_m_values))))
 
-
-###########################
-# Check for non-positive values in z
-non_positive_mask = z_values <= 0
-if np.any(non_positive_mask):
-    print("\nWARNING: Found {} non-positive Z values!".format(np.sum(non_positive_mask)))
-    print("Indices with non-positive Z values:")
-    for idx in np.where(non_positive_mask)[0][:20]:  # Show first 20
-        print("  Row index {}: mStop={}, mX0={}, Z={}, deltaM={}".format(
-            idx, x_values[idx], y_values[idx], z_values[idx], delta_m_values[idx]))
-    
-    # Also print the corresponding rows from the original filtered dataframe
-    print("\nCorresponding rows in filtered data:")
-    bad_rows = filtered_df.iloc[np.where(non_positive_mask)[0][:20]]
-    print(bad_rows.to_string())
-    
-    # Print unique values to see patterns
-    print("\nUnique non-positive Z values: {}".format(np.unique(z_values[non_positive_mask])))
-
-# Also check original dataframe before filtering
-original_non_positive = df[df[z_column] <= 0]
-if len(original_non_positive) > 0:
-    print("\nIn original CSV (before filtering):")
-    print("Found {} rows with Z <= 0".format(len(original_non_positive)))
-    print(original_non_positive.head(20).to_string())
-############################
 
 # Define the FULL theoretical grid parameters
 delta_m_stop = 25
@@ -103,8 +133,10 @@ delta_m_edges = np.array(delta_m_edges)
 
 # Create a mapping from (x, delta_m) to z using ONLY the filtered data
 point_to_z = {}
-for x_val, dm_val, z_val in zip(x_values, delta_m_values, z_values):
+processed_events_z = {}
+for x_val, dm_val, z_val, procc in zip(x_values, delta_m_values, z_values, processed_events_values):
     point_to_z[(x_val, dm_val)] = z_val
+    processed_events_z[(x_val, dm_val)] = procc
 
 # Create the z_matrix with dimensions (len(delta_m_edges)-1, len(x_edges)-1)
 # Initialize with NaN for missing points
@@ -128,47 +160,6 @@ print("  Total cells: {}".format(np.size(z_matrix)))
 print("  NaN count in z_matrix: {}".format(np.sum(np.isnan(z_matrix))))
 print("  Finite values in z_matrix: {}".format(np.sum(np.isfinite(z_matrix)))) 
 
-# Debug: Check what values you actually have vs theoretical grid
-print("\nDebug - Value comparison:")
-print("Theoretical X values: {}".format(all_x_values))
-print("Actual X values in data: {}".format(np.sort(np.unique(x_values))))
-print("\nTheoretical Delta M values: {}".format(all_delta_m_sorted))
-print("Actual Delta M values in data: {}".format(np.sort(np.unique(delta_m_values))))
-
-# Check if values are close but not exact (floating point issues)
-print("\nDebug - Checking for near matches:")
-for x_val in np.unique(x_values):
-    if x_val not in all_x_values:
-        closest = all_x_values[np.argmin(np.abs(all_x_values - x_val))]
-        print("  X={} not in theoretical grid, closest is {}".format(x_val, closest))
-        
-for dm_val in np.unique(delta_m_values):
-    if dm_val not in all_delta_m_sorted:
-        closest = all_delta_m_sorted[np.argmin(np.abs(all_delta_m_sorted - dm_val))]
-        print("  Delta M={} not in theoretical grid, closest is {}".format(dm_val, closest))
-
-# Debug: Check what keys are in point_to_z vs what you're looking for
-print("\nDebug - Point mapping check:")
-print("Sample of point_to_z keys (first 5):")
-for i, (key, val) in enumerate(point_to_z.items()):
-    if i < 5:
-        print("  {} -> {}".format(key, val))
-
-print("\nDebug - Checking first few grid positions:")
-for i, x_val in enumerate(all_x_values[:5]):
-    for j, dm_val in enumerate(all_delta_m_sorted[:3]):
-        print("  Checking grid ({}, {}): in point_to_z? {}".format(
-            x_val, dm_val, (x_val, dm_val) in point_to_z))
-
-# Also check the types and values
-print("\nDebug - Type check:")
-if len(point_to_z) > 0:
-    sample_key = list(point_to_z.keys())[0]
-    print("  Sample key type: {}".format(type(sample_key)))
-    print("  Sample key values: x={}, dm={}".format(sample_key[0], sample_key[1]))
-    print("  Sample x type: {}, dm type: {}".format(type(sample_key[0]), type(sample_key[1])))
-
-
 # Debug before filling loop
 print("\nDebug - Before filling loop:")
 print("Shape of z_matrix: {}".format(z_matrix.shape))
@@ -183,10 +174,41 @@ filled_count = 0
 for i, x_val in enumerate(all_x_values):
     for j, dm_val in enumerate(all_delta_m_sorted):
         if (x_val, dm_val) in point_to_z:
-            z_matrix[j, i] = point_to_z[(x_val, dm_val)]
+
+            cross_section_fb = get_xsec(x_val)
+
+            try:
+                key = str(x_val)+"_"+str(x_val-dm_val)
+                METeff =  processed_events_z[(x_val, dm_val)] / (data_nevents[key][0]+data_nevents[key][1])
+                #METeff =  0.97
+                #print(key)
+                #print(point_to_z[(x_val, dm_val)])
+                #print(METeff)
+            except:
+                print("divide by zero")
+
+            expected_events_i = expected_nevents(luminosity_2018_pb,cross_section_fb,BR_target,METeff)
+
+            if key == "1100_1070":
+                print(".....................")
+                print("integral_i = "+str(point_to_z[(x_val, dm_val)]))
+                print("METeff = "+str(METeff))
+                print("cross_section_fb = "+str(cross_section_fb))
+                print("expected_events_i = "+str(expected_events_i))
+                print("processed_events_i = "+str(processed_events_z[(x_val, dm_val)]))
+                print("luminosity_2018_pb = "+str(luminosity_2018_pb))
+                print("data_nevents[key][0] = "+str(data_nevents[key][0]))
+                print("data_nevents[key][1] = "+str(data_nevents[key][1]))
+                print("data_nevents[key][0]+data_nevents[key][1] = "+str(data_nevents[key][0]+data_nevents[key][1]))
+                print(".....................")
+
+            #z_matrix[j, i] = point_to_z[(x_val, dm_val)]
+
+            z_matrix[j, i] = expected_events_i
+            #print(expected_events_i)
             filled_count += 1
             if filled_count <= 5:  # Print first 5 fills
-                print("  Filled cell ({}, {}) with value {}".format(x_val, dm_val, point_to_z[(x_val, dm_val)]))
+                print("  Filled cell ({}, {}) with value {}".format(x_val, dm_val, expected_events_i))
 
 print("Total cells filled: {}".format(filled_count))
 
@@ -210,7 +232,7 @@ mesh = ax.pcolormesh(X_grid, Y_grid, z_masked, shading='flat',
 
 # Add colorbar
 cbar = plt.colorbar(mesh, ax=ax)
-cbar.set_label('nEvents passing pre-selection', fontsize=20)
+cbar.set_label('nEvents expected by the theory', fontsize=20)
 
 # Labels and title
 ax.set_xlabel('mStop (GeV)', fontsize=20)
@@ -241,7 +263,7 @@ ax.grid(True, alpha=0.2, linestyle='--', linewidth=0.5)
 plt.tight_layout()
 
 # Save the figure
-output_filename = 'grid_nevents_passing.png'
+output_filename = 'grid_nevents_theory.png'
 plt.savefig(output_filename, dpi=300, bbox_inches='tight')
 print("Plot saved as: {}".format(output_filename))
 

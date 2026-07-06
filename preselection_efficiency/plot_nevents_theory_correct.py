@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from stops_13TeV import xsecNNLL 
+import json
 
 #############################################
 #Define funcions
@@ -39,36 +40,100 @@ def getEff(csvFile,mStop, mNeu):
     filterEff = sub_df.loc[sub_df['dm_diff'].idxmin(), 'filterEff']
     return filterEff
 
-def expected_nevents(lumi,sigma,BR,met_eff):
-   expected = lumi*(sigma/1000)*met_eff*(2*BR-BR*BR)
+def expected_nevents(lumi,
+                     sigma,
+                     BR,
+                     meteff_44_03,
+                     meteff_42_03,
+                     meteff_22_03,
+                     MCcorr44_03,
+                     MCcorr42_03,
+                     MCcorr22_03,
+                     meteff_44_10,
+                     meteff_42_10,
+                     meteff_22_10,
+                     MCcorr44_10,
+                     MCcorr42_10,
+                     MCcorr22_10):
+   
+   br_factor_03 = (BR*BR)*meteff_44_03*MCcorr44_03 + \
+            (2*BR*(1-BR))*meteff_42_03*MCcorr42_03 + \
+            ((1-BR)*(1-BR))*meteff_22_03*MCcorr22_03
+   
+   expected_03 = lumi*(sigma/1000)*br_factor_03
+
+   br_factor_10 = (BR*BR)*meteff_44_10*MCcorr44_10 + \
+            (2*BR*(1-BR))*meteff_42_10*MCcorr42_10 + \
+            ((1-BR)*(1-BR))*meteff_22_10*MCcorr22_10
+   
+   expected_10 = lumi*(sigma/1000)*br_factor_10
+
+   expected = BR*expected_10 + (1-BR)*expected_03
+   
    return expected
 
 #####################################################
 
 luminosity_2018_pb  = 58905.0
+#luminosity_2018_pb  = 19520.0#ACTUALLY 2016 PreVPF
 
 # Read the CSV file (no headers)
-df = pd.read_csv('info_test_new_comb_tight7_combined.csv', header=None)
+df = pd.read_csv('info_test_new_comb_tight7_noSel_extra_combined.csv', header=None)
 
-# Assuming: 
+file_data = "/mnt/newDisk/stop_samples_long_lived/2018/summed_2018_reworked.json"
+with open(file_data, "r") as f:
+    data_nevents = json.load(f)
+
+
+# ACTUAL CSV STRUCTURE
 # Column 0 = x (mStop)
 # Column 1 = y (mX0) 
-# Column 2 = some parameter you want to filter on
-# Column 3 = z value (or whatever last column is)
-# ADJUST THIS BASED ON YOUR ACTUAL CSV STRUCTURE
+# Column 2 = BR
+# Column 3 = histogram entries
+# Column 4 = n_rejected_10+n_rejected_03
+# Column 5 = n_4bd4bd_03
+# Column 6 = n_4bd2bd_03
+# Column 7 = n_2bd2bd_03
+# Column 8 = n_4bd4bd_10
+# Column 9 = n_4bd2bd_10
+# Column 10 = n_2bd2bd_10
+# Column 11 = run_mcWeight_4bd4bd_03
+# Column 12 = run_mcWeight_4bd2bd_03
+# Column 13 = run_mcWeight_2bd2bd_03
+# Column 14 = run_mcWeight_4bd4bd_10
+# Column 15 = run_mcWeight_4bd2bd_10
+# Column 16 = run_mcWeight_2bd2bd_10
+# Column 17 = histogram integral
 
 # Example: If column 2 is the parameter to filter, and column 3 is z
 BR_column = 2  # Change this to the correct column index
 z_column = df.columns[-1]  # Last column is z
+processed_events_column = df.columns[3]
 
 # Filter for specific parameter value (e.g., 1.0 or whatever value you want)
-BR_target = 0.2  # CHANGE THIS to your desired filter value
+BR_target = 1.0  # CHANGE THIS to your desired filter value
 filtered_df = df[df[BR_column] == BR_target]
 
 x_values = filtered_df[0].values  # mStop
 y_values = filtered_df[1].values  # mX0
 
 z_values = filtered_df[z_column].values  # z values
+
+processed_events_values = filtered_df[17].values
+
+n_4bd4bd_03 = filtered_df[5].values
+n_4bd2bd_03 = filtered_df[6].values
+n_2bd2bd_03 = filtered_df[7].values
+n_4bd4bd_10 = filtered_df[8].values
+n_4bd2bd_10 = filtered_df[9].values
+n_2bd2bd_10 = filtered_df[10].values
+
+run_mcWeight_4bd4bd_03 = filtered_df[11].values
+run_mcWeight_4bd2bd_03 = filtered_df[12].values
+run_mcWeight_2bd2bd_03 = filtered_df[13].values
+run_mcWeight_4bd4bd_10 = filtered_df[14].values
+run_mcWeight_4bd2bd_10 = filtered_df[15].values
+run_mcWeight_2bd2bd_10 = filtered_df[16].values
 
 # Calculate the new variable: x - y (which is delta mass)
 delta_m_values = x_values - y_values
@@ -118,8 +183,56 @@ delta_m_edges = np.array(delta_m_edges)
 
 # Create a mapping from (x, delta_m) to z using ONLY the filtered data
 point_to_z = {}
-for x_val, dm_val, z_val in zip(x_values, delta_m_values, z_values):
+processed_events_z = {}
+for x_val, dm_val, z_val, procc in zip(x_values, delta_m_values, z_values, processed_events_values):
     point_to_z[(x_val, dm_val)] = z_val
+    processed_events_z[(x_val, dm_val)] = procc
+
+n_4bd4bd_10_ = {}
+n_4bd2bd_10_ = {}
+n_2bd2bd_10_ = {}
+run_mcWeight_4bd4bd_10_ = {}
+run_mcWeight_4bd2bd_10_ = {}
+run_mcWeight_2bd2bd_10_ = {}
+
+for x_val, dm_val, n_44, n_42, n_22, w_44, w_42, w_22   in zip(x_values, 
+                                     delta_m_values, 
+                                     n_4bd4bd_10, 
+                                     n_4bd2bd_10, 
+                                     n_2bd2bd_10, 
+                                     run_mcWeight_4bd4bd_10, 
+                                     run_mcWeight_4bd2bd_10, 
+                                     run_mcWeight_2bd2bd_10):
+    n_4bd4bd_10_[(x_val, dm_val)] = n_44
+    n_4bd2bd_10_[(x_val, dm_val)] = n_42
+    n_2bd2bd_10_[(x_val, dm_val)] = n_22
+    run_mcWeight_4bd4bd_10_[(x_val, dm_val)] = w_44
+    run_mcWeight_4bd2bd_10_[(x_val, dm_val)] = w_42
+    run_mcWeight_2bd2bd_10_[(x_val, dm_val)] = w_22
+
+
+n_4bd4bd_03_ = {}
+n_4bd2bd_03_ = {}
+n_2bd2bd_03_ = {}
+run_mcWeight_4bd4bd_03_ = {}
+run_mcWeight_4bd2bd_03_ = {}
+run_mcWeight_2bd2bd_03_ = {}
+
+for x_val, dm_val, n_44, n_42, n_22, w_44, w_42, w_22   in zip(x_values, 
+                                     delta_m_values, 
+                                     n_4bd4bd_03, 
+                                     n_4bd2bd_03, 
+                                     n_2bd2bd_03, 
+                                     run_mcWeight_4bd4bd_03, 
+                                     run_mcWeight_4bd2bd_03, 
+                                     run_mcWeight_2bd2bd_03):
+    n_4bd4bd_03_[(x_val, dm_val)] = n_44
+    n_4bd2bd_03_[(x_val, dm_val)] = n_42
+    n_2bd2bd_03_[(x_val, dm_val)] = n_22
+    run_mcWeight_4bd4bd_03_[(x_val, dm_val)] = w_44
+    run_mcWeight_4bd2bd_03_[(x_val, dm_val)] = w_42
+    run_mcWeight_2bd2bd_03_[(x_val, dm_val)] = w_22
+
 
 # Create the z_matrix with dimensions (len(delta_m_edges)-1, len(x_edges)-1)
 # Initialize with NaN for missing points
@@ -159,16 +272,81 @@ for i, x_val in enumerate(all_x_values):
         if (x_val, dm_val) in point_to_z:
 
             cross_section_fb = get_xsec(x_val)
-            METeff =  0.97
-            expected_events_i = expected_nevents(luminosity_2018_pb,cross_section_fb,BR_target,METeff)
+
+            try:
+                key = str(x_val)+"_"+str(x_val-dm_val)
+                #METeff =  processed_events_z[(x_val, dm_val)] / (data_nevents[key][0]+data_nevents[key][1])
+                #METeff =  0.97
+                #print(key)
+                #print(point_to_z[(x_val, dm_val)])
+                #print(METeff)
+                # meteff_44 =  n_4bd4bd_10_[(x_val, dm_val)] / ((data_nevents[key][0]+data_nevents[key][1])*0.64)
+                # meteff_42 =  n_4bd2bd_10_[(x_val, dm_val)] / ((data_nevents[key][0]+data_nevents[key][1])*0.32)
+                # meteff_22 =  n_2bd2bd_10_[(x_val, dm_val)] / ((data_nevents[key][0]+data_nevents[key][1])*0.04)
+
+                meteff_44_10 =  n_4bd4bd_10_[(x_val, dm_val)] / ((data_nevents[key][1])*0.64)
+                meteff_42_10 =  n_4bd2bd_10_[(x_val, dm_val)] / ((data_nevents[key][1])*0.32)
+                meteff_22_10 =  n_2bd2bd_10_[(x_val, dm_val)] / ((data_nevents[key][1])*0.04)
+                MCcorr44_10 =  run_mcWeight_4bd4bd_10_[(x_val, dm_val)]
+                MCcorr42_10 =  run_mcWeight_4bd2bd_10_[(x_val, dm_val)]
+                MCcorr22_10 =  run_mcWeight_2bd2bd_10_[(x_val, dm_val)]
+
+                meteff_44_03 =  n_4bd4bd_03_[(x_val, dm_val)] / ((data_nevents[key][0])*0.64)
+                meteff_42_03 =  n_4bd2bd_03_[(x_val, dm_val)] / ((data_nevents[key][0])*0.32)
+                meteff_22_03 =  n_2bd2bd_03_[(x_val, dm_val)] / ((data_nevents[key][0])*0.04)
+                MCcorr44_03 =  run_mcWeight_4bd4bd_03_[(x_val, dm_val)]
+                MCcorr42_03 =  run_mcWeight_4bd2bd_03_[(x_val, dm_val)]
+                MCcorr22_03 =  run_mcWeight_2bd2bd_03_[(x_val, dm_val)]
+                # print("----------------")
+                # print(meteff_44)
+                # print(meteff_42)
+                # print(meteff_22)
+                # print(MCcorr44)
+                # print(MCcorr42)
+                # print(MCcorr22)
+                # print("----------------")
+
+            except:
+                print("divide by zero")
+
+            expected_events_i = expected_nevents(luminosity_2018_pb,
+                                                 cross_section_fb,
+                                                 BR_target,
+                                                 meteff_44_03,
+                                                 meteff_42_03,
+                                                 meteff_22_03,
+                                                 MCcorr44_03,
+                                                 MCcorr42_03,
+                                                 MCcorr22_03,
+                                                 meteff_44_10,
+                                                 meteff_42_10,
+                                                 meteff_22_10,
+                                                 MCcorr44_10,
+                                                 MCcorr42_10,
+                                                 MCcorr22_10)
+            
+            #print("expected_events_i = "+str(expected_events_i))
+
+            if key == "1100_1070":
+                print(".....................")
+                print("integral_i = "+str(point_to_z[(x_val, dm_val)]))
+                #print("meteff_44 = "+str(meteff_44))
+                print("cross_section_fb = "+str(cross_section_fb))
+                print("expected_events_i = "+str(expected_events_i))
+                print("processed_events_i = "+str(processed_events_z[(x_val, dm_val)]))
+                print("luminosity_2018_pb = "+str(luminosity_2018_pb))
+                print("data_nevents[key][0] = "+str(data_nevents[key][0]))
+                print("data_nevents[key][1] = "+str(data_nevents[key][1]))
+                print("data_nevents[key][0]+data_nevents[key][1] = "+str(data_nevents[key][0]+data_nevents[key][1]))
+                print(".....................")
 
             #z_matrix[j, i] = point_to_z[(x_val, dm_val)]
 
-            z_matrix[j, i] = 100*point_to_z[(x_val, dm_val)]/expected_events_i
+            z_matrix[j, i] = expected_events_i
             #print(expected_events_i)
             filled_count += 1
             if filled_count <= 5:  # Print first 5 fills
-                print("  Filled cell ({}, {}) with value {}".format(x_val, dm_val, 100*point_to_z[(x_val, dm_val)]/expected_events_i))
+                print("  Filled cell ({}, {}) with value {}".format(x_val, dm_val, expected_events_i))
 
 print("Total cells filled: {}".format(filled_count))
 
@@ -187,16 +365,12 @@ norm = LogNorm(vmin=np.nanmin(z_values), vmax=np.nanmax(z_values))
 cmap = plt.cm.viridis
 cmap.set_bad('lightgray', alpha=0.5)  # Color for missing points
 
-#Log plot
-# mesh = ax.pcolormesh(X_grid, Y_grid, z_masked, shading='flat', 
-#                      cmap=cmap, norm=norm, edgecolors='black', linewidth=0.5)
-#No log
 mesh = ax.pcolormesh(X_grid, Y_grid, z_masked, shading='flat', 
-                     cmap=cmap, edgecolors='black', linewidth=0.5)
+                     cmap=cmap, norm=norm, edgecolors='black', linewidth=0.5)
 
 # Add colorbar
 cbar = plt.colorbar(mesh, ax=ax)
-cbar.set_label('pre-selection efficiency (%)', fontsize=20)
+cbar.set_label('nEvents expected by the theory', fontsize=20)
 
 # Labels and title
 ax.set_xlabel('mStop (GeV)', fontsize=20)
@@ -227,7 +401,7 @@ ax.grid(True, alpha=0.2, linestyle='--', linewidth=0.5)
 plt.tight_layout()
 
 # Save the figure
-output_filename = 'grid_selection_efficiency.png'
+output_filename = 'grid_nevents_theory.png'
 plt.savefig(output_filename, dpi=300, bbox_inches='tight')
 print("Plot saved as: {}".format(output_filename))
 

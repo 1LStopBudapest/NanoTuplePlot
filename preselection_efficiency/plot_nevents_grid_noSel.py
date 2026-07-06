@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 # Read the CSV file (no headers)
-df = pd.read_csv('info_test_new_comb_tight7_combined.csv', header=None)
+df = pd.read_csv('info_test_new_comb_tight7_noSel_combined.csv', header=None)
 
 # Assuming: 
 # Column 0 = x (mStop)
@@ -21,7 +21,7 @@ BR_column = 2  # Change this to the correct column index
 z_column = df.columns[-1]  # Last column is z
 
 # Filter for specific parameter value (e.g., 1.0 or whatever value you want)
-BR_target = 0.5  # CHANGE THIS to your desired filter value
+BR_target = 0.1  # CHANGE THIS to your desired filter value
 filtered_df = df[df[BR_column] == BR_target]
 
 x_values = filtered_df[0].values  # mStop
@@ -210,12 +210,12 @@ mesh = ax.pcolormesh(X_grid, Y_grid, z_masked, shading='flat',
 
 # Add colorbar
 cbar = plt.colorbar(mesh, ax=ax)
-cbar.set_label('nEvents passing pre-selection', fontsize=20)
+cbar.set_label('nEvents no Selection', fontsize=20)
 
 # Labels and title
 ax.set_xlabel('mStop (GeV)', fontsize=20)
 ax.set_ylabel('DeltaM (GeV)', fontsize=20)
-ax.set_title('mStop vs Delta M, BR = {})'.format(BR_target), fontsize=14)
+ax.set_title('mStop vs Delta M, BR = {}'.format(BR_target), fontsize=14)
 
 # Add text labels for each cell that HAS data
 for i, x_val in enumerate(all_x_values):
@@ -241,7 +241,7 @@ ax.grid(True, alpha=0.2, linestyle='--', linewidth=0.5)
 plt.tight_layout()
 
 # Save the figure
-output_filename = 'grid_nevents_passing.png'
+output_filename = 'grid_nevents_noSel.png'
 plt.savefig(output_filename, dpi=300, bbox_inches='tight')
 print("Plot saved as: {}".format(output_filename))
 

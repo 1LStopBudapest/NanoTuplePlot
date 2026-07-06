@@ -119,6 +119,23 @@ class FillHistosBothBR():
 
         n_rejected_03 = 0
         n_rejected_10 = 0
+        n_tail_10 = 0
+        
+
+        run_mcWeight_4bd4bd_03 = 0
+        run_mcWeight_4bd4bd_10 = 0
+        run_mcWeight_4bd2bd_03 = 0
+        run_mcWeight_4bd2bd_10 = 0
+        run_mcWeight_2bd2bd_03 = 0
+        run_mcWeight_2bd2bd_10 = 0
+
+
+        n_4bd4bd_03 = 0
+        n_4bd4bd_10 = 0
+        n_4bd2bd_03 = 0
+        n_4bd2bd_10 = 0
+        n_2bd2bd_03 = 0
+        n_2bd2bd_10 = 0
 
         maxWeight10 = -10
         maxWeight03 = -10        
@@ -126,7 +143,9 @@ class FillHistosBothBR():
         for ientry03 in range(n_entries03):
 
             if ientry03 > nevtcut03: break
+            #if ientry03 > 1: break
             if ientry03 % (nevtcut03/10)==0 : print 'processing ', ientry03,'th event'
+
 
             tree03.GetEntry(ientry03)
             if self.isData:
@@ -135,12 +154,11 @@ class FillHistosBothBR():
             else:
                 lumiscale = (self.DataLumi) * (tree03.lumi_weight)/1000.0
                 ####print("Considered as mc") 
+                #print(tree03.lumi_weight)
             if self.isData or self.NoCorr:
                 MCcorr = 1.0
             else:
                 MCcorr = MCWeight(tree03, self.year, self.sample).getTotalWeight()
-
-            
                 
             var03= {key: None for key in vardic}#reseting the var03dictionary for each event
             #its a string: 'Std' for standard PF ele, 'LowpT' for low pT ele and 'comb' for combination of both starting from the object according to the given preference 
@@ -164,6 +182,29 @@ class FillHistosBothBR():
 
                 if w_BRctau>maxWeight03:
                     maxWeight03=w_BRctau
+
+                ########################
+                #For test: get the stop antistop decay type
+                if  tree03.stopDecay > 3.5 and tree03.stopAntiDecay > 3.5:
+                    decay03 = "4bd+4bd"
+                    n_4bd4bd_03 +=1
+                    run_mcWeight_4bd4bd_03 += MCcorr
+                    running_mcWeight_avg_4bd4bd_03 = run_mcWeight_4bd4bd_03 / n_4bd4bd_03
+                elif (tree03.stopDecay < 3.5 and tree03.stopAntiDecay > 3.5) or \
+                    (tree03.stopDecay > 3.5 and tree03.stopAntiDecay < 3.5):
+                    decay03 = "4bd+2bd"
+                    n_4bd2bd_03 +=1
+                    run_mcWeight_4bd2bd_03 += MCcorr
+                    running_mcWeight_avg_4bd2bd_03 = run_mcWeight_4bd2bd_03 / n_4bd2bd_03
+                elif tree03.stopDecay < 3.5 and tree03.stopAntiDecay < 3.5:
+                    decay03 = "2bd+2bd"
+                    n_2bd2bd_03 +=1
+                    run_mcWeight_2bd2bd_03 += MCcorr
+                    running_mcWeight_avg_2bd2bd_03 = run_mcWeight_2bd2bd_03 / n_2bd2bd_03
+                else:
+                    decay03 = "ERROR!!"
+                    continue
+                #######################
 
                 
                 #############
@@ -239,11 +280,34 @@ class FillHistosBothBR():
                     maxWeight10 = w_BRctau
 
                 if (tree10.stopCtau/ctau_sample_03) > ctau_ratio_threshold or (tree10.stopAntiCtau/ctau_sample_03) > ctau_ratio_threshold:
-                    tail_event_10 = True
+                    tail_event_10 = True######
+                    n_tail_10 +=1
                     #Division by ctau_sample_03 is not an error
                     #This makes the cut to have the same ctau cutting point for both samples
                     #This avoid an ugly step down in the final ctau distribution
 
+                ########################
+                #For test: get the stop antistop decay type
+                if  tree10.stopDecay > 3.5 and tree10.stopAntiDecay > 3.5:
+                    decay10 = "4bd+4bd"
+                    n_4bd4bd_10 +=1
+                    run_mcWeight_4bd4bd_10 += MCcorr
+                    running_mcWeight_avg_4bd4bd_10 = run_mcWeight_4bd4bd_10 / n_4bd4bd_10
+                elif (tree10.stopDecay < 3.5 and tree10.stopAntiDecay > 3.5) or \
+                    (tree10.stopDecay > 3.5 and tree10.stopAntiDecay < 3.5):
+                    decay10 = "4bd+2bd"
+                    n_4bd2bd_10 +=1
+                    run_mcWeight_4bd2bd_10 += MCcorr
+                    running_mcWeight_avg_4bd2bd_10 = run_mcWeight_4bd2bd_10 / n_4bd2bd_10
+                elif tree10.stopDecay < 3.5 and tree10.stopAntiDecay < 3.5:
+                    decay10 = "2bd+2bd"
+                    n_2bd2bd_10 +=1
+                    run_mcWeight_2bd2bd_10 += MCcorr
+                    running_mcWeight_avg_2bd2bd_10 = run_mcWeight_2bd2bd_10 / n_2bd2bd_10
+                else:
+                    decay10 = "ERROR!!"
+                    continue
+                #######################
 
                 var10['stopCtau'] = tree10.stopCtau 
                 var10['MET'] = tree10.MET_pt
@@ -258,6 +322,10 @@ class FillHistosBothBR():
                                     for x in var10[key]: Fill1D(histos10_tail[key], x, lumiscale * MCcorr * w_BRctau)
                                 else:
                                     Fill1D(histos10_tail[key], var10[key], lumiscale * MCcorr * w_BRctau)
+                                    # print(" lumiscale * MCcorr * w_BRctau = "+str(lumiscale * MCcorr * w_BRctau))
+                                    # print(" lumiscale = "+str(lumiscale))
+                                    # print(" MCcorr = "+str(MCcorr))
+                                    # print(" w_BRctau = "+str(w_BRctau))
                         else:
                             print "You are trying to fill the histos for the keys", key, " which are missing in var10dictionary"
                 else:
@@ -270,6 +338,15 @@ class FillHistosBothBR():
                                     for x in var10[key]: Fill1D(histos10[key], x, lumiscale * MCcorr * w_BRctau)
                                 else:
                                     Fill1D(histos10[key], var10[key], lumiscale * MCcorr * w_BRctau)
+                                    
+                                    # if w_BRctau != 0:
+                                    #     Fill1D(histos10[key], var10[key], 1)
+                                        
+                                        #print(MCcorr)
+                                    # print(" lumiscale * MCcorr * w_BRctau = "+str(lumiscale * MCcorr * w_BRctau))
+                                    # print(" lumiscale = "+str(lumiscale))
+                                    # print(" MCcorr = "+str(MCcorr))
+                                    # print(" w_BRctau = "+str(w_BRctau))
                         else:
                             print "You are trying to fill the histos for the keys", key, " which are missing in var10dictionary"
             else:
@@ -287,6 +364,7 @@ class FillHistosBothBR():
 
             term_03 = histos03[key_].Clone()
             term_03.Scale(1-self.branching_ratio)
+            print("self.branching_ratio = "+str(self.branching_ratio))
 
             term_10 = histos10[key_].Clone()
             term_10.Scale(self.branching_ratio)
@@ -320,14 +398,56 @@ class FillHistosBothBR():
 
             print("integral_03.append("+ str(histos03[key_].Integral()) +")")
             print("integral_10.append("+ str(histos10[key_].Integral()) +")")
+
             print("integral_combined.append("+ str(self.histos[key_].Integral()) +")")
+
+            print("integral_tail.append("+ str(histos10_tail[key_].Integral()) +")")
 
             print("nentries_03_rejected.append("+ str(n_rejected_03) +")")
             print("nentries_10_rejected.append("+ str(n_rejected_10) +")")
             print("#####################################################")
-            row_csv_10 = [self.ms, self.ml, self.branching_ratio, histos10[key_].GetEntries(), n_rejected_10, histos10[key_].Integral()]
-            row_csv_03 = [self.ms, self.ml, self.branching_ratio, histos03[key_].GetEntries(), n_rejected_03, histos03[key_].Integral()]
-            row_csv_combined = [self.ms, self.ml, self.branching_ratio, self.histos[key_].GetEntries(), n_rejected_10+n_rejected_03, self.histos[key_].Integral()]
+            row_csv_10 = [self.ms, 
+                          self.ml, 
+                          self.branching_ratio, 
+                          histos10[key_].GetEntries(), 
+                          n_rejected_10, 
+                          n_4bd4bd_10,
+                          n_4bd2bd_10,
+                          n_2bd2bd_10,
+                          running_mcWeight_avg_4bd4bd_10,
+                          running_mcWeight_avg_4bd2bd_10,
+                          running_mcWeight_avg_2bd2bd_10,
+                          histos10[key_].Integral()]
+            row_csv_03 = [self.ms, 
+                          self.ml, 
+                          self.branching_ratio, 
+                          histos03[key_].GetEntries(), 
+                          n_rejected_03,
+                          n_4bd4bd_03,
+                          n_4bd2bd_03,
+                          n_2bd2bd_03,
+                          running_mcWeight_avg_4bd4bd_03,
+                          running_mcWeight_avg_4bd2bd_03,
+                          running_mcWeight_avg_2bd2bd_03,
+                          histos03[key_].Integral()]
+            row_csv_combined = [self.ms, 
+                                self.ml, 
+                                self.branching_ratio, 
+                                self.histos[key_].GetEntries(), 
+                                n_rejected_10+n_rejected_03,
+                                n_4bd4bd_03,
+                                n_4bd2bd_03,
+                                n_2bd2bd_03,
+                                n_4bd4bd_10,
+                                n_4bd2bd_10,
+                                n_2bd2bd_10,
+                                running_mcWeight_avg_4bd4bd_03,
+                                running_mcWeight_avg_4bd2bd_03,
+                                running_mcWeight_avg_2bd2bd_03,
+                                running_mcWeight_avg_4bd4bd_10,
+                                running_mcWeight_avg_4bd2bd_10,
+                                running_mcWeight_avg_2bd2bd_10,
+                                self.histos[key_].Integral()]
         
         
 
@@ -342,21 +462,33 @@ class FillHistosBothBR():
         his_10_tail = histos10_tail["stopCtau"].Clone()
         his_10_tail.SetFillColor(ROOT.kRed - 7)          
 
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/preselection_efficiency/info_test_new_comb_tight7_10.csv", row_csv_10)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/preselection_efficiency/info_test_new_comb_tight7_03.csv", row_csv_03)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/preselection_efficiency/info_test_new_comb_tight7_combined.csv", row_csv_combined)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/preselection_efficiency/info_test_new_comb_tight7_extra_10.csv", row_csv_10)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/preselection_efficiency/info_test_new_comb_tight7_extra_03.csv", row_csv_03)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/preselection_efficiency/info_test_new_comb_tight7_extra_combined.csv", row_csv_combined)
 
         print("Combined histograms of the two BR......")
         
         print("wwwwwwwwwwwwwwwwwwwwwwwwww")
-        """ print(self.histos)
-        for keyes in self.histos:
-            print(keyes)
-            print(self.histos[keyes].Print("all"))
+        print(" selected_events10 "+str(selected_events10))
+        print(" selected_events03 "+str(selected_events03))
+        print(" n_tail_10 "+str(n_tail_10))
 
-            # Check if the histogram is valid
-            if self.histos[keyes].GetEntries() == 0:
-                print("Error: Histogram is empty.") """
+        print(" n_4bd4bd_03 "+str(n_4bd4bd_03))
+        print(" run_mcWeight_4bd4bd_03 "+str(run_mcWeight_4bd4bd_03))
 
+        print(" n_4bd4bd_10 "+str(n_4bd4bd_10))
+        print(" run_mcWeight_4bd4bd_10 "+str(run_mcWeight_4bd4bd_10))
+
+        print(" n_4bd2bd_03 "+str(n_4bd2bd_03))
+        print(" run_mcWeight_4bd2bd_03 "+str(run_mcWeight_4bd2bd_03))
+
+        print(" n_4bd2bd_10 "+str(n_4bd2bd_10))
+        print(" run_mcWeight_4bd2bd_10 "+str(run_mcWeight_4bd2bd_10))
+
+        print(" n_2bd2bd_03 "+str(n_2bd2bd_03))
+        print(" run_mcWeight_2bd2bd_03 "+str(run_mcWeight_2bd2bd_03))
+
+        print(" n_2bd2bd_10 "+str(n_2bd2bd_10))
+        print(" run_mcWeight_2bd2bd_10 "+str(run_mcWeight_2bd2bd_10))
 
         print("wwwwwwwwwwwwwwwwwwwwwwwwww")

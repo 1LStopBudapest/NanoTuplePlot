@@ -54,12 +54,12 @@ def expected_nevents(lumi,sigma,BR,met_eff):
 luminosity_2018_pb  = 58905.0
 
 # Read the CSV file
-df_combined = pd.read_csv('/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/info_test_new_comb_tight7_combined.csv')
-df_03 = pd.read_csv('/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/info_test_new_comb_tight7_03.csv')
-df_10 = pd.read_csv('/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/info_test_new_comb_tight7_10.csv')
+df_combined = pd.read_csv('/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_new_comb_tight7_combined.csv')
+df_03 = pd.read_csv('/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_new_comb_tight7_03.csv')
+df_10 = pd.read_csv('/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_new_comb_tight7_10.csv')
 summary_file = ""
 
-file_data = "/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/json_sample_info/summed_2018_reworked.json"
+file_data = "/mnt/newDisk/stop_samples_long_lived/2018/summed_2018_reworked.json"
 with open(file_data, "r") as f:
     data_nevents = json.load(f)
 
@@ -120,14 +120,30 @@ for i in range(len(BR_combined)):
     try:
         METeff =  processed_events_i / (data_nevents[key][0]+data_nevents[key][1])
     except:
+        print(".....................")
         print("divide by zero")
         print("processed_events_i = "+str(processed_events_i))
         print("data_nevents[key][0] = "+str(data_nevents[key][0]))
         print("data_nevents[key][1] = "+str(data_nevents[key][1]))
         print("key = "+key)
         #print(data_nevents)
+        print(".....................")
 
     expected_events_i = expected_nevents(luminosity_2018_pb,cross_section_fb,BR_i,METeff)
+    if key == "1100_1070" and BR_i == 1:
+        print("-------------------------")
+        print("integral_i = "+str(integral_i))
+        print("METeff = "+str(METeff))
+        print("BR_i = "+str(BR_i))
+        print("cross_section_fb = "+str(cross_section_fb))
+        print("expected_events_i = "+str(expected_events_i))
+        print("processed_events_i = "+str(processed_events_i))
+        print("luminosity_2018_pb = "+str(luminosity_2018_pb))
+        print("data_nevents[key][0] = "+str(data_nevents[key][0]))
+        print("data_nevents[key][1] = "+str(data_nevents[key][1]))
+        print("data_nevents[key][0]+data_nevents[key][1] = "+str(data_nevents[key][0]+data_nevents[key][1]))
+        print("-------------------------")
+    
     ratio = integral_i/expected_events_i
 
     if ratio<0.9:
@@ -169,11 +185,7 @@ for i in range(len(BR_10)):
     integral_i = integral_10[i]
 
     key = str(mstop_i)+"_"+str(mx0_i)
-
-    
-
     cross_section_fb = get_xsec(mstop_i)
-    
     METeff =  processed_events_i / (data_nevents[key][1])
 
     try:

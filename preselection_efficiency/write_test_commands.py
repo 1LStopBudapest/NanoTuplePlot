@@ -36,12 +36,12 @@ print(total_masspoints)
 
 tmp_condor = open('execute_test.sh', 'w')
 
-for masspoint in masspoint_list:
-    #tmp_condor.write('echo "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" \n')
-    #tmp_condor.write('echo python 1DPlot_LL_BR_weighted_bothBR_genTest.py --sample Sig_Splitted_'+masspoint+' --startfile 0 --nfiles 10 --nevents 100000 --br 1.0 --year 2018 \n' )
-    #tmp_condor.write('echo "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" \n')
-    for br in ["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"]:
+for br in ["0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1.0"]:
+    for masspoint in masspoint_list:
+        #tmp_condor.write('echo "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" \n')
+        #tmp_condor.write('echo python 1DPlot_LL_BR_weighted_bothBR_genTest.py --sample Sig_Splitted_'+masspoint+' --startfile 0 --nfiles 10 --nevents 100000 --br 1.0 --year 2018 \n' )
+        #tmp_condor.write('echo "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO" \n')
         tmp_condor.write('python 1DPlot_LL_BR_weighted_bothBR_newComb_peselection.py --sample Sig_Splitted_'+masspoint+' --startfile 0 --nfiles 10 --nevents 1000000 --br '+br+' --year 2018 \n' )
-    #tmp_condor.write('\n')
+        #tmp_condor.write('\n')
 
 tmp_condor.close()

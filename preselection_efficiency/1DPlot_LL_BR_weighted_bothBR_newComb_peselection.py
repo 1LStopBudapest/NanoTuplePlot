@@ -16,7 +16,7 @@ from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2017 import samples as samples_2017
 from Sample.FileList_UL2018 import samples as samples_2018
 
-from Sample.FileList_LLStops_2018_reworked import samples as samples_LL
+#from Sample.FileList_LLStops_2017_reworked import samples as samples_LL
 
 
 def get_parser():
@@ -52,9 +52,11 @@ elif year=='2016PostVFP':
 elif year=='2017':
         samplelist = samples_2017
         DataLumi = SampleChain.luminosity_2017
-else:
+elif year=='2018':
         samplelist = samples_2018
         DataLumi = SampleChain.luminosity_2018
+else:
+      print("ERROR")
             
 #vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet']
 #vList = ['LeppT', 'MupT', 'epT']
