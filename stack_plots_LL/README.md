@@ -1,0 +1,9 @@
+# Data/MC stack plots for the long-lived analysis
+
+This is the pipeline that makes the stacked background plus signal plots for the displaced stop search. It comes in three flavours depending on which electron collection you want: the base version uses the combined standard plus low-pT electrons ('comb'), while the `_std` and `_lowPt` variants restrict to only standard PF electrons or only low-pT electrons. The three were made to compare how much the low-pT collection buys us.
+
+The file you actually run is `StackPlotScript_LL.py` (or its `_std`/`_lowPt` sibling). Its configuration is hardcoded at the top: samples, year, files per job, total jobs. Edit the script, there are no CLI flags. It writes a `parallelJobsubmit.txt` with one `StackHistMaker_LL.py` command per file chunk, runs them through GNU `parallel`, then hadds the outputs per background group under `Plots/StackFiles/Displaced/...`, and finally calls `StackPlot_LL.py` to draw the stacks. The `StackHistMaker_LL*.py` workers do the event loop by importing the matching `FillHistos_LL*.py` filler, which applies the `TreeVarSel_LL` selection. `StackHistMaker_LL_TM.py` is an older base version with slightly different binning.
+
+Status: active, but the signal handling predates the BR reweighting work. It plots single displaced signal samples with a plain `SampleChain`. If we want BR-weighted signal on these stacks, the fillers should be updated to the `SampleChainSplittedBothBR` plus newComb combination used in `preselection_efficiency/`.
+
+The imports were adjusted after the move: run everything from inside this folder (same convention as `preselection_efficiency/`), so the relative `sys.path` entries resolve. The driver regenerates `parallelJobsubmit.txt` and `parallelStackHist.sh` here when it runs, and output paths come from the absolute `Sample.Dir.plotDir`, so nothing else needed changing.
