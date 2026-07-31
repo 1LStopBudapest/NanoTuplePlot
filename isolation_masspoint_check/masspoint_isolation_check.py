@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')  # prevents "no display" error on headless systems
 import matplotlib.pyplot as plt
 
-file_data = "/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/check_met_eff/summed_2018.json"
+file_data = "/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/legacy_archive/check_met_eff/summed_2018.json"
 with open(file_data, "r") as f:
     data = json.load(f)
 

@@ -11,7 +11,7 @@ Reorganized July 2026: the loose top-level scripts were sorted into per-pipeline
 | `integral_test/` | Integral/yield cross-checks reading the BR-pipeline CSVs | Active-ish, still reads `Run_results_csv/` (see below) |
 | `sample_reweighting/` | Separate project: adds the `ReweightBRctau` branches to the input nanoAODs, adapted for lxplus and a newer Python | Do not touch from here |
 | `stack_plots_LL/` | Data/MC stack plots for the LL analysis (comb/std/lowPt electrons) | Active, candidate for newComb signal update |
-| `1D_plots_LL/` | Quick 1D histograms of a single sample (LL selection) plus overlay scripts | Active generic tool |
+| `1D_plots_LL/` | 1D histograms for the LL analysis: `1DPlot_LL_signal.py` (BR-weighted signal, newComb) and the `*_old.py` single-chain scripts for data/background, plus overlay scripts | Active. Signal side updated to the newComb method (July 2026) |
 | `ctau_fit_study/` | Validation of the BR/ctau reweighting (fits to reweighted ctau spectra), including its input producer (the old simple both-BR combination) | Finished study, kept for reference |
 | `prompt_analysis/` | The frozen prompt 1-lepton analysis: `1D_plots/`, `stack_plots/`, `regions/`, `datacards/`, `bkval/`, `cutflow/`, `truth/`, `ivf/` plus shared fillers at its root | Frozen reference (2020 to 2024) |
 | `Signal_efficiency/`, `isolation_masspoint_check/`, `masspoint_2bd_test/`, `Branch_check/`, `json_sample_info/` | Small existing studies and inputs | Untouched |
@@ -22,7 +22,8 @@ Reorganized July 2026: the loose top-level scripts were sorted into per-pipeline
 
 ## Which pipelines to update vs drop
 
-- Update to the `preselection_efficiency/` way of working: `stack_plots_LL/` and `1D_plots_LL/` still plot signal from plain single samples (`SampleChain`). To show BR-weighted signal they should adopt `SampleChainSplittedBothBR.get2chain_simple()` and the three-term newComb combination (1-BR)*h(0.3) + BR*h(1.0) + h(1.0)_tail. `integral_test/` should switch its inputs from `Run_results_csv/info_test_new_comb_tight7_*` to `preselection_efficiency/info_test_new_comb_tight7_extra_*` before `Run_results_csv/` is deleted.
+- Update to the `preselection_efficiency/` way of working: `stack_plots_LL/` still plots signal from plain single samples (`SampleChain`). To show BR-weighted signal it should adopt `SampleChainSplittedBothBR.get2chain_simple()` and the three-term newComb combination (1-BR)*h(0.3) + BR*h(1.0) + h(1.0)_tail. `integral_test/` should switch its inputs from `Run_results_csv/info_test_new_comb_tight7_*` to `preselection_efficiency/info_test_new_comb_tight7_extra_*` before `Run_results_csv/` is deleted.
+- Done for `1D_plots_LL/`: `1DPlot_LL_signal.py` + `FillHistos_LL_signal.py` are the newComb version for LL signal (July 2026), cross-checked event by event against `preselection_efficiency/`. The previous single-chain scripts were renamed `*_old.py` and still serve data and background.
 - Obsolete: everything in `legacy_archive/` (the gen-4 pair is fully contained in the `preselection_efficiency/` versions).
 - Frozen reference: `prompt_analysis/`. Nothing in the LL analysis depends on it.
 

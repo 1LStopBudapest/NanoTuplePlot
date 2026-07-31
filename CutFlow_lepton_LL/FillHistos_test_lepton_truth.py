@@ -16,8 +16,6 @@ from Helper.TreeVarSel_LL import TreeVarSel
 sys.path.append('../')
 from VarHandler import VarHandler
 
-USE_GENPARTFLAV_MATCHING = False  # True: old genPartFlav-based truth matching, False: DeltaR-based truth matching
-
 import csv
 def append_row_to_csv(filename, row_data):
     """Append a list as a new row to a CSV file."""
@@ -154,6 +152,22 @@ class FillHistosBothBR():
 
         n_rejected_03 = 0
         n_rejected_10 = 0
+        n_tail_10 = 0
+
+        run_mcWeight_4bd4bd_03 = 0
+        run_mcWeight_4bd4bd_10 = 0
+        run_mcWeight_4bd2bd_03 = 0
+        run_mcWeight_4bd2bd_10 = 0
+        run_mcWeight_2bd2bd_03 = 0
+        run_mcWeight_2bd2bd_10 = 0
+
+
+        n_4bd4bd_03 = 0
+        n_4bd4bd_10 = 0
+        n_4bd2bd_03 = 0
+        n_4bd2bd_10 = 0
+        n_2bd2bd_03 = 0
+        n_2bd2bd_10 = 0
 
         maxWeight10 = -10
         maxWeight03 = -10
@@ -207,6 +221,29 @@ class FillHistosBothBR():
 
                 if w_BRctau>maxWeight03:
                     maxWeight03=w_BRctau
+
+                ########################
+                #For test: get the stop antistop decay type
+                if  tree03.stopDecay > 3.5 and tree03.stopAntiDecay > 3.5:
+                    decay03 = "4bd+4bd"
+                    n_4bd4bd_03 +=1
+                    run_mcWeight_4bd4bd_03 += MCcorr
+                    running_mcWeight_avg_4bd4bd_03 = run_mcWeight_4bd4bd_03 / n_4bd4bd_03
+                elif (tree03.stopDecay < 3.5 and tree03.stopAntiDecay > 3.5) or \
+                    (tree03.stopDecay > 3.5 and tree03.stopAntiDecay < 3.5):
+                    decay03 = "4bd+2bd"
+                    n_4bd2bd_03 +=1
+                    run_mcWeight_4bd2bd_03 += MCcorr
+                    running_mcWeight_avg_4bd2bd_03 = run_mcWeight_4bd2bd_03 / n_4bd2bd_03
+                elif tree03.stopDecay < 3.5 and tree03.stopAntiDecay < 3.5:
+                    decay03 = "2bd+2bd"
+                    n_2bd2bd_03 +=1
+                    run_mcWeight_2bd2bd_03 += MCcorr
+                    running_mcWeight_avg_2bd2bd_03 = run_mcWeight_2bd2bd_03 / n_2bd2bd_03
+                else:
+                    decay03 = "ERROR!!"
+                    continue
+                #######################
 
 
                 #######################################################
@@ -294,7 +331,7 @@ class FillHistosBothBR():
                         tp       = reco['type']
                         reco_idx = reco['idx']
 
-                        # Read the old genPartFlav (used when USE_GENPARTFLAV_MATCHING is True)
+                        # Optional: still read the old genPartFlav for comparison
                         if tp == 'mu':
                             old_flag = ord(tree03.Muon_genPartFlav[reco_idx]) if hasattr(tree03, 'Muon_genPartFlav') else -1
                         elif tp == 'Electron':
@@ -323,19 +360,16 @@ class FillHistosBothBR():
                                 gen_lep["genPartFlav"] = old_flag   # update for diagnostic
 
                         # Decision: is this lepton truth-matched to a generated lepton?
+                        
 
-
-                        if USE_GENPARTFLAV_MATCHING:
-                            truth_matched_lepton = old_flag in [1, 15]
-                            var03['truthMatchedLepton'] = 8 if truth_matched_lepton else 4
-                        elif matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
+                        if matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
                             is_signal = matched_gen_lep["fromStop"]
                             if is_signal:
                                 truth_matched_lepton = True
-                                # print("Leading lepton is truth-matched | DeltaR = " + str(round(best_deltaR, 4)) +
-                                #     " | gen pdgId = " + str(matched_gen_lep["pdgId"]) +
+                                # print("Leading lepton is truth-matched | DeltaR = " + str(round(best_deltaR, 4)) + 
+                                #     " | gen pdgId = " + str(matched_gen_lep["pdgId"]) + 
                                 #     " | gen pt = " + str(round(matched_gen_lep["pt"], 2)))
-                                var03['truthMatchedLepton'] = 8
+                                var03['truthMatchedLepton'] = 8  
                             else:
                                 truth_matched_lepton = False
                                 # print("Leading lepton NOT truth-matched | best DeltaR = " + str(round(best_deltaR, 4)))
@@ -446,9 +480,33 @@ class FillHistosBothBR():
 
                 if (tree10.stopCtau/ctau_sample_03) > ctau_ratio_threshold or (tree10.stopAntiCtau/ctau_sample_03) > ctau_ratio_threshold:
                     tail_event_10 = True
+                    n_tail_10 +=1
                     #Division by ctau_sample_03 is not an error
                     #This makes the cut to have the same ctau cutting point for both samples
                     #This avoid an ugly step down in the final ctau distribution
+
+                ########################
+                #For test: get the stop antistop decay type
+                if  tree10.stopDecay > 3.5 and tree10.stopAntiDecay > 3.5:
+                    decay10 = "4bd+4bd"
+                    n_4bd4bd_10 +=1
+                    run_mcWeight_4bd4bd_10 += MCcorr
+                    running_mcWeight_avg_4bd4bd_10 = run_mcWeight_4bd4bd_10 / n_4bd4bd_10
+                elif (tree10.stopDecay < 3.5 and tree10.stopAntiDecay > 3.5) or \
+                    (tree10.stopDecay > 3.5 and tree10.stopAntiDecay < 3.5):
+                    decay10 = "4bd+2bd"
+                    n_4bd2bd_10 +=1
+                    run_mcWeight_4bd2bd_10 += MCcorr
+                    running_mcWeight_avg_4bd2bd_10 = run_mcWeight_4bd2bd_10 / n_4bd2bd_10
+                elif tree10.stopDecay < 3.5 and tree10.stopAntiDecay < 3.5:
+                    decay10 = "2bd+2bd"
+                    n_2bd2bd_10 +=1
+                    run_mcWeight_2bd2bd_10 += MCcorr
+                    running_mcWeight_avg_2bd2bd_10 = run_mcWeight_2bd2bd_10 / n_2bd2bd_10
+                else:
+                    decay10 = "ERROR!!"
+                    continue
+                #######################
 
                 ###########################################################################################
                 ### Extract final gen leptons
@@ -523,7 +581,7 @@ class FillHistosBothBR():
                         tp       = reco['type']
                         reco_idx = reco['idx']
 
-                        # Read the old genPartFlav (used when USE_GENPARTFLAV_MATCHING is True)
+                        # Optional: still read the old genPartFlav for comparison
                         if tp == 'mu':
                             old_flag = ord(tree10.Muon_genPartFlav[reco_idx]) if hasattr(tree10, 'Muon_genPartFlav') else -1
                         elif tp == 'Electron':
@@ -553,15 +611,12 @@ class FillHistosBothBR():
 
                         # Decision: is this lepton truth-matched to a generated lepton?
 
-                        if USE_GENPARTFLAV_MATCHING:
-                            truth_matched_lepton = old_flag in [1, 15]
-                            var10['truthMatchedLepton'] = 8 if truth_matched_lepton else 4
-                        elif matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
+                        if matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
                             is_signal = matched_gen_lep["fromStop"]
                             if is_signal:
                                 truth_matched_lepton = True
-                                # print("Leading lepton is truth-matched | DeltaR = " + str(round(best_deltaR, 4)) +
-                                #     " | gen pdgId = " + str(matched_gen_lep["pdgId"]) +
+                                # print("Leading lepton is truth-matched | DeltaR = " + str(round(best_deltaR, 4)) + 
+                                #     " | gen pdgId = " + str(matched_gen_lep["pdgId"]) + 
                                 #     " | gen pt = " + str(round(matched_gen_lep["pt"], 2)))
                                 var10['truthMatchedLepton'] = 8
                             else:
@@ -684,17 +739,77 @@ class FillHistosBothBR():
             print("nentries_03_rejected.append("+ str(n_rejected_03) +")")
             print("nentries_10_rejected.append("+ str(n_rejected_10) +")")
             print("#####################################################")
-            row_csv_10 = [self.ms, self.ml, self.branching_ratio, histos10[key_].GetEntries(), n_rejected_10, histos10[key_].Integral(), maxWeight10]
-            row_csv_03 = [self.ms, self.ml, self.branching_ratio, histos03[key_].GetEntries(), n_rejected_03, histos03[key_].Integral(), maxWeight03]
-            row_csv_combined = [self.ms, self.ml, self.branching_ratio, self.histos[key_].GetEntries(), n_rejected_10+n_rejected_03, self.histos[key_].Integral()]
-        
+            row_csv_10 = [self.ms,
+                          self.ml,
+                          self.branching_ratio,
+                          histos10[key_].GetEntries(),
+                          n_rejected_10,
+                          n_4bd4bd_10,
+                          n_4bd2bd_10,
+                          n_2bd2bd_10,
+                          running_mcWeight_avg_4bd4bd_10,
+                          running_mcWeight_avg_4bd2bd_10,
+                          running_mcWeight_avg_2bd2bd_10,
+                          histos10[key_].Integral()]
+            row_csv_03 = [self.ms,
+                          self.ml,
+                          self.branching_ratio,
+                          histos03[key_].GetEntries(),
+                          n_rejected_03,
+                          n_4bd4bd_03,
+                          n_4bd2bd_03,
+                          n_2bd2bd_03,
+                          running_mcWeight_avg_4bd4bd_03,
+                          running_mcWeight_avg_4bd2bd_03,
+                          running_mcWeight_avg_2bd2bd_03,
+                          histos03[key_].Integral()]
+            row_csv_combined = [self.ms,
+                                self.ml,
+                                self.branching_ratio,
+                                self.histos[key_].GetEntries(),
+                                n_rejected_10+n_rejected_03,
+                                n_4bd4bd_03,
+                                n_4bd2bd_03,
+                                n_2bd2bd_03,
+                                n_4bd4bd_10,
+                                n_4bd2bd_10,
+                                n_2bd2bd_10,
+                                running_mcWeight_avg_4bd4bd_03,
+                                running_mcWeight_avg_4bd2bd_03,
+                                running_mcWeight_avg_2bd2bd_03,
+                                running_mcWeight_avg_4bd4bd_10,
+                                running_mcWeight_avg_4bd2bd_10,
+                                running_mcWeight_avg_2bd2bd_10,
+                                self.histos[key_].Integral()]
 
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_10.csv", row_csv_10)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_03.csv", row_csv_03)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_combined.csv", row_csv_combined)
+
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/CutFlow_lepton_LL/info_test_cutFlow_10.csv", row_csv_10)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/CutFlow_lepton_LL/info_test_cutFlow_03.csv", row_csv_03)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/CutFlow_lepton_LL/info_test_cutFlow_combined.csv", row_csv_combined)
 
         print("Combined histograms of the two BR......")
         print("n_matched_events = "+str(n_matched_events))
+        print(" selected_events10 "+str(selected_events10))
+        print(" selected_events03 "+str(selected_events03))
+        print(" n_tail_10 "+str(n_tail_10))
+
+        print(" n_4bd4bd_03 "+str(n_4bd4bd_03))
+        print(" run_mcWeight_4bd4bd_03 "+str(run_mcWeight_4bd4bd_03))
+
+        print(" n_4bd4bd_10 "+str(n_4bd4bd_10))
+        print(" run_mcWeight_4bd4bd_10 "+str(run_mcWeight_4bd4bd_10))
+
+        print(" n_4bd2bd_03 "+str(n_4bd2bd_03))
+        print(" run_mcWeight_4bd2bd_03 "+str(run_mcWeight_4bd2bd_03))
+
+        print(" n_4bd2bd_10 "+str(n_4bd2bd_10))
+        print(" run_mcWeight_4bd2bd_10 "+str(run_mcWeight_4bd2bd_10))
+
+        print(" n_2bd2bd_03 "+str(n_2bd2bd_03))
+        print(" run_mcWeight_2bd2bd_03 "+str(run_mcWeight_2bd2bd_03))
+
+        print(" n_2bd2bd_10 "+str(n_2bd2bd_10))
+        print(" run_mcWeight_2bd2bd_10 "+str(run_mcWeight_2bd2bd_10))
                 
         #print(type(histos10["stopCtau"] * 2))
         print("wwwwwwwwwwwwwwwwwwwwwwwwww")
