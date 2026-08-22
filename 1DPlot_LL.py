@@ -49,7 +49,7 @@ else:
         samplelist = samples_2018
         DataLumi = SampleChain.luminosity_2018
             
-vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet']
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'LepdzSig', 'Njet', 'Nbjet']
 histext = ''
 
 sdir = '1DFiles/'+year
@@ -71,8 +71,9 @@ if 'T2tt' in samples:
     histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-    histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
+    histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[200,0,100], histclass = ROOT.TH1F).make_hist()
     histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+    histos['LepdzSig'] = HistInfo(hname = 'LepdzSig', sample = histext, binning=[200,0,100], histclass = ROOT.TH1F).make_hist()
     histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
    
@@ -96,8 +97,9 @@ else:
             histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
             histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
             histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-            histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
+            histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[200,0,100], histclass = ROOT.TH1F).make_hist()
             histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+            histos['LepdzSig'] = HistInfo(hname = 'LepdzSig', sample = histext, binning=[200,0,100], histclass = ROOT.TH1F).make_hist()
             histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
             histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
 
@@ -122,8 +124,9 @@ else:
         histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[0,3,5,12,20,30,50,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[0,0.2,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[20,0,1], histclass = ROOT.TH1F).make_hist()
+        histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[200,0,100], histclass = ROOT.TH1F).make_hist()
         histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[0,0.5,1,10], histclass = ROOT.TH1F, binopt = 'var').make_hist()
+        histos['LepdzSig'] = HistInfo(hname = 'LepdzSig', sample = histext, binning=[200,0,100], histclass = ROOT.TH1F).make_hist()
         histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         

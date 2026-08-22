@@ -37,7 +37,9 @@ class FillHistos():
             self.gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
         else:
             self.gfltreff = 1.0         
-            
+
+        self.trigger = 'HLT_PFMET120_PFMHT120_IDTight' #for inclusive MET triggers (logical OR), use 'HLT_MET_Inclusive'
+                    
         keylist = self.vList
         self.vardic = {key: None for key in keylist}
     
@@ -51,6 +53,8 @@ class FillHistos():
             if ientry > nevtcut: break
             if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
             tr.GetEntry(ientry)
+            getsel = TreeVarSel(tr, self.isData, self.year)
+            
             if self.isData:
                 lumiscale = 1.0
             else:
@@ -62,9 +66,10 @@ class FillHistos():
                 MCcorr = MCWeight(tr, self.year, self.sample).getTotalWeight() *  self.gfltreff
                 
             var = {key: None for key in vardic}#reseting the var dictionary for each event
-            getsel = TreeVarSel(tr, self.isData, self.year)
-            if getsel.passFilters() and getsel.PreSelection() and getsel.Dxy2():
+
+            if getsel.passFilters() and getsel.PreSelection() and getsel.passMETTrig(self.trigger) and getsel.Dxy3() and getsel.Dz3():
                 var['MET'] = tr.MET_pt
+                var['METSig'] = tr.MET_significance
                 var['ISRJetPt'] = getsel.getISRPt()
                 var['HT'] = getsel.calHT()
                 var['LepMT'] = getsel.getLepMT()
@@ -74,16 +79,25 @@ class FillHistos():
                 var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
                 var['LepdxySig'] = abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr'])
                 var['Lepdz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                var['LepdzSig'] = abs(getsel.getSortedLepVar()[0]['dz']/getsel.getSortedLepVar()[0]['dzErr'])
                 var['Njet'] = getsel.calNj()
                 var['Nbjet'] = getsel.cntBtagjet()
+                var['NPV'] = tr.PV_npvs
+                var['NGdPV'] = tr.PV_npvsGood
+                var['PVscore'] = tr.PV_score
+                var['PVchi'] = tr.PV_chi2
                 if getsel.getSortedLepVar()[0]['type'] == 'mu':
                     var['MupT'] = getsel.getSortedLepVar()[0]['pt']
                     var['Mudxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                    var['MudxySig'] = abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr'])
                     var['Mudz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                    var['MudzSig'] = abs(getsel.getSortedLepVar()[0]['dz']/getsel.getSortedLepVar()[0]['dzErr'])
                 else:
                     var['epT'] = getsel.getSortedLepVar()[0]['pt']
                     var['edxy'] = var['Lepdxy'] = abs(getsel.getSortedLepVar()[0]['dxy'])
+                    var['edxySig'] = abs(getsel.getSortedLepVar()[0]['dxy']/getsel.getSortedLepVar()[0]['dxyErr'])
                     var['edz'] = abs(getsel.getSortedLepVar()[0]['dz'])
+                    var['edzSig'] = abs(getsel.getSortedLepVar()[0]['dz']/getsel.getSortedLepVar()[0]['dzErr'])
                 '''
                 var['MupT'] = getsel.getMuVar(getsel.selectMuIdx())[0]['pt'] #[x['pt'] for x in getsel.getMuVar(getsel.selectMuIdx())]
                 var['Mudxy'] = abs(getsel.getMuVar(getsel.selectMuIdx())[0]['dxy']) #[abs(x['dxy']) for x in getsel.getMuVar(getsel.selectMuIdx())]
@@ -112,7 +126,7 @@ class FillHistos():
                     var['GenStoppt'] = [x['pt'] for x in getvar.genStop()]
                     var['GenLSPpt'] = [x['pt'] for x in getvar.genLSP()]
                 '''
-                    
+            
             for key in self.histos:
                 if key in var.keys():
                     if var[key] is not None:

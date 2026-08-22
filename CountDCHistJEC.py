@@ -9,6 +9,7 @@ from Helper.MCWeight import MCWeight
 from Helper.Binning import *
 from Helper.GenFilterEff import GenFilterEff
 from Helper.TrigEff import *
+from Helper.FullFastSF import FullFastSF
 from Sample.SampleChain import SampleChain
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
@@ -78,6 +79,8 @@ if 'T2tt' in samples:
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
     #print 'Gen filter eff: ',gfltreff
     trigeff = getTrigEff(year)
+    ffsf = FullFastSF(year)
+    softbSF = ffsf.getsoftbSF()
     hfile = ROOT.TFile( 'CountDCHistJEC_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_rate'] = HistInfo(hname = 'h_rate', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -112,61 +115,64 @@ if 'T2tt' in samples:
             else: h = histos['h_rate']
             
             if not getsel.PreSelection(tp): continue
+            lep1 = getsel.getSortedLepVar()[0]
+            lepSF = ffsf.getLepSF(lep1['pt'], lep1['eta'], lep1['type'])
+            fMCcorr = MCcorr * softbSF * lepSF
             if region == 'SR':
                 if not getsel.SearchRegion(tp): continue
                 if getsel.SR1(tp):
                     idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                     if not idx == -1:
-                        h.Fill(idx, lumiscale * MCcorr)
+                        h.Fill(idx, lumiscale * fMCcorr)
                 if getsel.SR2(tp):
                     idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                     if not idx <= 35:
-                        h.Fill(idx, lumiscale * MCcorr)
+                        h.Fill(idx, lumiscale * fMCcorr)
                 if getsel.SR3(tp):
                     idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                     if not idx <= 71:
-                        h.Fill(idx, lumiscale * MCcorr)
+                        h.Fill(idx, lumiscale * fMCcorr)
             if region == 'CR':
                 if not getsel.ControlRegion(tp): continue
                 if getsel.CR1(tp):
                     idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
                     if not idx == -1:
-                        h.Fill(idx, lumiscale * MCcorr)
+                        h.Fill(idx, lumiscale * fMCcorr)
                 if getsel.CR2(tp):
                     idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 8
                     if not idx <= 7:
-                        h.Fill(idx, lumiscale * MCcorr)
+                        h.Fill(idx, lumiscale * fMCcorr)
                 if getsel.CR3(tp):
                     idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 16
                     if not idx <= 15:
-                        h.Fill(idx, lumiscale * MCcorr)
+                        h.Fill(idx, lumiscale * fMCcorr)
             if region == 'SR+CR':
                 if getsel.SearchRegion(tp):
                     if getsel.SR1(tp):
                         idx = findSR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                         if not idx == -1:
-                            h.Fill(idx, lumiscale * MCcorr)
+                            h.Fill(idx, lumiscale * fMCcorr)
                     if getsel.SR2(tp):
                         idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                         if not idx <= 35:
-                            h.Fill(idx, lumiscale * MCcorr)
+                            h.Fill(idx, lumiscale * fMCcorr)
                     if getsel.SR3(tp):
                         idx = findSR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
                         if not idx <= 71:
-                            h.Fill(idx, lumiscale * MCcorr)
+                            h.Fill(idx, lumiscale * fMCcorr)
                 if getsel.ControlRegion(tp):
                     if getsel.CR1(tp):
                         idx = findCR1BinIndex(getsel.calCT(1, tp), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 #after 108 SRbins or after bin index 107 
                         if not idx <= 107:
-                            h.Fill(idx, lumiscale * MCcorr)
+                            h.Fill(idx, lumiscale * fMCcorr)
                     if getsel.CR2(tp):
                         idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) +  108 + 8
                         if not idx <= 115:
-                            h.Fill(idx, lumiscale * MCcorr)
+                            h.Fill(idx, lumiscale * fMCcorr)
                     if getsel.CR3(tp):
                         idx = findCR2BinIndex(getsel.calCT(2, tp), getsel.getLepMT()) + 116 + 8
                         if not idx <= 123:
-                            h.Fill(idx, lumiscale * MCcorr)
+                            h.Fill(idx, lumiscale * fMCcorr)
                         
     histos['h_rate'].Scale(gfltreff)
     histos['h_JECUp'].Scale(gfltreff)
@@ -255,12 +261,12 @@ else:
                     if not getsel.passFilters(): continue
                     if not getsel.passMETTrig(trigger): continue
                     idx = getsel.getSortedLepVar()[0]['idx']
-                    tp = getsel.getSortedLepVar()[0]['type']
+                    typ = getsel.getSortedLepVar()[0]['type']
                     promptFlag = True if isData else False
                     if not isData:
-                        if tp == 'mu':
+                        if typ == 'mu':
                             flag=ord(ch.Muon_genPartFlav[idx])
-                        elif tp == 'Electron':
+                        elif typ == 'Electron':
                             flag=ord(ch.Electron_genPartFlav[idx])
                         else:
                             flag=ord(ch.LowPtElectron_genPartFlav[idx])
@@ -427,12 +433,12 @@ else:
                 if not getsel.passFilters(): continue
                 if not getsel.passMETTrig(trigger): continue
                 idx = getsel.getSortedLepVar()[0]['idx']
-                tp = getsel.getSortedLepVar()[0]['type']
+                typ = getsel.getSortedLepVar()[0]['type']
                 promptFlag = True if isData else False
                 if not isData:
-                    if tp == 'mu':
+                    if typ == 'mu':
                         flag=ord(ch.Muon_genPartFlav[idx])
-                    elif tp == 'Electron':
+                    elif typ == 'Electron':
                         flag=ord(ch.Electron_genPartFlav[idx])
                     else:
                         flag=ord(ch.LowPtElectron_genPartFlav[idx])

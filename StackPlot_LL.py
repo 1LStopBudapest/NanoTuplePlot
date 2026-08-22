@@ -33,15 +33,16 @@ doplots = True
 for sl in samplelists:
     if os.path.exists('StackHist_'+sl+'.root'):
         files.append(ROOT.TFile.Open('StackHist_'+sl+'.root'))
-    elif os.path.exists(plotDir+'StackFiles/Displaced/Dxy2/StackHist_'+sl+'.root'):
-        files.append(ROOT.TFile.Open(plotDir+'StackFiles/Displaced/Dxy2/StackHist_'+sl+'.root'))
+    elif os.path.exists(plotDir+'StackFiles/Displaced/Dxy3/Dz2/StackHist_'+sl+'.root'):
+        files.append(ROOT.TFile.Open(plotDir+'StackFiles/Displaced/Dxy3/Dz2/StackHist_'+sl+'.root'))
     else:
         doplots = False        
         print 'Root files for',sl,'sample soes not exist. Please run python StackHistMaker.py --sample',sl
 
 
-vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet', 'MupT', 'Mudxy', 'Mudz', 'epT', 'edxy', 'edz', 'AllLeppT', 'AllLepdxy', 'AllLepdxySig', 'AllLepdz', 'Nlep', '2ndLeppT', '2ndLepeta', '2ndLepdxy', '2ndLepdz'] #same list as in StackHistMaker_LL.py
-        
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'LepdzSig', 'Njet', 'Nbjet', 'MupT', 'Mudxy', 'MudxySig', 'Mudz', 'MudzSig', 'epT', 'edxy', 'edxySig', 'edz', 'edzSig', 'AllLeppT', 'AllLepdxy', 'AllLepdxySig', 'AllLepdz', 'Nlep', '2ndLeppT', '2ndLepeta', '2ndLepdxy', '2ndLepdz', 'METSig', 'NPV', 'NGdPV', 'PVscore', 'PVchi'] #same list as in StackHistMaker_LL.py
+
+ROOT.gROOT.SetBatch(True)        
 if doplots :
     for v in vList:
-        StackHistsExt(files, samplelists, v, plotDir, 'Displaced/Dxy2')
+        StackHistsExt(files, samplelists, v, plotDir, 'Displaced/Dxy3/Dz2')

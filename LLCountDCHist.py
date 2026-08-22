@@ -3,12 +3,14 @@ import ROOT
 import types
 
 sys.path.append('../')
-from Helper.TreeVarSel_BKVal import TreeVarSel
+from Helper.TreeVarSel_LL import TreeVarSel
 from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
-from Helper.Binning_BKVal import *
+from Helper.Binning_LL import *
 from Helper.GenFilterEff import GenFilterEff
 from Helper.XsecUnc import *
+from Helper.TrigEff import *
+from Helper.FullFastSF import FullFastSF
 from Sample.SampleChain import SampleChain
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
@@ -21,7 +23,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',           action='store',                     type=str,            default='TTSingleLep_pow',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PreVFP',                                             help="Which year?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2018',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -41,6 +43,8 @@ DataLumi=1.0
 
 trigger = 'HLT_PFMET120_PFMHT120_IDTight' #for inclusive MET triggers (logical OR), use 'HLT_MET_Inclusive'
 
+trigeff = getTrigEff(year)
+
 if year=='2016PreVFP':
     samplelist = samples_2016Pre
     DataLumi = SampleChain.luminosity_2016PreVFP
@@ -55,11 +59,12 @@ else:
     DataLumi = SampleChain.luminosity_2018
 
 if region == 'SR+CR':
-    bins = 72 + 16
-    binLabel = SRBinLabelListVal2+CRBinLabelListVal2
+    bins = 56 + 16
+    binLabel = SRBinLabelList+CRBinLabelList
 else:
     bins = 1
     binLabel = ['REG']
+
 histext = ''
 
 if 'T2tt' in samples:
@@ -71,9 +76,11 @@ if 'T2tt' in samples:
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
     #print 'Gen filter eff: ',gfltreff
-    hfile = ROOT.TFile( 'PromptBKVal2_'+region+'_'+year+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    ffsf = FullFastSF(year)
+    ffsoftbSF = ffsf.getsoftbSF()
+    hfile = ROOT.TFile( 'LLCountDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
-    histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_rate'] = HistInfo(hname = 'h_rate', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_PU'] = HistInfo(hname = 'h_PU', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_PUUp'] = HistInfo(hname = 'h_PUUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_PUDown'] = HistInfo(hname = 'h_PUDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -88,9 +95,20 @@ if 'T2tt' in samples:
     histos['h_BTagSFbDown'] = HistInfo(hname = 'h_BTagSFbDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_BTagSFlUp'] = HistInfo(hname = 'h_BTagSFlUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_BTagSFlDown'] = HistInfo(hname = 'h_BTagSFlDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFbUpCorr'] = HistInfo(hname = 'h_BTagSFbUpCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFbDownCorr'] = HistInfo(hname = 'h_BTagSFbDownCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFlUpCorr'] = HistInfo(hname = 'h_BTagSFlUpCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFlDownCorr'] = HistInfo(hname = 'h_BTagSFlDownCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFbUpUnCorr'] = HistInfo(hname = 'h_BTagSFbUpUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFbDownUnCorr'] = HistInfo(hname = 'h_BTagSFbDownUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFlUpUnCorr'] = HistInfo(hname = 'h_BTagSFlUpUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_BTagSFlDownUnCorr'] = HistInfo(hname = 'h_BTagSFlDownUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_L1Prefire'] = HistInfo(hname = 'h_L1Prefire', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_L1PrefireUp'] = HistInfo(hname = 'h_L1PrefireUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+    histos['h_L1PrefireDown'] = HistInfo(hname = 'h_L1PrefireDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()    
     histos['h_XsecUp'] = HistInfo(hname = 'h_XsecUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     for b in range(bins):
-        histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_PU'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_PUUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_PUDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -105,7 +123,18 @@ if 'T2tt' in samples:
         histos['h_BTagSFbDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_BTagSFlUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         histos['h_BTagSFlDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-        histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])                                  
+        histos['h_BTagSFbUpCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFbDownCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFlUpCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFlDownCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFbUpUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFbDownUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFlUpUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_BTagSFlDownUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_L1Prefire'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_L1PrefireUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_L1PrefireDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+        histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     n_entries = ch.GetEntries()
@@ -116,15 +145,26 @@ if 'T2tt' in samples:
         if ientry % (nevtcut/10)==0 : print 'processing ', ientry,'th event'
         ch.GetEntry(ientry)
         lumiscale = (DataLumi/1000.0) * ch.weight
-        MCcorr = MCWeight(ch, year, sample).getTotalWeight()
+        MCcorr = MCWeight(ch, year, sample).getTotalWeight() * trigeff
         getsel = TreeVarSel(ch, isData, year)
         if not getsel.PreSelection(): continue
+        lep1 = getsel.getSortedLepVar()[0]
+        lepSF = ffsf.getLepSF(lep1['pt'], lep1['eta'], lep1['type'])
+        fMCcorr = MCcorr * lepSF
+        reweightBTag_SF_b_Up_Corr = ch.reweightBTag_SF_b_Up_Correlated if hasattr(ch, 'reweightBTag_SF_b_Up_Correlated') else ch.reweightBTag_SF
+        reweightBTag_SF_b_Down_Corr = ch.reweightBTag_SF_b_Down_Correlated if hasattr(ch, 'reweightBTag_SF_b_Down_Correlated') else ch.reweightBTag_SF
+        reweightBTag_SF_l_Up_Corr = ch.reweightBTag_SF_l_Up_Correlated if hasattr(ch, 'reweightBTag_SF_l_Up_Correlated') else ch.reweightBTag_SF
+        reweightBTag_SF_l_Down_Corr = ch.reweightBTag_SF_l_Down_Correlated if hasattr(ch, 'reweightBTag_SF_l_Down_Correlated') else ch.reweightBTag_SF
+        reweightBTag_SF_b_Up_UnCorr = ch.reweightBTag_SF_b_Up_Uncorrelated if hasattr(ch, 'reweightBTag_SF_b_Up_Uncorrelated') else ch.reweightBTag_SF
+        reweightBTag_SF_b_Down_UnCorr = ch.reweightBTag_SF_b_Down_Uncorrelated if hasattr(ch, 'reweightBTag_SF_b_Down_Uncorrelated') else ch.reweightBTag_SF
+        reweightBTag_SF_l_Up_UnCorr = ch.reweightBTag_SF_l_Up_Uncorrelated if hasattr(ch, 'reweightBTag_SF_l_Up_Uncorrelated') else ch.reweightBTag_SF
+        reweightBTag_SF_l_Down_UnCorr = ch.reweightBTag_SF_l_Down_Uncorrelated if hasattr(ch, 'reweightBTag_SF_l_Down_Uncorrelated') else ch.reweightBTag_SF
         if region == 'SR+CR':
-            if getsel.Val2SearchRegion():
-                if getsel.Val2SR1():
-                    idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
+            if getsel.SearchRegion():
+                if getsel.SR1():
+                    idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                     if not idx == -1:
-                        histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        histos['h_rate'].Fill(idx, lumiscale * fMCcorr)
                         histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                         histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
                         histos['h_PUDown'].Fill(idx, lumiscale * ch.reweightPUDown)
@@ -139,11 +179,22 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
-                if getsel.Val2SR3():
-                    idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                    if not idx <= 35:
-                        histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                        histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                        histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                        histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                        histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                        histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                        histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                        histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                        histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                        histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                        histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * fMCcorr)
+                if getsel.SR2():
+                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 28
+                    if not idx <= 27:
+                        histos['h_rate'].Fill(idx, lumiscale * fMCcorr)
                         histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                         histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
                         histos['h_PUDown'].Fill(idx, lumiscale * ch.reweightPUDown)
@@ -158,12 +209,24 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
-            if getsel.Val2ControlRegion():
-                if getsel.Val2CR1():
-                    idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 72 SR bins or after bin index 71 
-                    if not idx <= 71:
-                        histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                        histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                        histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                        histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                        histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                        histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                        histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                        histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                        histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                        histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                        histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * fMCcorr)
+
+            if getsel.ControlRegion():
+                if getsel.CR1():
+                    idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 56 # after 56 SR bins or after bin index 55 
+                    if not idx <= 55:
+                        histos['h_rate'].Fill(idx, lumiscale * fMCcorr)
                         histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                         histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
                         histos['h_PUDown'].Fill(idx, lumiscale * ch.reweightPUDown)
@@ -178,11 +241,22 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
-                if getsel.Val2CR3():
-                    idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
-                    if not idx <= 79:
-                        histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                        histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                        histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                        histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                        histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                        histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                        histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                        histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                        histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                        histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                        histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * fMCcorr)
+                if getsel.CR2():
+                    idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  56 + 8
+                    if not idx <= 63:
+                        histos['h_rate'].Fill(idx, lumiscale * fMCcorr)
                         histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                         histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
                         histos['h_PUDown'].Fill(idx, lumiscale * ch.reweightPUDown)
@@ -197,23 +271,46 @@ if 'T2tt' in samples:
                         histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                         histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                         histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
-                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * MCcorr)
-    histos['h_reg'].Scale(gfltreff)
-    histos['h_PU'].Scale(gfltreff)
-    histos['h_PUUp'].Scale(gfltreff)
-    histos['h_PUDown'].Scale(gfltreff)
-    histos['h_WPt'].Scale(gfltreff)
-    histos['h_WPtUp'].Scale(gfltreff)
-    histos['h_WPtDown'].Scale(gfltreff)
-    histos['h_LeptonSF'].Scale(gfltreff)
-    histos['h_LeptonSFUp'].Scale(gfltreff)
-    histos['h_LeptonSFDown'].Scale(gfltreff)
-    histos['h_BTagSF'].Scale(gfltreff)
-    histos['h_BTagSFbUp'].Scale(gfltreff)
-    histos['h_BTagSFbDown'].Scale(gfltreff)
-    histos['h_BTagSFlUp'].Scale(gfltreff)
-    histos['h_BTagSFlDown'].Scale(gfltreff)
-    histos['h_XsecUp'].Scale(gfltreff)
+                        histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                        histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                        histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                        histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                        histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                        histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                        histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                        histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                        histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                        histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                        histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
+                        histos['h_XsecUp'].Fill(idx, lumiscale*(1+getSigXsecUnc(ms)) * fMCcorr)
+
+    histos['h_rate'].Scale(1/gfltreff)
+    histos['h_PU'].Scale(1/gfltreff)
+    histos['h_PUUp'].Scale(1/gfltreff)
+    histos['h_PUDown'].Scale(1/gfltreff)
+    histos['h_WPt'].Scale(1/gfltreff)
+    histos['h_WPtUp'].Scale(1/gfltreff)
+    histos['h_WPtDown'].Scale(1/gfltreff)
+    histos['h_LeptonSF'].Scale(1/gfltreff)
+    histos['h_LeptonSFUp'].Scale(1/gfltreff)
+    histos['h_LeptonSFDown'].Scale(1/gfltreff)
+    histos['h_BTagSF'].Scale(1/gfltreff)
+    histos['h_BTagSFbUp'].Scale(1/gfltreff)
+    histos['h_BTagSFbDown'].Scale(1/gfltreff)
+    histos['h_BTagSFlUp'].Scale(1/gfltreff)
+    histos['h_BTagSFlDown'].Scale(1/gfltreff)
+    histos['h_BTagSFbUpCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFbDownCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFlUpCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFlDownCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFbUpUnCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFbDownUnCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFlUpUnCorr'].Scale(1/gfltreff)
+    histos['h_BTagSFlDownUnCorr'].Scale(1/gfltreff)
+    histos['h_L1Prefire'].Scale(1/gfltreff)
+    histos['h_L1PrefireUp'].Scale(1/gfltreff)
+    histos['h_L1PrefireDown'].Scale(1/gfltreff)
+    histos['h_XsecUp'].Scale(1/gfltreff)
     hfile.Write()
 else:
     if isinstance(samplelist[samples][0], types.ListType):
@@ -221,9 +318,9 @@ else:
         for s in samplelist[samples]:
             sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
             print 'running over: ', sample
-            hfile = ROOT.TFile( 'PromptBKVal2_'+region+'_'+year+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+            hfile = ROOT.TFile( 'LLCountDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 	    histos = {}
-            histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_rate'] = HistInfo(hname = 'h_rate', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PU'] = HistInfo(hname = 'h_PU', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PUUp'] = HistInfo(hname = 'h_PUUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PUDown'] = HistInfo(hname = 'h_PUDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -238,8 +335,19 @@ else:
             histos['h_BTagSFbDown'] = HistInfo(hname = 'h_BTagSFbDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlUp'] = HistInfo(hname = 'h_BTagSFlUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlDown'] = HistInfo(hname = 'h_BTagSFlDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbUpCorr'] = HistInfo(hname = 'h_BTagSFbUpCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbDownCorr'] = HistInfo(hname = 'h_BTagSFbDownCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlUpCorr'] = HistInfo(hname = 'h_BTagSFlUpCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlDownCorr'] = HistInfo(hname = 'h_BTagSFlDownCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbUpUnCorr'] = HistInfo(hname = 'h_BTagSFbUpUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbDownUnCorr'] = HistInfo(hname = 'h_BTagSFbDownUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlUpUnCorr'] = HistInfo(hname = 'h_BTagSFlUpUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlDownUnCorr'] = HistInfo(hname = 'h_BTagSFlDownUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1Prefire'] = HistInfo(hname = 'h_L1Prefire', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1PrefireUp'] = HistInfo(hname = 'h_L1PrefireUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1PrefireDown'] = HistInfo(hname = 'h_L1PrefireDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_XsecUp'] = HistInfo(hname = 'h_XsecUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-            histos['h_reg_prompt'] = HistInfo(hname = 'h_reg_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_rate_prompt'] = HistInfo(hname = 'h_rate_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PU_prompt'] = HistInfo(hname = 'h_PU_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PUUp_prompt'] = HistInfo(hname = 'h_PUUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PUDown_prompt'] = HistInfo(hname = 'h_PUDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -254,8 +362,19 @@ else:
             histos['h_BTagSFbDown_prompt'] = HistInfo(hname = 'h_BTagSFbDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlUp_prompt'] = HistInfo(hname = 'h_BTagSFlUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlDown_prompt'] = HistInfo(hname = 'h_BTagSFlDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbUpCorr_prompt'] = HistInfo(hname = 'h_BTagSFbUpCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbDownCorr_prompt'] = HistInfo(hname = 'h_BTagSFbDownCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlUpCorr_prompt'] = HistInfo(hname = 'h_BTagSFlUpCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlDownCorr_prompt'] = HistInfo(hname = 'h_BTagSFlDownCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbUpUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFbUpUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbDownUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFbDownUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlUpUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFlUpUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlDownUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFlDownUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1Prefire_prompt'] = HistInfo(hname = 'h_L1Prefire_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1PrefireUp_prompt'] = HistInfo(hname = 'h_L1PrefireUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1PrefireDown_prompt'] = HistInfo(hname = 'h_L1PrefireDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_XsecUp_prompt'] = HistInfo(hname = 'h_XsecUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-            histos['h_reg_nonprompt'] = HistInfo(hname = 'h_reg_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_rate_nonprompt'] = HistInfo(hname = 'h_rate_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PU_nonprompt'] = HistInfo(hname = 'h_PU_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PUUp_nonprompt'] = HistInfo(hname = 'h_PUUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_PUDown_nonprompt'] = HistInfo(hname = 'h_PUDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -270,9 +389,20 @@ else:
             histos['h_BTagSFbDown_nonprompt'] = HistInfo(hname = 'h_BTagSFbDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlUp_nonprompt'] = HistInfo(hname = 'h_BTagSFlUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_BTagSFlDown_nonprompt'] = HistInfo(hname = 'h_BTagSFlDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbUpCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbUpCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbDownCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbDownCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlUpCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlUpCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlDownCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlDownCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbUpUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbUpUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFbDownUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbDownUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlUpUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlUpUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_BTagSFlDownUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlDownUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1Prefire_nonprompt'] = HistInfo(hname = 'h_L1Prefire_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1PrefireUp_nonprompt'] = HistInfo(hname = 'h_L1PrefireUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_L1PrefireDown_nonprompt'] = HistInfo(hname = 'h_L1PrefireDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_XsecUp_nonprompt'] = HistInfo(hname = 'h_XsecUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             for b in range(bins):
-                histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PU'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -287,8 +417,19 @@ else:
                 histos['h_BTagSFbDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbUpCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbDownCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlUpCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlDownCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbUpUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbDownUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlUpUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlDownUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1Prefire'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1PrefireUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1PrefireDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-                histos['h_reg_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_rate_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PU_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -303,8 +444,19 @@ else:
                 histos['h_BTagSFbDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbUpCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbDownCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlUpCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlDownCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbUpUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbDownUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlUpUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlDownUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1Prefire_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1PrefireUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1PrefireDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_XsecUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-                histos['h_reg_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_rate_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PU_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_PUDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -319,9 +471,20 @@ else:
                 histos['h_BTagSFbDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_BTagSFlDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbUpCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbDownCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlUpCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlDownCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbUpUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFbDownUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlUpUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_BTagSFlDownUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1Prefire_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1PrefireUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_L1PrefireDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_XsecUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-                
-            ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
+                                                
+	    ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 	    n_entries = ch.GetEntries()
             nevtcut = n_entries -1 if nEvents == - 1 else nEvents - 1
@@ -340,6 +503,14 @@ else:
                 if not getsel.PreSelection(): continue
                 if not getsel.passFilters(): continue
                 if not getsel.passMETTrig(trigger): continue
+                reweightBTag_SF_b_Up_Corr = ch.reweightBTag_SF_b_Up_Correlated if hasattr(ch, 'reweightBTag_SF_b_Up_Correlated') else ch.reweightBTag_SF
+                reweightBTag_SF_b_Down_Corr = ch.reweightBTag_SF_b_Down_Correlated if hasattr(ch, 'reweightBTag_SF_b_Down_Correlated') else ch.reweightBTag_SF
+                reweightBTag_SF_l_Up_Corr = ch.reweightBTag_SF_l_Up_Correlated if hasattr(ch, 'reweightBTag_SF_l_Up_Correlated') else ch.reweightBTag_SF
+                reweightBTag_SF_l_Down_Corr = ch.reweightBTag_SF_l_Down_Correlated if hasattr(ch, 'reweightBTag_SF_l_Down_Correlated') else ch.reweightBTag_SF
+                reweightBTag_SF_b_Up_UnCorr = ch.reweightBTag_SF_b_Up_Uncorrelated if hasattr(ch, 'reweightBTag_SF_b_Up_Uncorrelated') else ch.reweightBTag_SF
+                reweightBTag_SF_b_Down_UnCorr = ch.reweightBTag_SF_b_Down_Uncorrelated if hasattr(ch, 'reweightBTag_SF_b_Down_Uncorrelated') else ch.reweightBTag_SF
+                reweightBTag_SF_l_Up_UnCorr = ch.reweightBTag_SF_l_Up_Uncorrelated if hasattr(ch, 'reweightBTag_SF_l_Up_Uncorrelated') else ch.reweightBTag_SF
+                reweightBTag_SF_l_Down_UnCorr = ch.reweightBTag_SF_l_Down_Uncorrelated if hasattr(ch, 'reweightBTag_SF_l_Down_Uncorrelated') else ch.reweightBTag_SF
                 idx = getsel.getSortedLepVar()[0]['idx']
                 tp = getsel.getSortedLepVar()[0]['type']
                 promptFlag = True if isData else False
@@ -351,14 +522,15 @@ else:
                     else:
                         flag=ord(ch.LowPtElectron_genPartFlav[idx])
                     promptFlag = flag in [ 1 , 15 ]
+
                 if region == 'SR+CR':
-                    if getsel.Val2SearchRegion():
-                        if getsel.Val2SR1():
-                            idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
+                    if getsel.SearchRegion():
+                        if getsel.SR1():
+                            idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                             if not idx == -1:
-                                histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                                if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                                else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                                histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                                else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                                 if not isData:
                                     histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                     histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -374,6 +546,17 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     if promptFlag:
                                         histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -390,6 +573,17 @@ else:
                                         histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     else:
                                         histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -406,14 +600,24 @@ else:
                                         histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
-                                        
-                        if getsel.Val2SR3():
-                            idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                            if not idx <= 35:
-                                histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                                if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                                else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                        if getsel.SR2():
+                            idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 28
+                            if not idx <= 27:
+                                histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                                else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                                 if not isData:
                                     histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                     histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -429,6 +633,17 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     if promptFlag:
                                         histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -445,6 +660,17 @@ else:
                                         histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     else:
                                         histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -461,14 +687,26 @@ else:
                                         histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
-                    if getsel.Val2ControlRegion():
-                        if getsel.Val2CR1():
-                            idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 # after 24 SR bins or after bin index 23 
-                            if not idx <= 71:
-                                histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                                if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                                else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+
+                    if getsel.ControlRegion():
+                        if getsel.CR1():
+                            idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 56 #after 72 SR bins or after bin index 71 
+                            if not idx <= 55:
+                                histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                                else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                                 if not isData:
                                     histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                     histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -484,6 +722,17 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     if promptFlag:
                                         histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -500,6 +749,17 @@ else:
                                         histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     else:
                                         histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -516,13 +776,24 @@ else:
                                         histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
-                        if getsel.Val2CR3():
-                            idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
-                            if not idx <= 79:
-                                histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                                if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                                else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                        if getsel.CR2():
+                            idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  56 + 8
+                            if not idx <= 63:
+                                histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                                else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                                 if not isData:
                                     histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                     histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -538,6 +809,17 @@ else:
                                     histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     if promptFlag:
                                         histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -554,6 +836,17 @@ else:
                                         histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                     else:
                                         histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -570,7 +863,19 @@ else:
                                         histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                         histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                         histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                        histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                        histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                        histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                        histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                        histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                        histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                        histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                        histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                        histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                        histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                        histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                         histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
+
             hfile.Write()
     else:
         histext = samples
@@ -578,9 +883,9 @@ else:
             if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
         sample = samples
         print 'running over: ', sample
-        hfile = ROOT.TFile( 'PromptBKVal2_'+region+'_'+year+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        hfile = ROOT.TFile( 'LLCountDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
-        histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_rate'] = HistInfo(hname = 'h_rate', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PU'] = HistInfo(hname = 'h_PU', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PUUp'] = HistInfo(hname = 'h_PUUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PUDown'] = HistInfo(hname = 'h_PUDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -595,8 +900,19 @@ else:
         histos['h_BTagSFbDown'] = HistInfo(hname = 'h_BTagSFbDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlUp'] = HistInfo(hname = 'h_BTagSFlUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlDown'] = HistInfo(hname = 'h_BTagSFlDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbUpCorr'] = HistInfo(hname = 'h_BTagSFbUpCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbDownCorr'] = HistInfo(hname = 'h_BTagSFbDownCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlUpCorr'] = HistInfo(hname = 'h_BTagSFlUpCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlDownCorr'] = HistInfo(hname = 'h_BTagSFlDownCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbUpUnCorr'] = HistInfo(hname = 'h_BTagSFbUpUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbDownUnCorr'] = HistInfo(hname = 'h_BTagSFbDownUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlUpUnCorr'] = HistInfo(hname = 'h_BTagSFlUpUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlDownUnCorr'] = HistInfo(hname = 'h_BTagSFlDownUnCorr', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1Prefire'] = HistInfo(hname = 'h_L1Prefire', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1PrefireUp'] = HistInfo(hname = 'h_L1PrefireUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1PrefireDown'] = HistInfo(hname = 'h_L1PrefireDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_XsecUp'] = HistInfo(hname = 'h_XsecUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-        histos['h_reg_prompt'] = HistInfo(hname = 'h_reg_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_rate_prompt'] = HistInfo(hname = 'h_rate_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PU_prompt'] = HistInfo(hname = 'h_PU_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PUUp_prompt'] = HistInfo(hname = 'h_PUUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PUDown_prompt'] = HistInfo(hname = 'h_PUDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -611,8 +927,19 @@ else:
         histos['h_BTagSFbDown_prompt'] = HistInfo(hname = 'h_BTagSFbDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlUp_prompt'] = HistInfo(hname = 'h_BTagSFlUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlDown_prompt'] = HistInfo(hname = 'h_BTagSFlDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbUpCorr_prompt'] = HistInfo(hname = 'h_BTagSFbUpCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbDownCorr_prompt'] = HistInfo(hname = 'h_BTagSFbDownCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlUpCorr_prompt'] = HistInfo(hname = 'h_BTagSFlUpCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlDownCorr_prompt'] = HistInfo(hname = 'h_BTagSFlDownCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbUpUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFbUpUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbDownUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFbDownUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlUpUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFlUpUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlDownUnCorr_prompt'] = HistInfo(hname = 'h_BTagSFlDownUnCorr_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1Prefire_prompt'] = HistInfo(hname = 'h_L1Prefire_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1PrefireUp_prompt'] = HistInfo(hname = 'h_L1PrefireUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1PrefireDown_prompt'] = HistInfo(hname = 'h_L1PrefireDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_XsecUp_prompt'] = HistInfo(hname = 'h_XsecUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-        histos['h_reg_nonprompt'] = HistInfo(hname = 'h_reg_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_rate_nonprompt'] = HistInfo(hname = 'h_rate_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PU_nonprompt'] = HistInfo(hname = 'h_PU_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PUUp_nonprompt'] = HistInfo(hname = 'h_PUUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_PUDown_nonprompt'] = HistInfo(hname = 'h_PUDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -627,9 +954,20 @@ else:
         histos['h_BTagSFbDown_nonprompt'] = HistInfo(hname = 'h_BTagSFbDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlUp_nonprompt'] = HistInfo(hname = 'h_BTagSFlUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_BTagSFlDown_nonprompt'] = HistInfo(hname = 'h_BTagSFlDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbUpCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbUpCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbDownCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbDownCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlUpCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlUpCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlDownCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlDownCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbUpUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbUpUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFbDownUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFbDownUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlUpUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlUpUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_BTagSFlDownUnCorr_nonprompt'] = HistInfo(hname = 'h_BTagSFlDownUnCorr_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1Prefire_nonprompt'] = HistInfo(hname = 'h_L1Prefire_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1PrefireUp_nonprompt'] = HistInfo(hname = 'h_L1PrefireUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_L1PrefireDown_nonprompt'] = HistInfo(hname = 'h_L1PrefireDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_XsecUp_nonprompt'] = HistInfo(hname = 'h_XsecUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         for b in range(bins):
-            histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_rate'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PU'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PUUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PUDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -644,8 +982,19 @@ else:
             histos['h_BTagSFbDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbUpCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbDownCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlUpCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlDownCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbUpUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbDownUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlUpUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlDownUnCorr'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1Prefire'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1PrefireUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1PrefireDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_XsecUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-            histos['h_reg_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_rate_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PU_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PUUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PUDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -660,8 +1009,19 @@ else:
             histos['h_BTagSFbDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbUpCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbDownCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlUpCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlDownCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbUpUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbDownUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlUpUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlDownUnCorr_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1Prefire_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1PrefireUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1PrefireDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_XsecUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-            histos['h_reg_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_rate_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PU_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PUUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_PUDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
@@ -676,6 +1036,17 @@ else:
             histos['h_BTagSFbDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_BTagSFlDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbUpCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbDownCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlUpCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlDownCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbUpUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFbDownUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlUpUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_BTagSFlDownUnCorr_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1Prefire_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1PrefireUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_L1PrefireDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_XsecUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -696,6 +1067,14 @@ else:
             if not getsel.PreSelection(): continue
             if not getsel.passFilters(): continue
             if not getsel.passMETTrig(trigger): continue
+            reweightBTag_SF_b_Up_Corr = ch.reweightBTag_SF_b_Up_Correlated if hasattr(ch, 'reweightBTag_SF_b_Up_Correlated') else ch.reweightBTag_SF
+            reweightBTag_SF_b_Down_Corr = ch.reweightBTag_SF_b_Down_Correlated if hasattr(ch, 'reweightBTag_SF_b_Down_Correlated') else ch.reweightBTag_SF
+            reweightBTag_SF_l_Up_Corr = ch.reweightBTag_SF_l_Up_Correlated if hasattr(ch, 'reweightBTag_SF_l_Up_Correlated') else ch.reweightBTag_SF
+            reweightBTag_SF_l_Down_Corr = ch.reweightBTag_SF_l_Down_Correlated if hasattr(ch, 'reweightBTag_SF_l_Down_Correlated') else ch.reweightBTag_SF
+            reweightBTag_SF_b_Up_UnCorr = ch.reweightBTag_SF_b_Up_Uncorrelated if hasattr(ch, 'reweightBTag_SF_b_Up_Uncorrelated') else ch.reweightBTag_SF
+            reweightBTag_SF_b_Down_UnCorr = ch.reweightBTag_SF_b_Down_Uncorrelated if hasattr(ch, 'reweightBTag_SF_b_Down_Uncorrelated') else ch.reweightBTag_SF
+            reweightBTag_SF_l_Up_UnCorr = ch.reweightBTag_SF_l_Up_Uncorrelated if hasattr(ch, 'reweightBTag_SF_l_Up_Uncorrelated') else ch.reweightBTag_SF
+            reweightBTag_SF_l_Down_UnCorr = ch.reweightBTag_SF_l_Down_Uncorrelated if hasattr(ch, 'reweightBTag_SF_l_Down_Uncorrelated') else ch.reweightBTag_SF
             idx = getsel.getSortedLepVar()[0]['idx']
             tp = getsel.getSortedLepVar()[0]['type']
             promptFlag = True if isData else False
@@ -707,14 +1086,15 @@ else:
                 else:
                     flag=ord(ch.LowPtElectron_genPartFlav[idx])
                 promptFlag = flag in [ 1 , 15 ]
+
             if region == 'SR+CR':
-                if getsel.Val2SearchRegion():
-                    if getsel.Val2SR1():
-                        idx = findSR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
+                if getsel.SearchRegion():
+                    if getsel.SR1():
+                        idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                         if not idx == -1:
-                            histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                            if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                            else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                            histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                            else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                             if not isData:
                                 histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                 histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -730,6 +1110,17 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                 histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 if promptFlag:
                                     histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -746,6 +1137,17 @@ else:
                                     histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 else:
                                     histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -762,13 +1164,24 @@ else:
                                     histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
-                    if getsel.Val2SR3():
-                        idx = findSR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                        if not idx <= 35:
-                            histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                            if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                            else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                    if getsel.SR2():
+                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 28
+                        if not idx <= 27:
+                            histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                            else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                             if not isData:
                                 histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                 histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -784,6 +1197,17 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                 histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 if promptFlag:
                                     histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -800,6 +1224,17 @@ else:
                                     histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 else:
                                     histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -816,14 +1251,26 @@ else:
                                     histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
-                if getsel.Val2ControlRegion():
-                    if getsel.Val2CR1():
-                        idx = findCR1BinIndexVal2(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 72 #after 72 SR bins or after bin index 71
-                        if not idx <= 71:
-                            histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                            if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                            else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                    
+                if getsel.ControlRegion():
+                    if getsel.CR1():
+                        idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 56 # after 72 SR bins or after bin index 71
+                        if not idx <= 55:
+                            histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                            else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                             if not isData:
                                 histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                 histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -839,6 +1286,17 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                 histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 if promptFlag:
                                     histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -855,6 +1313,17 @@ else:
                                     histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 else:
                                     histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -871,13 +1340,24 @@ else:
                                     histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
-                    if getsel.Val2CR3():
-                        idx = findCR3BinIndexVal2(getsel.calCT(2), getsel.getLepMT()) + 72 + 8
-                        if not idx <= 79:
-                            histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                            if promptFlag: histos['h_reg_prompt'].Fill(idx, lumiscale * MCcorr)
-                            else: histos['h_reg_nonprompt'].Fill(idx, lumiscale * MCcorr)
+                    if getsel.CR2():
+                        idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  56 + 8
+                        if not idx <= 63:
+                            histos['h_rate'].Fill(idx, lumiscale * MCcorr)
+                            if promptFlag: histos['h_rate_prompt'].Fill(idx, lumiscale * MCcorr)
+                            else: histos['h_rate_nonprompt'].Fill(idx, lumiscale * MCcorr)
                             if not isData:
                                 histos['h_PU'].Fill(idx, lumiscale * ch.reweightPU)
                                 histos['h_PUUp'].Fill(idx, lumiscale * ch.reweightPUUp)
@@ -893,6 +1373,17 @@ else:
                                 histos['h_BTagSFbDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                 histos['h_BTagSFlUp'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                 histos['h_BTagSFlDown'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                histos['h_BTagSFbUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                histos['h_BTagSFbDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                histos['h_BTagSFlUpCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                histos['h_BTagSFlDownCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                histos['h_BTagSFbUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                histos['h_BTagSFbDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                histos['h_BTagSFlUpUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                histos['h_BTagSFlDownUnCorr'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                histos['h_L1Prefire'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                histos['h_L1PrefireUp'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                histos['h_L1PrefireDown'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                 histos['h_XsecUp'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 if promptFlag:
                                     histos['h_PU_prompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -909,6 +1400,17 @@ else:
                                     histos['h_BTagSFbDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_prompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_prompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_prompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_prompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_prompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
                                 else:
                                     histos['h_PU_nonprompt'].Fill(idx, lumiscale * ch.reweightPU)
@@ -925,5 +1427,17 @@ else:
                                     histos['h_BTagSFbDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_b_Down)
                                     histos['h_BTagSFlUp_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Up)
                                     histos['h_BTagSFlDown_nonprompt'].Fill(idx, lumiscale * ch.reweightBTag_SF_l_Down)
+                                    histos['h_BTagSFbUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_Corr)
+                                    histos['h_BTagSFbDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_Corr)
+                                    histos['h_BTagSFlUpCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_Corr)
+                                    histos['h_BTagSFlDownCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_Corr)
+                                    histos['h_BTagSFbUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Up_UnCorr)
+                                    histos['h_BTagSFbDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_b_Down_UnCorr)
+                                    histos['h_BTagSFlUpUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Up_UnCorr)
+                                    histos['h_BTagSFlDownUnCorr_nonprompt'].Fill(idx, lumiscale * reweightBTag_SF_l_Down_UnCorr)
+                                    histos['h_L1Prefire_nonprompt'].Fill(idx, lumiscale * ch.reweightL1Prefire)
+                                    histos['h_L1PrefireUp_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireUp)
+                                    histos['h_L1PrefireDown_nonprompt'].Fill(idx, lumiscale * ch.reweightL1PrefireDown)
                                     histos['h_XsecUp_nonprompt'].Fill(idx, lumiscale*(1+getXsecUnc(sample)) * MCcorr)
+                    
         hfile.Write()

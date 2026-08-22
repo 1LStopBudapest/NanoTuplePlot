@@ -14,21 +14,17 @@ def get_parser():
     ''' Argument parser.                                                                                                                                                    '''
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
-    argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample, Signal or Other?" )
-    argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
-    argParser.add_argument('--val',             action='store',                    type=str,            default='Val1',                                             help="Which region?" )
+    argParser.add_argument('--sample',             action='store',                    type=str,            default='Other',                                      help="run over which sample?" )
+    argParser.add_argument('--region',             action='store',                    type=str,            default='DxyDz',                                             help="Which region?" )
     return argParser
 
 options = get_parser().parse_args()
     
 reg = options.region
 sample = options.sample
-val = options.val
 
 SigScan =  True if 'Signal' in sample else False
-script = 'PromptBKVal1JEC' if val=='Val1' else 'PromptBKVal2JEC'
-year = '2016PreVFP'
-nevts = -1
+year = '2018'
 fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
@@ -42,7 +38,7 @@ elif year=='2017':
 else:
     samplelist = samples_2018
 
-Rootfilesdirpath = os.path.join(plotDir,"PromptValFiles")
+Rootfilesdirpath = os.path.join(plotDir,"LLRegionHistFiles")
 if not os.path.exists(Rootfilesdirpath):
         os.makedirs(Rootfilesdirpath)
 
@@ -51,23 +47,23 @@ bashline = []
 if SigScan:
     print 'Running over all the signal points'
     txtline = []
-    for sig in signals:
+    for sig in signals[year]:
         sname = 'T2tt_'+sig
-        txtline.append("python %s.py --sample %s --region %s --year %s --nevents %d\n"%(script, sname, reg, year, nevts))
+        txtline.append("python LLRegionHistMaker.py --sample %s --region %s --year %s\n"%(sname, reg, year))
     fout = open("parallelJobsubmit.txt", "w")
     fout.write(''.join(txtline))
     fout.close()
 
 
     bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
-    for sig in signals:
+    for sig in signals[year]:
         sname = 'T2tt_'+sig
-        bashline.append('mv %s_%s_%s_%s*.root %s_%s_%s_%s.root\n'%(script, reg, year, sname, script, reg, year, sname))
-    bashline.append('mv %s_%s*.root %s\n'%(script, reg, Rootfilesdirpath))
+        bashline.append('mv LLRegionHistMaker_%s_%s*.root LLRegionHistMaker_%s_%s.root\n'%(reg, sname, reg, sname))
+    bashline.append('mv LLRegionHistMaker_%s*.root %s\n'%(reg, Rootfilesdirpath))
 
 else:
-    print 'Running over all the bkgs'
-    samplesRun = list(snameMap[k] for k in bkgs)
+    print 'Running over all the bkgs as well as pilot sig points'
+    samplesRun = list(snameMap[k] for k in bkgs + LLPilotSigs_full)
     print samplesRun
     txtline = []
     for sL in samplesRun:
@@ -77,28 +73,31 @@ else:
                 fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
                 tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
                 for i in range(0, tfiles, fileperjob):
-                    txtline.append("python %s.py --sample %s --startfile %i --nfiles %i --region %s --year %s --nevents %d\n"%(script, sample, i, fileperjob, reg, year,  nevts))
+                    txtline.append("python LLRegionHistMaker.py --sample %s --startfile %i --nfiles %i --region %s --year %s\n"%(sample, i, fileperjob, reg, year))
         else:
             tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
             fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
             for i in range(0, tfiles, fileperjob):
-                txtline.append("python %s.py --sample %s --startfile %i --nfiles %i --region %s --year %s --nevents %d\n"%(script, sL, i, fileperjob, reg, year, nevts))
+                txtline.append("python LLRegionHistMaker.py --sample %s --startfile %i --nfiles %i --region %s --year %s\n"%(sL, i, fileperjob, reg, year))
     fout = open("parallelJobsubmit.txt", "w")
     fout.write(''.join(txtline))
     fout.close()
 
     bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
     for sL in samplesRun:
-        if isinstance(samplelist[sL][0], types.ListType):
-            sLi = 'hadd '+script+'_'+reg+'_'+year+'_'+sL+'.root '+str("".join(script+'_'+reg+'_'+year+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root ' for s in samplelist[sL]))
+        if 'Data' in sL:
+            sLi = sL.replace('Data','')+'Run'
+            bashline.append('hadd LLRegionHistMaker_%s_%s.root LLRegionHistMaker_%s_%s*.root\n'%(reg, sL, reg, sLi))
+        elif isinstance(samplelist[sL][0], types.ListType):
+            sLi = 'hadd LLRegionHistMaker_'+reg+'_'+sL+'.root'+str("".join(' LLRegionHistMaker_'+reg+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root' for s in samplelist[sL]))
             bashline.append('%s\n'%sLi)
         else:
-            bashline.append('hadd %s_%s_%s_%s.root %s_%s_%s_%s_*.root\n'%(script, reg, year, sL, script, reg, year, sL))
-        bashline.append('mv %s_%s_%s_%s.root %s\n'%(script, reg, year, sL, Rootfilesdirpath))
+            bashline.append('hadd LLRegionHistMaker_%s_%s.root LLRegionHistMaker_%s_%s_*.root\n'%(reg, sL, reg, sL))
+        bashline.append('mv LLRegionHistMaker_%s_%s.root %s\n'%(reg, sL, Rootfilesdirpath))
                 
-fsh = open("PromptBKValHistJEC.sh", "w")
+fsh = open("LLparallelRegionHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
-os.system('chmod 744 PromptBKValHistJEC.sh')
-os.system('./PromptBKValHistJEC.sh')
-#os.system('rm *.root parallelJobsubmit.txt PromptBKValHistJEC.sh')
+os.system('chmod 744 LLparallelRegionHist.sh')
+os.system('./LLparallelRegionHist.sh')
+#os.system('rm *.root parallelJobsubmit.txt LLparallelRegionHist.sh')

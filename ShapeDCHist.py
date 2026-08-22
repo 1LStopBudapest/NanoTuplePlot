@@ -8,11 +8,16 @@ from Helper.HistInfo import HistInfo
 from Helper.MCWeight import MCWeight
 from Helper.Binning import *
 from Helper.GenFilterEff import GenFilterEff
+from Helper.XsecUnc import *
+from Helper.TrigEff import *
+from Helper.FullFastSF import FullFastSF
+from Helper.SoftbSF import SoftbSF
 from Sample.SampleChain import SampleChain
 from Sample.FileList_UL2016PreVFP import samples as samples_2016Pre
 from Sample.FileList_UL2016PostVFP import samples as samples_2016Post
 from Sample.FileList_UL2017 import samples as samples_2017
 from Sample.FileList_UL2018 import samples as samples_2018
+from Sample.SampleList import *
 
 def get_parser():
     ''' Argument parser.                                                                                                                                                                                                                     
@@ -20,7 +25,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',           action='store',                     type=str,            default='TTSingleLep_pow',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PostVFP',                                             help="Which year?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2018',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -37,6 +42,10 @@ nEvents = options.nevents
 
 isData = True if ('Run' in samples or 'Data' in samples) else False
 DataLumi=1.0
+trigger = 'HLT_PFMET120_PFMHT120_IDTight' #for inclusive MET triggers (logical OR), use 'HLT_MET_Inclusive'
+shapebins = ShapeDCbins
+SysNames = LsysNamesVar
+softbSF = SoftbSF(year).getsoftbSF()
 
 if year=='2016PreVFP':
     samplelist = samples_2016Pre
@@ -51,34 +60,34 @@ else:
     samplelist = samples_2018
     DataLumi = SampleChain.luminosity_2018
 
-if region == 'SR':
-    bins = 108 #prev. ver had 72
-    binLabel = SRBinLabelList
-elif region == 'CR':
-    bins = 24 #prev. ver had 16
-    binLabel = CRBinLabelList
-elif region == 'SR+CR':
-    bins = 108 + 24
-    binLabel = SRBinLabelList+CRBinLabelList
+if region == 'SR+CR':
+    ShapebinlPtbinMap = ShapebinlPtbinMapSC
+elif region == 'SR':
+    ShapebinlPtbinMap = ShapebinlPtbinMapS
 else:
-    bins = 1
-    binLabel = ['REG']
+    ShapebinlPtbinMap = ShapebinlPtbinMapSC
+    print('Using default SR+CR bin setting, check the --region')
+   
 histext = ''
 
 if 'T2tt' in samples:
-    histext = samples
+    histext = 'signal'
     sample = samples
     print 'running over: ', sample
     ms = int(sample.split('_')[1])
     ml = int(sample.split('_')[2])
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
-    print 'Gen filter eff: ',gfltreff
-    hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    trigeff = getTrigEff(year)
+    ffsf = FullFastSF(year)
+    ffsoftbSF = ffsf.getsoftbSF()
+    hfile = ROOT.TFile( 'ShapeDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
-    histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-    for b in range(bins): histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-    
+    for b in range(shapebins):
+        histos['Bin'+str(b)] = HistInfo(hname = 'Bin'+str(b), sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+        for se in SysNames:
+            histos['Bin'+str(b)+'_'+se] = HistInfo(hname = 'Bin'+str(b)+'_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+     
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     n_entries = ch.GetEntries()
@@ -92,62 +101,100 @@ if 'T2tt' in samples:
         MCcorr = MCWeight(ch, year, sample).getTotalWeight()
         getsel = TreeVarSel(ch, isData, year)
         if not getsel.PreSelection(): continue
+        lep1 = getsel.getSortedLepVar()[0]
+        lepSF = ffsf.getLepSF(lep1['pt'], lep1['eta'], lep1['type'])
+        fMCcorr = MCcorr  * lepSF
         if region == 'SR':
             if not getsel.SearchRegion(): continue
             if getsel.SR1():
-                idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                shapeIdx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                if shapeIdx != -1 and lptIdx!=-1:
+                    histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * fMCcorr)
+                    for se in SysNames:
+                        if 'XSecUp' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1+getSigXsecUnc(ms)))
+                        elif 'XSecDown' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1-getSigXsecUnc(ms)))
+                        elif se == 'XSec': histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * 1)
+                        elif 'Correlated' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                        else: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
             if getsel.SR2():
-                idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                if not idx == 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
+                lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                if shapeIdx > 7 and lptIdx!=-1:
+                    histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * fMCcorr)
+                    for se in SysNames:
+                        if 'XSecUp' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1+getSigXsecUnc(ms)))
+                        elif 'XSecDown' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1-getSigXsecUnc(ms)))
+                        elif se == 'XSec': histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * 1)
+                        elif 'Correlated' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                        else: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
             if getsel.SR3():
-                idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                if not idx == 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-        if region == 'CR':
-            if not getsel.ControlRegion(): continue
-            if getsel.CR1():
-                idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
-                if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-            if getsel.CR2():
-                idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
-                if not idx == 7: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-            if getsel.CR3():
-                idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
-                if not idx == 15: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
+                lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                if shapeIdx > 15 and lptIdx!=-1:
+                    histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF)
+                    for se in SysNames:
+                        if 'XSecUp' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF * (1+getSigXsecUnc(ms)))
+                        elif 'XSecDown' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF * (1-getSigXsecUnc(ms)))
+                        elif se == 'XSec': histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF * 1)
+                        elif 'Correlated' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                        else: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
         if region == 'SR+CR':
-            if getsel.SearchRegion():
-                if getsel.SR1():
-                    idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                    if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.SR2():
-                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                    if not idx == 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.SR3():
-                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                    if not idx == 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-            if getsel.ControlRegion():
-                if getsel.CR1():
-                    idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 # after 108 SR bins or after bin index 107 
-                    if not idx == 107: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.CR2():
-                    idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  108 + 8
-                    if not idx == 115: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.CR3():
-                    idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
-                    if not idx == 123: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-    histos['h_reg'].Scale(gfltreff)
+            if not getsel.SCRegion(): continue
+            if getsel.SCR1():
+                shapeIdx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                if shapeIdx != -1 and lptIdx!=-1:
+                    histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * fMCcorr)
+                    for se in SysNames:
+                        if 'XSecUp' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1+getSigXsecUnc(ms)))
+                        elif 'XSecDown' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1-getSigXsecUnc(ms)))
+                        elif se == 'XSec': histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * 1)
+                        elif 'Correlated' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                        else: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+            if getsel.SCR2():
+                shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
+                lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                if shapeIdx > 7 and lptIdx!=-1:
+                    histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * fMCcorr)
+                    for se in SysNames:
+                        if 'XSecUp' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1+getSigXsecUnc(ms)))
+                        elif 'XSecDown' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * (1-getSigXsecUnc(ms)))
+                        elif se == 'XSec': histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * 1)
+                        elif 'Correlated' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                        else: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+            if getsel.SCR3():
+                shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
+                lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                if shapeIdx > 15 and lptIdx!=-1:
+                    histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF)
+                    for se in SysNames:
+                        if 'XSecUp' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF * (1+getSigXsecUnc(ms)))
+                        elif 'XSecDown' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF * (1-getSigXsecUnc(ms)))
+                        elif se == 'XSec': histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * fMCcorr * softbSF * ffsoftbSF * 1)
+                        elif 'Correlated' in se: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                        else: histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+    for b in range(shapebins):                
+        histos['Bin'+str(b)].Scale(1/gfltreff)
+        for se in SysNames:
+            histos['Bin'+str(b)+'_'+se].Scale(1/gfltreff)
     hfile.Write()
 else:
     if isinstance(samplelist[samples][0], types.ListType):
-        histext = samples
+        histext = 'data_obs' if isData else samples
         for s in samplelist[samples]:
             sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
             print 'running over: ', sample
-            hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
-	    histos = {}
-            histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-	    for b in range(bins): histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-
+            hfile = ROOT.TFile( 'ShapeDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+            histos = {}
+            for b in range(shapebins):
+                histos['Bin'+str(b)] = HistInfo(hname = 'Bin'+str(b), sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                histos['Bin'+str(b)+'_prompt'] = HistInfo(hname = 'Bin'+str(b)+'_prompt', sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                histos['Bin'+str(b)+'_nonprompt'] = HistInfo(hname = 'Bin'+str(b)+'_nonprompt', sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                for se in SysNames:
+                    histos['Bin'+str(b)+'_'+se] = HistInfo(hname = 'Bin'+str(b)+'_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                    histos['Bin'+str(b)+'_prompt_'+se] = HistInfo(hname = 'Bin'+str(b)+'_prompt_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                    histos['Bin'+str(b)+'_nonprompt_'+se] = HistInfo(hname = 'Bin'+str(b)+'_nonprompt_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
 	    ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 	    n_entries = ch.GetEntries()
@@ -165,61 +212,203 @@ else:
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
                 if not getsel.PreSelection(): continue
+                if not getsel.passFilters(): continue
+                if not getsel.passMETTrig(trigger): continue
+                idx = getsel.getSortedLepVar()[0]['idx']
+                tp = getsel.getSortedLepVar()[0]['type']
+                promptFlag = True if isData else False
+                if not isData:
+                    if tp == 'mu':
+                        flag=ord(ch.Muon_genPartFlav[idx])
+                    elif tp == 'Electron':
+                        flag=ord(ch.Electron_genPartFlav[idx])
+                    else:
+                        flag=ord(ch.LowPtElectron_genPartFlav[idx])
+                    promptFlag = flag in [ 1 , 15 ]
+                                                                                                                        
                 if region == 'SR':
                     if not getsel.SearchRegion(): continue
                     if getsel.SR1():
-                        idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                        if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        shapeIdx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                        lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                        if shapeIdx != -1 and lptIdx!=-1:
+                            histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if not isData:
+                                for se in SysNames:
+                                    if 'XSecUp' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    elif 'XSecDown' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    elif se=='XSec':
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    elif 'Correlated' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        if promptFlag:
+                                            histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        else:
+                                            histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
                     if getsel.SR2():
-                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                        if not idx == 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
+                        lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                        if shapeIdx > 7 and lptIdx!=-1:
+                            histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if not isData:
+                                for se in SysNames:
+                                    if 'XSecUp' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    elif 'XSecDown' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    elif se=='XSec':
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    elif 'Correlated' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        if promptFlag:
+                                            histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        else:
+                                            histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
                     if getsel.SR3():
-                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                        if not idx == 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if region == 'CR':
-                    if not getsel.ControlRegion(): continue
-                    if getsel.CR1():
-                        idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
-                        if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.CR2():
-                        idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
-                        if not idx == 7: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.CR3():
-                        idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
-                        if not idx == 15: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                        shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
+                        lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                        if shapeIdx > 15 and lptIdx!=-1:
+                            histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                            if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                            else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                            if not isData:
+                                for se in SysNames:
+                                    if 'XSecUp' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                    elif 'XSecDown' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                    elif se=='XSec':
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                    elif 'Correlated' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        if promptFlag:
+                                            histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        else:
+                                            histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
                 if region == 'SR+CR':
-                    if getsel.SearchRegion():
-                        if getsel.SR1():
-                            idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                            if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                        if getsel.SR2():
-                            idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                            if not idx == 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                        if getsel.SR3():
-                            idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                            if not idx == 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.ControlRegion():
-                        if getsel.CR1():
-                            idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 # after 108 SR bins or after bin index 107 
-                            if not idx == 107: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                        if getsel.CR2():
-                            idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  108 + 8
-                            if not idx == 115: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                        if getsel.CR3():
-                            idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
-                            if not idx == 123: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    if not getsel.SCRegion(): continue
+                    if getsel.SCR1():
+                        shapeIdx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                        lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                        if shapeIdx != -1 and lptIdx!=-1:
+                            histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if not isData:
+                                for se in SysNames:
+                                    if 'XSecUp' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    elif 'XSecDown' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    elif se=='XSec':
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    elif 'Correlated' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        if promptFlag:
+                                            histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        else:
+                                            histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                    if getsel.SCR2():
+                        shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
+                        lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                        if shapeIdx > 7 and lptIdx!=-1:
+                            histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                            if not isData:
+                                for se in SysNames:
+                                    if 'XSecUp' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    elif 'XSecDown' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    elif se=='XSec':
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    elif 'Correlated' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        if promptFlag:
+                                            histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        else:
+                                            histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                    if getsel.SCR3():
+                        shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
+                        lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                        if shapeIdx > 15 and lptIdx != -1:
+                            histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                            if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                            else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                            if not isData:
+                                for se in SysNames:
+                                    if 'XSecUp' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                    elif 'XSecDown' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                    elif se=='XSec':
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                    elif 'Correlated' in se:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        if promptFlag:
+                                            histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                        else:
+                                            histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
             hfile.Write()
     else:
-        histext = samples
+        histext = 'data_obs' if isData else samples
         for l in list(samplelist.values()):
             if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
         sample = samples
         print 'running over: ', sample
-        hfile = ROOT.TFile( 'RegionPlot_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        hfile = ROOT.TFile( 'ShapeDCHist_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
-        histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
-        for b in range(bins): histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-    
+        for b in range(shapebins):
+            histos['Bin'+str(b)] = HistInfo(hname = 'Bin'+str(b), sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+            histos['Bin'+str(b)+'_prompt'] = HistInfo(hname = 'Bin'+str(b)+'_prompt', sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+            histos['Bin'+str(b)+'_nonprompt'] = HistInfo(hname = 'Bin'+str(b)+'_nonprompt', sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+            for se in SysNames:
+                histos['Bin'+str(b)+'_'+se] = HistInfo(hname = 'Bin'+str(b)+'_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                histos['Bin'+str(b)+'_prompt_'+se] = HistInfo(hname = 'Bin'+str(b)+'_prompt_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
+                histos['Bin'+str(b)+'_nonprompt_'+se] = HistInfo(hname = 'Bin'+str(b)+'_nonprompt_'+se, sample = histext, binning = [ShapebinlPtbinMap[b], 0, ShapebinlPtbinMap[b]], histclass = ROOT.TH1F).make_hist()
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         n_entries = ch.GetEntries()
@@ -237,48 +426,184 @@ else:
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
             if not getsel.PreSelection(): continue
+            if not getsel.passFilters(): continue
+            if not getsel.passMETTrig(trigger): continue
+            idx = getsel.getSortedLepVar()[0]['idx']
+            tp = getsel.getSortedLepVar()[0]['type']
+            promptFlag = True if isData else False
+            if not isData:
+                if tp == 'mu':
+                    flag=ord(ch.Muon_genPartFlav[idx])
+                elif tp == 'Electron':
+                    flag=ord(ch.Electron_genPartFlav[idx])
+                else:
+                    flag=ord(ch.LowPtElectron_genPartFlav[idx])
+                promptFlag = flag in [ 1 , 15 ]
+                                                                        
             if region == 'SR':
                 if not getsel.SearchRegion(): continue
                 if getsel.SR1():
-                    idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                    if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    shapeIdx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                    lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                    if shapeIdx != -1 and lptIdx!=-1:
+                        histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if not isData:
+                            for se in SysNames:
+                                if 'XSecUp' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                elif 'XSecDown' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                elif se=='XSec':
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                elif 'Correlated' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    if promptFlag:
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                else:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
                 if getsel.SR2():
-                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                    if not idx == 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
+                    lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                    if shapeIdx > 7 and lptIdx!=-1:
+                        histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if not isData:
+                            for se in SysNames:
+                                if 'XSecUp' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                elif 'XSecDown' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                elif se=='XSec':
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                elif 'Correlated' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    if promptFlag:
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                else:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
                 if getsel.SR3():
-                    idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                    if not idx == 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-            if region == 'CR':
-                if not getsel.ControlRegion(): continue
-                if getsel.CR1():
-                    idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
-                    if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.CR2():
-                    idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
-                    if not idx == 7: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.CR3():
-                    idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
-                    if not idx == 15: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
+                    shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
+                    lptIdx = findLepPtBin(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                    if shapeIdx > 15 and lptIdx!=-1:
+                        histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                        if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                        else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                        if not isData:
+                            for se in SysNames:
+                                if 'XSecUp' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                elif 'XSecDown' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                elif se=='XSec':
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                elif 'Correlated' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    if promptFlag:
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                else:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
             if region == 'SR+CR':
-                if getsel.SearchRegion():
-                    if getsel.SR1():
-                        idx = findSR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
-                        if not idx == -1: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.SR2():
-                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
-                        if not idx == 35: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.SR3():
-                        idx = findSR2BinIndex(getsel.calCT(2), getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 72
-                        if not idx == 71: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                if getsel.ControlRegion():
-                    if getsel.CR1():
-                        idx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 108 # after 108 SR bins or after bin index 107
-                        if not idx == 107: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.CR2():
-                        idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) +  108 + 8
-                        if not idx == 115: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
-                    if getsel.CR3():
-                        idx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 116 + 8
-                        if not idx == 123: histos['h_reg'].Fill(idx, lumiscale * MCcorr)
- 
+                if not getsel.SCRegion(): continue
+                if getsel.SCR1():
+                    shapeIdx = findCR1BinIndex(getsel.calCT(1), getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg'])
+                    lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                    if shapeIdx != -1 and lptIdx!=-1:
+                        histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if not isData:
+                            for se in SysNames:
+                                if 'XSecUp' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                elif 'XSecDown' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                elif se=='XSec':
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                elif 'Correlated' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    if promptFlag:
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                else:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                if getsel.SCR2():
+                    shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 8
+                    lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                    if shapeIdx > 7 and lptIdx!=-1:
+                        histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr)
+                        if not isData:
+                            for se in SysNames:
+                                if 'XSecUp' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1+getSigXsecUnc(sample)))
+                                elif 'XSecDown' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * (1-getSigXsecUnc(sample)))
+                                elif se=='XSec':
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * 1)
+                                elif 'Correlated' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    if promptFlag:
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                else:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                if getsel.SCR3():
+                    shapeIdx = findCR2BinIndex(getsel.calCT(2), getsel.getLepMT()) + 16
+                    lptIdx = findLepPtBinSC(getsel.getSortedLepVar()[0]['pt'], getsel.getLepMT())
+                    if shapeIdx > 15 and lptIdx!=-1:
+                        histos['Bin'+str(shapeIdx)].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                        if promptFlag: histos['Bin'+str(shapeIdx)+'_prompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                        else: histos['Bin'+str(shapeIdx)+'_nonprompt'].Fill(lptIdx-1, lumiscale * MCcorr * softbSF)
+                        if not isData:
+                            for se in SysNames:
+                                if 'XSecUp' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1+getSigXsecUnc(sample)))
+                                elif 'XSecDown' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample))) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * (1-getSigXsecUnc(sample)))
+                                elif se=='XSec':
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * MCcorr * softbSF * 1)
+                                elif 'Correlated' in se:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    if promptFlag:
+                                        histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                    else:
+                                        histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if hasattr(ch, 'reweigt'+se) else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweightBTag_SF'))
+                                else:
+                                    histos['Bin'+str(shapeIdx)+'_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
+                                    histos['Bin'+str(shapeIdx)+'_prompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se)) if promptFlag else histos['Bin'+str(shapeIdx)+'_nonprompt_'+se].Fill(lptIdx-1, lumiscale * getattr(ch, 'reweight'+se))
         hfile.Write()
