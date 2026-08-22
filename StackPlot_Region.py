@@ -19,12 +19,12 @@ def get_parser():
     nargs='+',                              # one or more parameters to this switch
     type=str,                               # /parameters/ are ints
     dest='alist',                           # store in 'list'.
-        default=['VV', 'TTV', 'ZJetsToNuNu', 'QCD', 'DYJetsToLL', 'ST', 'TTbar', 'WJetsToLNu'],     # last sample should be data (when data is included) as to be consistent with StackHists funtion.
+        default=['Fake', 'OtherPrompt', 'ttbar', 'WJets', 'MET_Data'],     # last sample should be data (when data is included) as to be consistent with StackHists funtion. All samples: ['VV', 'TTV', 'ZJetsToNuNu', 'QCD', 'DYJetsToLL', 'ST', 'TTbar', 'WJetsToLNu']
     )
     argParser.add_argument('--fname',            action='store',                    type=str,            default='CountDCHist_',          help="root file name prefix?" )
     argParser.add_argument('--reg',            action='store',                    type=str,            default='SR+CR',          help="Which region?" )
-    argParser.add_argument('--cut',            action='store',                    type=str,            default='RegHist',          help="Which selection?" )
-    argParser.add_argument('--filedir',            action='store',                    type=str,            default='PromptDCFiles/2018/CCDC',          help="Which directory input files are located?" )
+    argParser.add_argument('--cut',            action='store',                    type=str,            default='MoneyPlot',          help="Which selection?" )
+    argParser.add_argument('--filedir',            action='store',                    type=str,            default='PromptDCFiles/2017/CCDC',          help="Which directory input files are located?" )
 
     return argParser
 
@@ -48,8 +48,9 @@ for sl in samplelists:
         doplots = False        
         print 'Root files for', sl, 'sample does not exist. Please run python RegionPlot.py --sample', sl
 
+ROOT.gROOT.SetBatch(True)
 if doplots:
-    #StackHists(files, samplelists, 'h_reg', plotDir, cut)# use this one when data is included
-    StackHistsNoData(files, samplelists, 'h_rate', plotDir, cut)
-    StackHistsNoData(files, samplelists, 'h_rate_prompt', plotDir, cut)
-    StackHistsNoData(files, samplelists, 'h_rate_nonprompt', plotDir, cut)
+    StackHists(files, samplelists, 'h_rate', plotDir, cut)# use this one when data is included
+    #StackHistsNoData(files, samplelists, 'h_rate', plotDir, cut)
+    #StackHistsNoData(files, samplelists, 'h_rate_prompt', plotDir, cut)
+    #StackHistsNoData(files, samplelists, 'h_rate_nonprompt', plotDir, cut)

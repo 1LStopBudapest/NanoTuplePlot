@@ -20,7 +20,7 @@ def get_parser():
     import argparse
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',           action='store',                     type=str,            default='TTSingleLep_pow',                                help="Which sample?" )
-    argParser.add_argument('--year',             action='store',                     type=str,            default='2018',                                             help="Which year?" )
+    argParser.add_argument('--year',             action='store',                     type=str,            default='2016PreVFP',                                             help="Which year?" )
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
@@ -68,7 +68,7 @@ if 'T2tt' in samples:
     gfiltr = GenFilterEff(year)
     gfltreff = gfiltr.getEff(ms,ml) if gfiltr.getEff(ms,ml) else 0.48
     print 'Gen filter eff: ',gfltreff
-    hfile = ROOT.TFile( 'PromptBKVal1JEC_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    hfile = ROOT.TFile( 'PromptBKVal1JEC_'+region+'_'+year+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
     histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
     histos['h_JECUp'] = HistInfo(hname = 'h_JECUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
@@ -99,7 +99,6 @@ if 'T2tt' in samples:
             elif tp == 'JERUp': h = histos['h_JERUp']
             elif tp == 'JERDown': h = histos['h_JERDown']
             else: h = histos['h_reg']
-                            
             if not getsel.PreSelection(tp): continue
             if region == 'SR+CR':
                 if getsel.Val1SearchRegion(tp):
@@ -142,20 +141,40 @@ else:
         for s in samplelist[samples]:
             sample = list(samplelist.keys())[list(samplelist.values()).index(s)]
             print 'running over: ', sample
-            hfile = ROOT.TFile( 'PromptBKVal1JEC_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+            hfile = ROOT.TFile( 'PromptBKVal1JEC_'+region+'_'+year+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
 	    histos = {}
             histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_JECUp'] = HistInfo(hname = 'h_JECUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_JECDown'] = HistInfo(hname = 'h_JECDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_JERUp'] = HistInfo(hname = 'h_JERUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             histos['h_JERDown'] = HistInfo(hname = 'h_JERDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_reg_prompt'] = HistInfo(hname = 'h_reg_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECUp_prompt'] = HistInfo(hname = 'h_JECUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECDown_prompt'] = HistInfo(hname = 'h_JECDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERUp_prompt'] = HistInfo(hname = 'h_JERUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERDown_prompt'] = HistInfo(hname = 'h_JERDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_reg_nonprompt'] = HistInfo(hname = 'h_reg_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECUp_nonprompt'] = HistInfo(hname = 'h_JECUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JECDown_nonprompt'] = HistInfo(hname = 'h_JECDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERUp_nonprompt'] = HistInfo(hname = 'h_JERUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+            histos['h_JERDown_nonprompt'] = HistInfo(hname = 'h_JERDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
             for b in range(bins):
                 histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JECUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JECDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JERUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
                 histos['h_JERDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
-                                                    
+                histos['h_reg_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_reg_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JECDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                histos['h_JERDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+                                                                    
 	    ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
             print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
 	    n_entries = ch.GetEntries()
@@ -173,40 +192,77 @@ else:
                     MCcorr = MCWeight(ch, year, sample).getTotalWeight()
                 getsel = TreeVarSel(ch, isData, year)
                 for tp in ['Nom', 'JECUp', 'JECDown', 'JERUp', 'JERDown']:
-                    if tp == 'JECUp': h = histos['h_JECUp']
-                    elif tp == 'JECDown': h = histos['h_JECDown']
-                    elif tp == 'JERUp': h = histos['h_JERUp']
-                    elif tp == 'JERDown': h = histos['h_JERDown']
-                    else: h = histos['h_reg']
-                    
+                    if tp == 'JECUp':
+                        h1 = histos['h_JECUp']
+                        h2 = histos['h_JECUp_prompt']
+                        h3 = histos['h_JECUp_nonprompt']
+                    elif tp == 'JECDown':
+                        h1 = histos['h_JECDown']
+                        h2 = histos['h_JECDown_prompt']
+                        h3 = histos['h_JECDown_nonprompt']
+                    elif tp == 'JERUp':
+                        h1 = histos['h_JERUp']
+                        h2 = histos['h_JERUp_prompt']
+                        h3 = histos['h_JERUp_nonprompt']
+                    elif tp == 'JERDown':
+                        h1 = histos['h_JERDown']
+                        h2 = histos['h_JERDown_prompt']
+                        h3 = histos['h_JERDown_nonprompt']
+                    else:
+                        h1 = histos['h_reg']
+                        h2 = histos['h_reg_prompt']
+                        h3 = histos['h_reg_nonprompt']        
                     if not getsel.PreSelection(tp): continue
+                    idx = getsel.getSortedLepVar()[0]['idx']
+                    tp = getsel.getSortedLepVar()[0]['type']
+                    promptFlag = True if isData else False
+                    if not isData:
+                        if tp == 'mu':
+                            flag=ord(ch.Muon_genPartFlav[idx])
+                        elif tp == 'Electron':
+                            flag=ord(ch.Electron_genPartFlav[idx])
+                        else:
+                            flag=ord(ch.LowPtElectron_genPartFlav[idx])
+                        promptFlag = flag in [ 1 , 15 ]
                     if region == 'SR+CR':
                         if getsel.Val1SearchRegion(tp):
                             if getsel.Val1SR1(tp):
                                 idx = findSR1BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                                 if not idx == -1:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.Val1SR2(tp):
                                 idx = findSR2BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 18
                                 if not idx <= 17:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.Val1SR3(tp):
                                 idx = findSR2BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                                 if not idx <= 35:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.Val1ControlRegion(tp):
                             if getsel.Val1CR1(tp):
                                 idx = findCR1BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 54 # after 54 SR bins or after bin index 53 
                                 if not idx <= 53:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.Val1CR2(tp):
                                 idx = findCR2BinIndexVal1(getsel.getLepMT()) +  54 + 4
                                 if not idx <= 57:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                             if getsel.Val1CR3(tp):
                                 idx = findCR2BinIndexVal1(getsel.getLepMT()) + 58 + 4
                                 if not idx <= 61:
-                                    h.Fill(idx, lumiscale * MCcorr)
+                                    h1.Fill(idx, lumiscale * MCcorr)
+                                    if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                    else: h3.Fill(idx, lumiscale * MCcorr)
                         
             hfile.Write()
     else:
@@ -215,19 +271,39 @@ else:
             if samplelist[samples] in l: histext = list(samplelist.keys())[list(samplelist.values()).index(l)]
         sample = samples
         print 'running over: ', sample
-        hfile = ROOT.TFile( 'PromptBKVal1JEC_'+region+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+        hfile = ROOT.TFile( 'PromptBKVal1JEC_'+region+'_'+year+'_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
         histos = {}
         histos['h_reg'] = HistInfo(hname = 'h_reg', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_JECUp'] = HistInfo(hname = 'h_JECUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_JECDown'] = HistInfo(hname = 'h_JECDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_JERUp'] = HistInfo(hname = 'h_JERUp', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         histos['h_JERDown'] = HistInfo(hname = 'h_JERDown', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_reg_prompt'] = HistInfo(hname = 'h_reg_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECUp_prompt'] = HistInfo(hname = 'h_JECUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECDown_prompt'] = HistInfo(hname = 'h_JECDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERUp_prompt'] = HistInfo(hname = 'h_JERUp_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERDown_prompt'] = HistInfo(hname = 'h_JERDown_prompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_reg_nonprompt'] = HistInfo(hname = 'h_reg_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECUp_nonprompt'] = HistInfo(hname = 'h_JECUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JECDown_nonprompt'] = HistInfo(hname = 'h_JECDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERUp_nonprompt'] = HistInfo(hname = 'h_JERUp_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
+        histos['h_JERDown_nonprompt'] = HistInfo(hname = 'h_JERDown_nonprompt', sample = histext, binning = [bins, 0, bins], histclass = ROOT.TH1F).make_hist()
         for b in range(bins):
             histos['h_reg'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JECUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JECDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JERUp'].GetXaxis().SetBinLabel(b+1, binLabel[b])
             histos['h_JERDown'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_reg_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERUp_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERDown_prompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_reg_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JECDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERUp_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
+            histos['h_JERDown_nonprompt'].GetXaxis().SetBinLabel(b+1, binLabel[b])
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
         n_entries = ch.GetEntries()
@@ -245,39 +321,77 @@ else:
                 MCcorr = MCWeight(ch, year, sample).getTotalWeight()
             getsel = TreeVarSel(ch, isData, year)
             for tp in ['Nom', 'JECUp', 'JECDown', 'JERUp', 'JERDown']:
-                if tp == 'JECUp': h = histos['h_JECUp']
-                elif tp == 'JECDown': h = histos['h_JECDown']
-                elif tp == 'JERUp': h = histos['h_JERUp']
-                elif tp == 'JERDown': h = histos['h_JERDown']
-                else: h = histos['h_reg']
-                            
+                if tp == 'JECUp':
+                    h1 = histos['h_JECUp']
+                    h2 = histos['h_JECUp_prompt']
+                    h3 = histos['h_JECUp_nonprompt']
+                elif tp == 'JECDown':
+                    h1 = histos['h_JECDown']
+                    h2 = histos['h_JECDown_prompt']
+                    h3 = histos['h_JECDown_nonprompt']
+                elif tp == 'JERUp':
+                    h1 = histos['h_JERUp']
+                    h2 = histos['h_JERUp_prompt']
+                    h3 = histos['h_JERUp_nonprompt']
+                elif tp == 'JERDown':
+                    h1 = histos['h_JERDown']
+                    h2 = histos['h_JERDown_prompt']
+                    h3 = histos['h_JERDown_nonprompt']
+                else:
+                    h1 = histos['h_reg']
+                    h2 = histos['h_reg_prompt']
+                    h3 = histos['h_reg_nonprompt']        
+                                            
                 if not getsel.PreSelection(tp): continue
+                idx = getsel.getSortedLepVar()[0]['idx']
+                tp = getsel.getSortedLepVar()[0]['type']
+                promptFlag = True if isData else False
+                if not isData:
+                    if tp == 'mu':
+                        flag=ord(ch.Muon_genPartFlav[idx])
+                    elif tp == 'Electron':
+                        flag=ord(ch.Electron_genPartFlav[idx])
+                    else:
+                        flag=ord(ch.LowPtElectron_genPartFlav[idx])
+                    promptFlag = flag in [ 1 , 15 ]
                 if region == 'SR+CR':
                     if getsel.Val1SearchRegion(tp):
                         if getsel.Val1SR1(tp):
                             idx = findSR1BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt'], getsel.getSortedLepVar()[0]['charg'])
                             if not idx == -1:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.Val1SR2(tp):
                             idx = findSR2BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 18
                             if not idx <= 17:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.Val1SR3(tp):
                             idx = findSR2BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['pt']) + 36
                             if not idx <= 35:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                     if getsel.Val1ControlRegion(tp):
                         if getsel.Val1CR1(tp):
                             idx = findCR1BinIndexVal1(getsel.getLepMT(), getsel.getSortedLepVar()[0]['charg']) + 54 # after 54 SR bins or after bin index 53
                             if not idx <= 53:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.Val1CR2(tp):
                             idx = findCR2BinIndexVal1(getsel.getLepMT()) +  54 + 4
                             if not idx <= 57:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                         if getsel.Val1CR3(tp):
                             idx = findCR2BinIndexVal1(getsel.getLepMT()) + 58 + 4
                             if not idx <= 61:
-                                h.Fill(idx, lumiscale * MCcorr)
+                                h1.Fill(idx, lumiscale * MCcorr)
+                                if promptFlag: h2.Fill(idx, lumiscale * MCcorr)
+                                else: h3.Fill(idx, lumiscale * MCcorr)
                              
         hfile.Write()

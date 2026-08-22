@@ -16,7 +16,7 @@ def get_parser():
     argParser = argparse.ArgumentParser(description = "Argument parser")
     argParser.add_argument('--sample',             action='store',                    type=str,            default='Signal',                                      help="run over which sample, Signal or Other?" )
     argParser.add_argument('--region',             action='store',                    type=str,            default='SR+CR',                                             help="Which region?" )
-    argParser.add_argument('--val',             action='store',                    type=str,            default='Val2',                                             help="Which region?" )
+    argParser.add_argument('--val',             action='store',                    type=str,            default='Val1',                                             help="Which region?" )
     return argParser
 
 options = get_parser().parse_args()
@@ -27,7 +27,7 @@ val = options.val
 
 SigScan =  True if 'Signal' in sample else False
 script = 'PromptBKVal1' if val=='Val1' else 'PromptBKVal2'
-year = '2018'
+year = '2016PreVFP'
 nevts = -1
 fileperjobMC = 2
 fileperjobData = 1
@@ -62,8 +62,8 @@ if SigScan:
     bashline.append('parallel --jobs %i < parallelJobsubmit.txt\n'%TotJobs)
     for sig in signals:
         sname = 'T2tt_'+sig
-        bashline.append('mv %s_%s_%s*.root %s_%s_%s.root\n'%(script, reg, sname, script, reg, sname))
-    bashline.append('mv %s_%s*.root %s\n'%(script, reg, Rootfilesdirpath))
+        bashline.append('mv %s_%s_%s_%s*.root %s_%s_%s_%s.root\n'%(script, reg, year, sname, script, reg, year, sname))
+    bashline.append('mv %s_%s_%s*.root %s\n'%(script, reg, year, Rootfilesdirpath))
 
 else:
     print 'Running over all the bkgs as well as data (MET)'
@@ -91,17 +91,17 @@ else:
     for sL in samplesRun:
         if 'Data' in sL:
             sLi = sL.replace('Data','')+'Run'
-            bashline.append('hadd %s_%s_%s.root %s_%s_%s*.root\n'%(script, reg, sL, script, reg, sLi))
+            bashline.append('hadd %s_%s_%s_%s.root %s_%s_%s_%s*.root\n'%(script, reg, year, sL, script, reg, year, sLi))
         elif isinstance(samplelist[sL][0], types.ListType):
-            sLi = 'hadd '+script+'_'+reg+'_'+sL+'.root '+str("".join(script+'_'+reg+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root ' for s in samplelist[sL]))
+            sLi = 'hadd '+script+'_'+reg+'_'+year+'_'+sL+'.root '+str("".join(script+'_'+reg+'_'+year+'_'+list(samplelist.keys())[list(samplelist.values()).index(s)]+'*.root ' for s in samplelist[sL]))
             bashline.append('%s\n'%sLi)
         else:
-            bashline.append('hadd %s_%s_%s.root %s_%s_%s_*.root\n'%(script, reg, sL, script, reg, sL))
-        bashline.append('mv %s_%s_%s.root %s\n'%(script, reg, sL, Rootfilesdirpath))
+            bashline.append('hadd %s_%s_%s_%s.root %s_%s_%s_%s_*.root\n'%(script, reg, year, sL, script, reg, year, sL))
+        bashline.append('mv %s_%s_%s_%s.root %s\n'%(script, reg, year, sL, Rootfilesdirpath))
                 
 fsh = open("PromptBKValHist.sh", "w")
 fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 PromptBKValHist.sh')
 os.system('./PromptBKValHist.sh')
-os.system('rm *.root parallelJobsubmit.txt PromptBKValHist.sh')
+#os.system('rm *.root parallelJobsubmit.txt PromptBKValHist.sh')

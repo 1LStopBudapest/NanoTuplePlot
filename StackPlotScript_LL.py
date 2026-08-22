@@ -18,6 +18,8 @@ fileperjobMC = 2
 fileperjobData = 1
 TotJobs = 4
 year = '2016PostVFP'
+rdxy = 'Dxy3'
+rdz = 'Dz3'
 
 txtline = []
 
@@ -44,18 +46,18 @@ for sL in samplesRun:
             fileperjob = fileperjobData if ('Run' in sample or 'Data' in sample) else fileperjobMC
             tfiles = len(SampleChain.getfilelist(samplelist[sample][0]))
             for i in range(0, tfiles, fileperjobMC):
-                txtline.append("python StackHistMaker_LL.py --sample %s --startfile %i --nfiles %i\n"%(sample, i, fileperjobMC))
+                txtline.append("python StackHistMaker_LL.py --sample %s --startfile %i --nfiles %i --Rdxy %s --Rdz %s\n"%(sample, i, fileperjobMC, rdxy, rdz))
     else:
         tfiles = len(SampleChain.getfilelist(samplelist[sL][0]))
         fileperjob = fileperjobData if ('Run' in sL or 'Data' in sL) else fileperjobMC
         for i in range(0, tfiles, fileperjobMC):
-            txtline.append("python StackHistMaker_LL.py --sample %s --startfile %i --nfiles %i\n"%(sL, i, fileperjobMC))
+            txtline.append("python StackHistMaker_LL.py --sample %s --startfile %i --nfiles %i --Rdxy %s --Rdz %s\n"%(sL, i, fileperjobMC, rdxy, rdz))
                 
 fout = open("parallelJobsubmit.txt", "w")
 fout.write(''.join(txtline))
 fout.close()
 
-Rootfilesdirpath = os.path.join(plotDir,"StackFiles/Displaced/Dxy2")
+Rootfilesdirpath = os.path.join(plotDir,"StackFiles/Displaced", rdxy, rdz)
 if not os.path.exists(Rootfilesdirpath):
     os.makedirs(Rootfilesdirpath)
 
@@ -81,5 +83,5 @@ fsh.write(''.join(bashline))
 fsh.close()
 os.system('chmod 744 parallelStackHist.sh')
 os.system('./parallelStackHist.sh')
-#os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
+os.system('rm *.root parallelJobsubmit.txt parallelStackHist.sh')
 

@@ -25,7 +25,8 @@ def get_parser():
     argParser.add_argument('--startfile',        action='store',                     type=int,            default=0,                                                help="start from which root file like 0th or 10th etc?" )
     argParser.add_argument('--nfiles',           action='store',                     type=int,            default=-1,                                               help="No of files to run. -1 means all files" )
     argParser.add_argument('--nevents',           action='store',                    type=int,            default=-1,                                               help="No of events to run. -1 means all events" )
-    
+    argParser.add_argument('--Rdxy',             action='store',                     type=str,            default='Dxy1',                                             help="Which year?" )
+    argParser.add_argument('--Rdz',             action='store',                     type=str,            default='Dz1',                                             help="Which year?" )
 
     return argParser
 
@@ -33,7 +34,8 @@ options = get_parser().parse_args()
 
 samples  = options.sample
 year = options.year
-
+Rdxy = options.Rdxy
+Rdz = options.Rdz
 
 DataLumi=1.0
 
@@ -53,8 +55,26 @@ else:
     samplelist = samples_2018
     DataLumi = SampleChain.luminosity_2018
 
+
+if Rdxy == 'Dxy1':
+    dxybinning = [10, 0, 0.02]
+elif Rdxy == 'Dxy2':
+    dxybinning = [50, 0.02, 1.0]
+else:
+    dxybinning = [40, 1.0, 20.0]
+
+if Rdz == 'Dz1':
+    dzbinning = [10, 0, 0.1]
+elif Rdz == 'Dz2':
+    dzbinning = [50, 0.1, 20.0]
+else:
+    dzbinning = [40, 20.0, 100.0]
+
+
+
+
 histext = ''
-vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet', 'MupT', 'Mudxy', 'Mudz', 'epT', 'edxy', 'edz', 'AllLeppT', 'AllLepdxy', 'AllLepdxySig', 'AllLepdz', 'Nlep', '2ndLeppT', '2ndLepeta', '2ndLepdxy', '2ndLepdz']
+vList = ['MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'LepdzSig', 'Njet', 'Nbjet', 'MupT', 'Mudxy', 'MudxySig', 'Mudz', 'MudzSig', 'epT', 'edxy', 'edxySig', 'edz', 'edzSig', 'AllLeppT', 'AllLepdxy', 'AllLepdxySig', 'AllLepdz', 'Nlep', '2ndLeppT', '2ndLepeta', '2ndLepdxy', '2ndLepdz', 'METSig', 'NPV', 'NGdPV', 'PVscore', 'PVchi']
 
 if isinstance(samplelist[samples][0], types.ListType):
     histext = samples
@@ -70,26 +90,36 @@ if isinstance(samplelist[samples][0], types.ListType):
         histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
         histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=dxybinning, histclass = ROOT.TH1F).make_hist()
         histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
-        histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=dzbinning, histclass = ROOT.TH1F).make_hist()
+        histos['LepdzSig'] = HistInfo(hname = 'LepdzSig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
         histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
         histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['Mudxy'] = HistInfo(hname = 'Mudxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
-        histos['Mudz'] = HistInfo(hname = 'Mudz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['Mudxy'] = HistInfo(hname = 'Mudxy', sample = histext, binning=dxybinning, histclass = ROOT.TH1F).make_hist()
+        histos['MudxySig'] = HistInfo(hname = 'MudxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+        histos['Mudz'] = HistInfo(hname = 'Mudz', sample = histext, binning=dzbinning, histclass = ROOT.TH1F).make_hist()
+        histos['MudzSig'] = HistInfo(hname = 'MudzSig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
         histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['edxy'] = HistInfo(hname = 'edxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
-        histos['edz'] = HistInfo(hname = 'edz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['edxy'] = HistInfo(hname = 'edxy', sample = histext, binning=dxybinning, histclass = ROOT.TH1F).make_hist()
+        histos['edxySig'] = HistInfo(hname = 'edxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+        histos['edz'] = HistInfo(hname = 'edz', sample = histext, binning=dzbinning, histclass = ROOT.TH1F).make_hist()
+        histos['edzSig'] = HistInfo(hname = 'edzSig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
         histos['AllLeppT'] = HistInfo(hname = 'AllLeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['AllLepdxy'] = HistInfo(hname = 'AllLepdxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['AllLepdxy'] = HistInfo(hname = 'AllLepdxy', sample = histext, binning=[200,0,20], histclass = ROOT.TH1F).make_hist()
         histos['AllLepdxySig'] = HistInfo(hname = 'AllLepdxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
-        histos['AllLepdz'] = HistInfo(hname = 'AllLepdz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['AllLepdz'] = HistInfo(hname = 'AllLepdz', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
         histos['2ndLeppT'] = HistInfo(hname = '2ndLeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
         histos['2ndLepeta'] = HistInfo(hname = '2ndLepeta', sample = histext, binning=[0,1.44,1.56,2.5], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-        histos['2ndLepdxy'] = HistInfo(hname = '2ndLepdxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
-        histos['2ndLepdz'] = HistInfo(hname = '2ndLepdz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+        histos['2ndLepdxy'] = HistInfo(hname = '2ndLepdxy', sample = histext, binning=[200,0,20], histclass = ROOT.TH1F).make_hist()
+        histos['2ndLepdz'] = HistInfo(hname = '2ndLepdz', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
         histos['Nlep'] = HistInfo(hname = 'Nlep', sample = histext, binning=[5,0,5], histclass = ROOT.TH1F).make_hist()
+        histos['METSig'] = HistInfo(hname = 'METSig', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
+        histos['NPV'] = HistInfo(hname = 'NPV', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+        histos['NGdPV'] = HistInfo(hname = 'NGdPV', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+        histos['PVscore'] = HistInfo(hname = 'PVscore', sample = histext, binning=[100,100,10000], histclass = ROOT.TH1F).make_hist()
+        histos['PVchi'] = HistInfo(hname = 'PVchi', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
         
         ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
         print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
@@ -111,26 +141,37 @@ else:
     histos['CT1'] = HistInfo(hname = 'CT1', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['CT2'] = HistInfo(hname = 'CT2', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
     histos['LeppT'] = HistInfo(hname = 'LeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-    histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['Lepdxy'] = HistInfo(hname = 'Lepdxy', sample = histext, binning=dxybinning, histclass = ROOT.TH1F).make_hist()
     histos['LepdxySig'] = HistInfo(hname = 'LepdxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
-    histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['Lepdz'] = HistInfo(hname = 'Lepdz', sample = histext, binning=dzbinning, histclass = ROOT.TH1F).make_hist()
+    histos['LepdzSig'] = HistInfo(hname = 'LepdzSig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
     histos['Njet'] = HistInfo(hname = 'Njet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     histos['Nbjet'] = HistInfo(hname = 'Nbjet', sample = histext, binning=[10,0,10], histclass = ROOT.TH1F).make_hist()
     histos['MupT'] = HistInfo(hname = 'MupT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-    histos['Mudxy'] = HistInfo(hname = 'Mudxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
-    histos['Mudz'] = HistInfo(hname = 'Mudz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['Mudxy'] = HistInfo(hname = 'Mudxy', sample = histext, binning=dxybinning, histclass = ROOT.TH1F).make_hist()
+    histos['MudxySig'] = HistInfo(hname = 'MudxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+    histos['Mudz'] = HistInfo(hname = 'Mudz', sample = histext, binning=dzbinning, histclass = ROOT.TH1F).make_hist()
+    histos['MudzSig'] = HistInfo(hname = 'MudzSig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
     histos['epT'] = HistInfo(hname = 'epT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-    histos['edxy'] = HistInfo(hname = 'edxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
-    histos['edz'] = HistInfo(hname = 'edz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['edxy'] = HistInfo(hname = 'edxy', sample = histext, binning=dxybinning, histclass = ROOT.TH1F).make_hist()
+    histos['edxySig'] = HistInfo(hname = 'edxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+    histos['edz'] = HistInfo(hname = 'edz', sample = histext, binning=dzbinning, histclass = ROOT.TH1F).make_hist()
+    histos['edzSig'] = HistInfo(hname = 'edzSig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
     histos['AllLeppT'] = HistInfo(hname = 'AllLeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-    histos['AllLepdxy'] = HistInfo(hname = 'AllLepdxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['AllLepdxy'] = HistInfo(hname = 'AllLepdxy', sample = histext, binning=[200,0,20], histclass = ROOT.TH1F).make_hist()
     histos['AllLepdxySig'] = HistInfo(hname = 'AllLepdxySig', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
-    histos['AllLepdz'] = HistInfo(hname = 'AllLepdz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['AllLepdz'] = HistInfo(hname = 'AllLepdz', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
     histos['2ndLeppT'] = HistInfo(hname = '2ndLeppT', sample = histext, binning=[3,5,12,20,30,100], histclass = ROOT.TH1F, binopt = 'var').make_hist()
     histos['2ndLepeta'] = HistInfo(hname = '2ndLepeta', sample = histext, binning=[0,1.44,1.56,2.5], histclass = ROOT.TH1F, binopt = 'var').make_hist()
-    histos['2ndLepdxy'] = HistInfo(hname = '2ndLepdxy', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
-    histos['2ndLepdz'] = HistInfo(hname = '2ndLepdz', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    histos['2ndLepdxy'] = HistInfo(hname = '2ndLepdxy', sample = histext, binning=[200,0,20], histclass = ROOT.TH1F).make_hist()
+    histos['2ndLepdz'] = HistInfo(hname = '2ndLepdz', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
     histos['Nlep'] = HistInfo(hname = 'Nlep', sample = histext, binning=[5,0,5], histclass = ROOT.TH1F).make_hist()
+    histos['METSig'] = HistInfo(hname = 'METSig', sample = histext, binning=[100,0,1000], histclass = ROOT.TH1F).make_hist()
+    histos['NPV'] = HistInfo(hname = 'NPV', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+    histos['NGdPV'] = HistInfo(hname = 'NGdPV', sample = histext, binning=[100,0,100], histclass = ROOT.TH1F).make_hist()
+    histos['PVscore'] = HistInfo(hname = 'PVscore', sample = histext, binning=[100,100,10000], histclass = ROOT.TH1F).make_hist()
+    histos['PVchi'] = HistInfo(hname = 'PVchi', sample = histext, binning=[100,0,10], histclass = ROOT.TH1F).make_hist()
+    
     ch = SampleChain(sample, options.startfile, options.nfiles, year).getchain()
     print 'Total events of selected files of the', sample, 'sample: ', ch.GetEntries()
     FillHistos(histos, ch, options.year, options.nevents, sample, vList, DataLumi, False).fill()
