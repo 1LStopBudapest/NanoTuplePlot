@@ -2,7 +2,7 @@ import os, sys
 import ROOT
 import types
 
-from FillHistos_test_lepton_truth import FillHistosBothBR
+from FillHistos_test_lepton_truth_TM_comparison import FillHistosBothBR
 
 
 sys.path.append('../../')
@@ -61,7 +61,7 @@ else:
 #vList = ['LeppT', 'MupT', 'epT']
 #vList = ['MupT', 'epT', 'MET', 'ISRJetPt', 'HT', 'LepMT', 'CT1', 'CT2', 'LeppT', 'Lepdxy', 'LepdxySig', 'Lepdz', 'Njet', 'Nbjet']
 #vList = ['stopCtau', 'MET', 'MCWeight', 'gfltreff', 'lumiWeight', 'w_BRctau']
-vList = ['cutFlow','nLeptonMeasured','truthMatchedLepton','nLeptonGen','lepOrigin','2Dpt']
+vList = ['cutFlow','nLeptonMeasured','truthMatchedLepton','nLeptonGen','lepOrigin','lepOriginWhenFlag','bestDeltaRWhenFlag','TMcomparison','genPartFlavValue','2Dpt']
 cutflow = ['nocut', 'lepton']
 
 
@@ -79,7 +79,8 @@ if 'T2tt' or 'Sig_Splitted' in samples:
     sample = samples
     histext = samples
     print 'running over: ', sample
-    hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
+    #the TMcomp prefix keeps these files apart from the ones of the main study
+    hfile = ROOT.TFile(str(Rootfilesdirpath)+"/"+'1DHist_TMcomp_'+sample+'_%i_%i'%(options.startfile+1, options.startfile + options.nfiles)+'.root', 'RECREATE')
     histos = {}
 
     histos['cutFlow'] = HistInfo(hname = 'cutFlow', sample = histext, binning=[11,0,11], histclass = ROOT.TH1F).make_hist()
@@ -87,6 +88,13 @@ if 'T2tt' or 'Sig_Splitted' in samples:
     histos['nLeptonMeasured'] = HistInfo(hname = 'nLeptonMeasured', sample = histext, binning=[11,0,11], histclass = ROOT.TH1F).make_hist()
     histos['truthMatchedLepton'] = HistInfo(hname = 'truthMatchedLepton', sample = histext, binning=[11,0,11], histclass = ROOT.TH1F).make_hist()
     histos['lepOrigin'] = HistInfo(hname = 'lepOrigin', sample = histext, binning=[11,0,11], histclass = ROOT.TH1F).make_hist()
+    #same codes as lepOrigin, plus 9 (gen lepton too far) and 10 (no gen lepton at all)
+    histos['lepOriginWhenFlag'] = HistInfo(hname = 'lepOriginWhenFlag', sample = histext, binning=[11,0,11], histclass = ROOT.TH1F).make_hist()
+    #best_deltaR of the bin 9 events only, to see if the 0.01 cut is too tight
+    histos['bestDeltaRWhenFlag'] = HistInfo(hname = 'bestDeltaRWhenFlag', sample = histext, binning=[100,0,0.4], histclass = ROOT.TH1F).make_hist()
+    histos['TMcomparison'] = HistInfo(hname = 'TMcomparison', sample = histext, binning=[11,0,11], histclass = ROOT.TH1F).make_hist()
+    #raw genPartFlav value, here bin 0 is meaningful: it means no gen match at all
+    histos['genPartFlavValue'] = HistInfo(hname = 'genPartFlavValue', sample = histext, binning=[25,0,25], histclass = ROOT.TH1F).make_hist()
 
     histos['2Dpt'] = HistInfo(hname = '2Dpt', sample = histext, binning=[[50,0,100],[50,0,100]], histclass = ROOT.TH2F).make_hist()
 

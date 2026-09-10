@@ -16,7 +16,24 @@ from Helper.TreeVarSel_LL import TreeVarSel
 sys.path.append('../')
 from VarHandler import VarHandler
 
-USE_GENPARTFLAV_MATCHING = True  # True: old genPartFlav-based truth matching, False: DeltaR-based truth matching
+# This is the comparison fork: both truth matching logics run on every event.
+# The default (truth_matched_lepton) is the DeltaR + origin one, the genPartFlav
+# one is computed alongside only to compare them, so there is no switch here.
+#
+# Categories of the TMcomparison histogram, 1 based so bin 0 stays empty
+TM_COMPARISON_CODES = {
+    'no_lepton': 1,   # no selected reco lepton
+    'neither':   2,   # reco lepton, matched by neither logic
+    'flag_only': 3,   # matched by the genPartFlav logic only
+    'both':      4,   # matched by both logics
+    'new_only':  5,   # matched by the default (DeltaR + origin) logic only
+}
+
+# Extra codes for the lepOriginWhenFlag histogram, on top of the ORIGIN_CODES
+# values below. The flag_only events do not always have an origin, and the two
+# ways of having none need different fixes, so they get one code each.
+DELTAR_TOO_FAR_CODE   = 9    # same flavour gen lepton found, but beyond DeltaR 0.01
+NO_GEN_CANDIDATE_CODE = 10   # no same flavour gen lepton in the list at all
 
 import csv
 def append_row_to_csv(filename, row_data):
@@ -403,7 +420,7 @@ class FillHistosBothBR():
                         tp       = reco['type']
                         reco_idx = reco['idx']
 
-                        # Read the old genPartFlav (used when USE_GENPARTFLAV_MATCHING is True)
+                        # Read the old genPartFlav, used by the comparison logic
                         if tp == 'mu':
                             old_flag = ord(tree03.Muon_genPartFlav[reco_idx]) if hasattr(tree03, 'Muon_genPartFlav') else -1
                         elif tp == 'Electron':
@@ -434,30 +451,54 @@ class FillHistosBothBR():
                         # Decision: is this lepton truth-matched to a generated lepton?
 
 
-                        if USE_GENPARTFLAV_MATCHING:
-                            truth_matched_lepton = old_flag in [1, 15]
-                            var03['truthMatchedLepton'] = 8 if truth_matched_lepton else 4
-                        elif matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
+                        # default logic: DeltaR match plus the origin classification
+                        if matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
                             var03['lepOrigin'] = ORIGIN_CODES[matched_gen_lep["origin"]]
                             is_signal = matched_gen_lep["origin"] in ('W_leptonic', 'W_leptonic_tau')
                             if is_signal:
                                 truth_matched_lepton = True
-                                # print("Leading lepton is truth-matched | DeltaR = " + str(round(best_deltaR, 4)) +
-                                #     " | gen pdgId = " + str(matched_gen_lep["pdgId"]) +
-                                #     " | gen pt = " + str(round(matched_gen_lep["pt"], 2)))
                                 var03['truthMatchedLepton'] = 8
                             else:
                                 truth_matched_lepton = False
-                                # print("Leading lepton NOT truth-matched | best DeltaR = " + str(round(best_deltaR, 4)))
                                 var03['truthMatchedLepton'] = 4
                         else:
                             truth_matched_lepton = False
-                            # print("Leading lepton NOT truth-matched | best DeltaR = " + str(round(best_deltaR, 4)))
                             var03['truthMatchedLepton'] = 4
+
+                        # old logic, computed only to compare against the default one
+                        truth_matched_flag = old_flag in [1, 15]
+
+                        # 2x2 of the two logics
+                        if truth_matched_lepton and truth_matched_flag:
+                            var03['TMcomparison'] = TM_COMPARISON_CODES['both']
+                        elif truth_matched_lepton:
+                            var03['TMcomparison'] = TM_COMPARISON_CODES['new_only']
+                        elif truth_matched_flag:
+                            var03['TMcomparison'] = TM_COMPARISON_CODES['flag_only']
+                        else:
+                            var03['TMcomparison'] = TM_COMPARISON_CODES['neither']
+
+                        # what the flag says about the leptons the default logic accepts
+                        if truth_matched_lepton:
+                            var03['genPartFlavValue'] = old_flag
+
+                        # where the leptons that only the flag catches come from
+                        if truth_matched_flag and not truth_matched_lepton:
+                            if matched_gen_lep is not None and best_deltaR < 0.01:
+                                var03['lepOriginWhenFlag'] = ORIGIN_CODES[matched_gen_lep["origin"]]
+                            else:
+                                if matched_gen_lep is not None:
+                                    #here best_deltaR is a real distance, only too big
+                                    var03['lepOriginWhenFlag'] = DELTAR_TOO_FAR_CODE
+                                    var03['bestDeltaRWhenFlag'] = best_deltaR
+                                else:
+                                    #the loop never assigned, best_deltaR is still 999
+                                    var03['lepOriginWhenFlag'] = NO_GEN_CANDIDATE_CODE
 
                     else:
                         # print("No selected lepton in this event")
                         var03['truthMatchedLepton'] = 1
+                        var03['TMcomparison'] = TM_COMPARISON_CODES['no_lepton']
                         
                         # n_signal_taus = 0
                         # for gen_lep in final_leptons:
@@ -634,7 +675,7 @@ class FillHistosBothBR():
                         tp       = reco['type']
                         reco_idx = reco['idx']
 
-                        # Read the old genPartFlav (used when USE_GENPARTFLAV_MATCHING is True)
+                        # Read the old genPartFlav, used by the comparison logic
                         if tp == 'mu':
                             old_flag = ord(tree10.Muon_genPartFlav[reco_idx]) if hasattr(tree10, 'Muon_genPartFlav') else -1
                         elif tp == 'Electron':
@@ -664,30 +705,54 @@ class FillHistosBothBR():
 
                         # Decision: is this lepton truth-matched to a generated lepton?
 
-                        if USE_GENPARTFLAV_MATCHING:
-                            truth_matched_lepton = old_flag in [1, 15]
-                            var10['truthMatchedLepton'] = 8 if truth_matched_lepton else 4
-                        elif matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
+                        # default logic: DeltaR match plus the origin classification
+                        if matched_gen_lep is not None and best_deltaR < 0.01:        # you can tune this threshold
                             var10['lepOrigin'] = ORIGIN_CODES[matched_gen_lep["origin"]]
                             is_signal = matched_gen_lep["origin"] in ('W_leptonic', 'W_leptonic_tau')
                             if is_signal:
                                 truth_matched_lepton = True
-                                # print("Leading lepton is truth-matched | DeltaR = " + str(round(best_deltaR, 4)) +
-                                #     " | gen pdgId = " + str(matched_gen_lep["pdgId"]) +
-                                #     " | gen pt = " + str(round(matched_gen_lep["pt"], 2)))
                                 var10['truthMatchedLepton'] = 8
                             else:
                                 truth_matched_lepton = False
-                                # print("Leading lepton NOT truth-matched | best DeltaR = " + str(round(best_deltaR, 4)))
                                 var10['truthMatchedLepton'] = 4
                         else:
                             truth_matched_lepton = False
-                            # print("Leading lepton NOT truth-matched | best DeltaR = " + str(round(best_deltaR, 4)))
                             var10['truthMatchedLepton'] = 4
+
+                        # old logic, computed only to compare against the default one
+                        truth_matched_flag = old_flag in [1, 15]
+
+                        # 2x2 of the two logics
+                        if truth_matched_lepton and truth_matched_flag:
+                            var10['TMcomparison'] = TM_COMPARISON_CODES['both']
+                        elif truth_matched_lepton:
+                            var10['TMcomparison'] = TM_COMPARISON_CODES['new_only']
+                        elif truth_matched_flag:
+                            var10['TMcomparison'] = TM_COMPARISON_CODES['flag_only']
+                        else:
+                            var10['TMcomparison'] = TM_COMPARISON_CODES['neither']
+
+                        # what the flag says about the leptons the default logic accepts
+                        if truth_matched_lepton:
+                            var10['genPartFlavValue'] = old_flag
+
+                        # where the leptons that only the flag catches come from
+                        if truth_matched_flag and not truth_matched_lepton:
+                            if matched_gen_lep is not None and best_deltaR < 0.01:
+                                var10['lepOriginWhenFlag'] = ORIGIN_CODES[matched_gen_lep["origin"]]
+                            else:
+                                if matched_gen_lep is not None:
+                                    #here best_deltaR is a real distance, only too big
+                                    var10['lepOriginWhenFlag'] = DELTAR_TOO_FAR_CODE
+                                    var10['bestDeltaRWhenFlag'] = best_deltaR
+                                else:
+                                    #the loop never assigned, best_deltaR is still 999
+                                    var10['lepOriginWhenFlag'] = NO_GEN_CANDIDATE_CODE
 
                     else:
                         # print("No selected lepton in this event")
-                        var10['truthMatchedLepton'] = 1                                       
+                        var10['truthMatchedLepton'] = 1
+                        var10['TMcomparison'] = TM_COMPARISON_CODES['no_lepton']
 
                     #########################################################
                     
@@ -801,9 +866,9 @@ class FillHistosBothBR():
             row_csv_combined = [self.ms, self.ml, self.branching_ratio, self.histos[key_].GetEntries(), n_rejected_10+n_rejected_03, self.histos[key_].Integral()]
         
 
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_10.csv", row_csv_10)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_03.csv", row_csv_03)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_combined.csv", row_csv_combined)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_TMcomparison_v2_10.csv", row_csv_10)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_TMcomparison_v2_03.csv", row_csv_03)
+        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_TMcomparison_v2_combined.csv", row_csv_combined)
 
         print("Combined histograms of the two BR......")
         print("n_matched_events = "+str(n_matched_events))
