@@ -1,0 +1,44 @@
+# Python 2.7 requirements for the 1LStopBudapest long-lived stop analysis.
+#
+# Pinned to exactly the versions installed on the local (Higgs) machine, so that
+# histograms and plots produced on lxplus match the ones produced locally:
+#
+#     numpy 1.16.2   matplotlib 2.2.2   pandas 0.24.2   scipy 1.2.3
+#
+# These are also, not coincidentally, the last release of each project that
+# supports Python 2.7. All four publish cp27-cp27mu-manylinux1_x86_64 wheels on
+# PyPI, so no compiler is needed for them.
+#
+# ROOT is deliberately NOT here -- it comes from CMSSW on /cvmfs. See README.md.
+#
+# The complete third-party dependency set of this repo (verified by grepping all
+# 232 .py files) is: ROOT, numpy, matplotlib, pandas, scipy, tabulate, pathlib.
+# The active LL pipelines (preselection_efficiency/, CutFlow_study_LL/,
+# stack_plots_LL/, 1D_plots_LL/) need only the first four.
+
+numpy==1.16.2
+scipy==1.2.3
+matplotlib==2.2.2
+pandas==0.24.2
+
+# --- optional, only for non-active folders -----------------------------------
+# tabulate   -> Signal_efficiency/, legacy_archive/
+# pathlib    -> sample_reweighting/merge_job_outputs.py (py2 backport)
+#tabulate
+#pathlib
+
+# --- notes -------------------------------------------------------------------
+# Transitive dependencies are intentionally NOT pinned here. pip 20.3.4 honours
+# Requires-Python metadata, so it resolves the correct py2.7 versions by itself
+# (kiwisolver 1.1.0, pyparsing 2.4.7, cycler, python-dateutil, pytz, six).
+# install_venv.sh writes the fully-resolved set to requirements.lock.txt after a
+# successful install -- that file, not this one, is the reproducible artifact.
+#
+# subprocess32 is pulled in by matplotlib on py2 and is sdist-only, i.e. it
+# compiles. CMSSW's gcc is on PATH so it normally builds fine. If it ever fails,
+# matplotlib guards that import in a try/except, so this is a safe fallback:
+#     pip install --no-deps matplotlib==2.2.2
+#
+# If the probe (probe_lxplus.sh section 7) shows CMSSW already ships a package
+# here at a version we are happy with, the corresponding pin can be dropped --
+# but only together with a decision about the PYTHONPATH prepend (see README).
