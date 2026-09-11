@@ -9,8 +9,8 @@
 #     bash probe_lxplus.sh 2>&1 | tee probe_output.txt
 #
 # It installs nothing, writes nothing outside /tmp, and is safe to re-run.
-# Paste the whole output back so the pinned values in install_venv.sh and
-# requirements.txt can be set from measurements instead of guesses.
+# Use it to re-check set_env.sh if CMSSW moves, a release disappears, or a
+# library version changes. Section 7 is the one that matters most.
 #
 # Optional override, if you want to probe a specific release:
 #     CMSSW_DIR=/cvmfs/cms.cern.ch/slc7_amd64_gcc700/cms/cmssw/CMSSW_10_6_30 bash probe_lxplus.sh
@@ -148,9 +148,9 @@ if [ -n "$CMSSW_DIR" ] && [ -f "$CMSSET" ]; then
             echo "$out" | head -10 | sed 's/^/      | /'
         fi
     )
-    note "If 5a succeeds, install_venv.sh needs no SCRAM_ARCH export."
-    note "If only 5b succeeds, uncomment the SCRAM_ARCH line in install_venv.sh."
-    note "If both fail, we fall back to a cmsrel dev area."
+    note "If 5a succeeds, set_env.sh needs no SCRAM_ARCH export (it does not set one)."
+    note "If only 5b succeeds, add an SCRAM_ARCH export to set_env.sh."
+    note "If both fail, a cmsrel dev area would be needed instead."
 else
     echo "SKIPPED (no release or no cmsset_default.sh)"
 fi
@@ -210,9 +210,8 @@ for m in mods:
         print("%-12s %s" % (m, "NOT PRESENT"))
 PYEOF
 )
-    note "Anything listed with a /cvmfs/ path is on PYTHONPATH and WILL shadow the venv"
-    note "unless install_venv.sh/setup_env.sh prepend the venv site-packages."
-    note "Anything 'NOT PRESENT' must come from requirements.txt."
+    note "Everything with a /cvmfs/ path is supplied by CMSSW -- nothing to install."
+    note "Anything 'NOT PRESENT' would have to be pip-installed; see README.md."
 else
     echo "SKIPPED"
 fi
@@ -232,7 +231,7 @@ if [ -n "$CMSSW_DIR" ] && [ -f "$CMSSET" ] && [ -x /usr/bin/python ]; then
     echo "    (exit code $rc -- 139 would mean a segfault, i.e. libpython mismatch)"
 )
     note "If this works, either interpreter is viable and the choice does not matter."
-    note "If it segfaults or ImportErrors, the venv must be built from CMSSW's python."
+    note "If it fails, use only the python that scram runtime puts on PATH."
 else
     echo "SKIPPED"
 fi
@@ -289,7 +288,7 @@ fi
 # -----------------------------------------------------------------------------
 hdr "12. Pre-existing tooling"
 # -----------------------------------------------------------------------------
-for t in pip pip2 pip2.7 virtualenv scram scramv1 condor_submit git curl tar; do
+for t in pip pip2 pip2.7 scram scramv1 git curl tar; do
     p="$(command -v "$t" 2>/dev/null)"
     if [ -n "$p" ]; then printf '    %-14s %s\n' "$t" "$p"
     else printf '    %-14s %s\n' "$t" "(not found)"; fi

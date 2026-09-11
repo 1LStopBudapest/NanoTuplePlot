@@ -1,0 +1,5 @@
+# Nothing is installed in this folder and no caches are written here -- every
+# library comes from CMSSW on /cvmfs. This is just stray output.
+
+*.pyc
+probe_output.txt
