@@ -80,7 +80,7 @@ luminosity_2018_pb  = 58905.0
 # Read the CSV file (no headers)
 df = pd.read_csv('info_test_new_comb_tight7_noSel_extra_combined.csv', header=None)
 
-file_data = "/mnt/newDisk/stop_samples_long_lived/2018/summed_2018_reworked.json"
+file_data = "../json_sample_info/summed_2018_reworked.json"
 with open(file_data, "r") as f:
     data_nevents = json.load(f)
 

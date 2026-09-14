@@ -36,8 +36,16 @@ DELTAR_TOO_FAR_CODE   = 9    # same flavour gen lepton found, but beyond DeltaR 
 NO_GEN_CANDIDATE_CODE = 10   # no same flavour gen lepton in the list at all
 
 import csv
+
+# The CSVs live next to this file, not next to whatever directory python was
+# launched from, so that the same checkout runs here and on lxplus.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
 def append_row_to_csv(filename, row_data):
     """Append a list as a new row to a CSV file."""
+    d = os.path.dirname(filename)
+    if d and not os.path.exists(d):
+        os.makedirs(d)
     with open(filename, 'ab') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(row_data)
@@ -866,9 +874,9 @@ class FillHistosBothBR():
             row_csv_combined = [self.ms, self.ml, self.branching_ratio, self.histos[key_].GetEntries(), n_rejected_10+n_rejected_03, self.histos[key_].Integral()]
         
 
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_TMcomparison_v2_10.csv", row_csv_10)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_TMcomparison_v2_03.csv", row_csv_03)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_TMcomparison_v2_combined.csv", row_csv_combined)
+        append_row_to_csv(os.path.join(_HERE, 'info_test_TMcomparison_v2_10.csv'), row_csv_10)
+        append_row_to_csv(os.path.join(_HERE, 'info_test_TMcomparison_v2_03.csv'), row_csv_03)
+        append_row_to_csv(os.path.join(_HERE, 'info_test_TMcomparison_v2_combined.csv'), row_csv_combined)
 
         print("Combined histograms of the two BR......")
         print("n_matched_events = "+str(n_matched_events))

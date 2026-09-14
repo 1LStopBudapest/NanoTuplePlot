@@ -1,7 +1,7 @@
 import json
 
 
-input_json_file = "/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/json_sample_info/summed_2018_reworked.json"
+input_json_file = "../json_sample_info/summed_2018_reworked.json"
 ####################################################
 #Read json with a dictionary including nevents per masspoints and BR
 with open(input_json_file, "r") as f:

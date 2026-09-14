@@ -13,7 +13,7 @@ masspoint = "1075_1065"
 variable = "cutFlow"
 sdir = '1DFiles_LL/'+year
 filename = "1DHist_Sig_Splitted_"+masspoint+"_1_10.root"
-out_plot_path = "/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/CutFlow_study_LL"
+out_plot_path = os.path.dirname(os.path.abspath(__file__))
 #out_plot_path = os.path.join(plotDir, sdir,target_BR_folder,"Sig_Splitted_"+masspoint)
 
 BR_list = ["BR_0.1","BR_0.2","BR_0.3","BR_0.4","BR_0.5","BR_0.6","BR_0.7","BR_0.8","BR_0.9","BR_1.0"]

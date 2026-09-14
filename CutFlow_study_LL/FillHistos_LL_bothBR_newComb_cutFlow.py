@@ -17,8 +17,16 @@ sys.path.append('../')
 from VarHandler import VarHandler
 
 import csv
+
+# The CSVs live next to this file, not next to whatever directory python was
+# launched from, so that the same checkout runs here and on lxplus.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
 def append_row_to_csv(filename, row_data):
     """Append a list as a new row to a CSV file."""
+    d = os.path.dirname(filename)
+    if d and not os.path.exists(d):
+        os.makedirs(d)
     with open(filename, 'ab') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(row_data)
@@ -375,9 +383,9 @@ class FillHistosBothBR():
             row_csv_combined = [self.ms, self.ml, self.branching_ratio, self.histos[key_].GetEntries(), n_rejected_10+n_rejected_03, self.histos[key_].Integral()]
         
 
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_10.csv", row_csv_10)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_03.csv", row_csv_03)
-        append_row_to_csv("/home/mleoncoe/stopAnalysis/test/NanoTuplePlot/Run_results_csv/info_test_cutFlow_combined.csv", row_csv_combined)
+        append_row_to_csv(os.path.join(_HERE, 'info_test_cutFlow_10.csv'), row_csv_10)
+        append_row_to_csv(os.path.join(_HERE, 'info_test_cutFlow_03.csv'), row_csv_03)
+        append_row_to_csv(os.path.join(_HERE, 'info_test_cutFlow_combined.csv'), row_csv_combined)
 
         print("Combined histograms of the two BR......")
         
