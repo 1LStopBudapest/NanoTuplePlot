@@ -1,0 +1,19 @@
+Executable = execute_condor_job.sh
+Log        = log/log_running_$(ProcId).log
+Output     = output/log_running_$(ProcId).out
+Error      = error/log_running_$(ProcId).error
+Transfer_Input_Files = payload.tar
+transfer_output_files   = analysis_output
+arguments  = $(info)
+environment = "PROCID=$(ProcId)"
+MY.WantOS = "el7"
+MY.SendCredential = True
++JobFlavour = "espresso" 
+
+queue info from ( 
+1DPlot_test_lepton_truth_TM_comparison.py --sample Sig_Splitted_250_240 --startfile 0 --nfiles 10 --nevents 1000000 --br 0.1 --year 2018 
+1DPlot_test_lepton_truth_TM_comparison.py --sample Sig_Splitted_250_240 --startfile 0 --nfiles 10 --nevents 1000000 --br 0.2 --year 2018 
+1DPlot_test_lepton_truth_TM_comparison.py --sample Sig_Splitted_250_240 --startfile 0 --nfiles 10 --nevents 1000000 --br 0.3 --year 2018 
+1DPlot_test_lepton_truth_TM_comparison.py --sample Sig_Splitted_250_240 --startfile 0 --nfiles 10 --nevents 1000000 --br 0.4 --year 2018 
+1DPlot_test_lepton_truth_TM_comparison.py --sample Sig_Splitted_250_240 --startfile 0 --nfiles 10 --nevents 1000000 --br 0.5 --year 2018 
+) 
